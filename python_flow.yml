@@ -1,0 +1,20 @@
+id: test-python
+namespace: test
+
+tasks:
+  - id: run_python
+    type: io.kestra.core.tasks.scripts.Python
+    virtualEnv: false
+      commands:
+        - python main.py
+      runner: DOCKER
+      dockerOptions:
+        image: custom_python
+        pullImage: false
+    inputFiles:
+      main.py: |
+        from kestra import Kestra
+        import requests
+
+        response = requests.get("https://google.com")
+        Kestra.outputs({"data": response.text})

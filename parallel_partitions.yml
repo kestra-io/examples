@@ -1,0 +1,32 @@
+id: partitions
+namespace: dev
+description: Process partitions in parallel
+
+tasks:
+  - id: getPartitions
+    type: io.kestra.core.tasks.scripts.Python
+    inputFiles:
+      main.py: |
+        from kestra import Kestra
+        partitions = [f"file_{nr}.parquet" for nr in range(1, 10)]
+        Kestra.outputs({'partitions': partitions})
+
+  - id: processPartitions
+    type: io.kestra.core.tasks.flows.EachParallel
+    value: '{{outputs.getPartitions.vars.partitions}}'
+    tasks:
+      - id: partition
+        type: io.kestra.core.tasks.scripts.Python
+        inputFiles:
+          main.py: |
+            import random
+            import time
+            from kestra import Kestra
+            
+            filename = '{{ taskrun.value }}'
+            print(f"Reading and processing partition {filename}")
+            nr_rows = random.randint(1, 1000)
+            processing_time = random.randint(1, 20)
+            time.sleep(processing_time)
+            Kestra.counter('nr_rows', nr_rows, {'partition': filename})
+            Kestra.timer('processing_time', processing_time, {'partition': filename})
