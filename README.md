@@ -3,14 +3,16 @@
 This repository will:
 1. Help you **get started** with Kestra
 2. Provide examples of how to **use Kestra**
-3. Provide examples of how to **integrate** Kestra with Infrastructure as Code tools, Modern Data Stack products, and public cloud provider services
+3. Provide examples of how to **integrate** Kestra with Infrastructure as Code tools (Terraform, GitHub Actions), Modern Data Stack products, and public cloud provider services
 4. Share **best practices** for managing data workflows across environments so that moving from development to production is as easy as possible without sacrificing security or reliability
 
 ## Getting started video explaining key concepts
 
 Link to the video: https://youtu.be/yuV_rgnpXU8
 
-## How to install Kestra
+---
+
+# How to install Kestra
 
 Download the Docker Compose file:
 
@@ -26,27 +28,76 @@ docker-compose up
 
 ![install.png](images/install.png)
 
+---
 
-## How to use Kestra
+# Hello-World example
 
 Here is a Hello-World example:
 
 ```yaml
 id: hello  
-namespace: prod
+namespace: dev
 tasks:
   - id: hello-world
     type: io.kestra.core.tasks.log.Log
     message: Hello world!
 ```
 
+
+---
+
+## How to integrate Kestra with Modern Data Stack products
+
+### Airbyte
+
+Here is an example of using Kestra with Airbyte running in other Docker container:
+
+```yaml
+id: airbyteSync
+namespace: dev
+tasks:
+  - id: dataIngestionSyncAirbyte
+    type: io.kestra.plugin.airbyte.connections.Sync
+    connectionId: e3b1ce92-547c-436f-b1e8-23b6936c12ab
+    url: http://host.docker.internal:8000/
+    username: airbyte
+    password: password
+```
+
+### Fivetran
+
+Here is an example of using Kestra with Fivetran running in other Docker container:
+
+```yaml
+id: fivetran
+namespace: dev
+tasks:
+  - id: dataIngestionSyncFivetran
+    type: io.kestra.plugin.fivetran.connectors.Sync
+    apiKey: "{{ envs.fivetran_api_key }}"
+    apiSecret: "{{ envs.fivetran_api_secret }}"
+    connectorId: vesicle_movement
+```
+
+---
+
+
+## How to integrate Kestra with IaC: CI/CD with Terraform
+
+Coming soon.
+
+
+---
+
+# Custom Scripts
+
 ## How to run Bash and Python tasks
 
 Here is an example of a Bash task:
 
 ```yaml
-id: hello  
-namespace: prod
+id: hello-bash-python  
+namespace: dev
 tasks:  
   - id: bash-task
     type: io.kestra.core.tasks.scripts.Bash
@@ -82,6 +133,9 @@ tasks:
 If you prefer to run the Python or Bash task in a (_potentially custom_) Docker container:
 
 ```yaml
+id: hello-docker
+namespace: dev
+tasks: 
   - id: python-container-cli
     type: io.kestra.core.tasks.scripts.Bash
     commands:
@@ -99,6 +153,9 @@ Using `dockerOptions` you can also configure credentials to remote Docker regist
 
 
 ```yaml
+id: hello-python-docker
+namespace: dev
+tasks:
   - id: python-container
     type: io.kestra.core.tasks.scripts.Python
     inputFiles:
@@ -117,6 +174,3 @@ Using `dockerOptions` you can also configure credentials to remote Docker regist
 ```
 
 
-## How to integrate Kestra with IaC: CI/CD with Terraform
-
-Coming soon.
