@@ -63,7 +63,7 @@ triggers:
 
 ---
 
-# How to integrate Kestra with Modern Data Stack products
+# How to integrate Kestra with other tools in the Modern Data Stack 
 
 ## Airbyte
 
@@ -83,10 +83,10 @@ tasks:
 
 ## Fivetran
 
-Here is an example of using Kestra with Fivetran running in other Docker container:
+Here is an example of a flow with a single task triggering a Fivetran sync:
 
 ```yaml
-id: fivetran
+id: fivetranSync
 namespace: dev
 tasks:
   - id: dataIngestionSyncFivetran
