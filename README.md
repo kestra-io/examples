@@ -43,12 +43,29 @@ tasks:
     message: Hello world!
 ```
 
+## Adding a schedule
+
+Here is an example of adding a schedule to the Hello-World example:
+
+```yaml
+id: hello-cron  
+namespace: dev
+tasks:
+  - id: hello-world
+    type: io.kestra.core.tasks.log.Log
+    message: Hello world!
+triggers:
+  - id: every-minute
+    type: io.kestra.core.models.triggers.types.Schedule
+    cron: "*/1 * * * *"
+```
+
 
 ---
 
-## How to integrate Kestra with Modern Data Stack products
+# How to integrate Kestra with Modern Data Stack products
 
-### Airbyte
+## Airbyte
 
 Here is an example of using Kestra with Airbyte running in other Docker container:
 
@@ -64,7 +81,7 @@ tasks:
     password: password
 ```
 
-### Fivetran
+## Fivetran
 
 Here is an example of using Kestra with Fivetran running in other Docker container:
 
