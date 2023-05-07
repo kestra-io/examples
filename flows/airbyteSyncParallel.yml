@@ -10,16 +10,19 @@ tasks:
         tasks:
           - id: salesforce
             type: io.kestra.plugin.airbyte.connections.Sync
+            url: http://host.docker.internal:8000/
             connectionId: e3b1ce92-547c-436f-b1e8-23b6936c12ab
           - id: google-analytics
             type: io.kestra.plugin.airbyte.connections.Sync
+            url: http://host.docker.internal:8000/
             connectionId: e3b1ce92-547c-436f-b1e8-23b6936c12cd
           - id: facebook-ads
             type: io.kestra.plugin.airbyte.connections.Sync
+            url: http://host.docker.internal:8000/
             connectionId: e3b1ce92-547c-436f-b1e8-23b6936c12ef
 
 taskDefaults:
   - type: io.kestra.plugin.airbyte.connections.Sync
-    url: http://host.docker.internal:8000/
-    username: airbyte
-    password: password
+    values:
+      username: airbyte
+      password: password
