@@ -1,0 +1,22 @@
+id: pythonScriptContainer
+namespace: prod
+description: |
+  This flow starts a Docker container, installs custom packages
+  and runs a Python task script inside it.
+
+tasks:
+  - id: pythonScriptContainer
+    type: io.kestra.core.tasks.scripts.Python
+    inputFiles:
+      main.py: |
+        import pandas as pd
+        import requests
+        
+        print(f"pandas version: {pd.__version__}")
+        print(f"requests version: {requests.__version__}")
+    requirements:
+      - requests
+      - pandas
+    runner: DOCKER
+    dockerOptions:
+      image: python:3.11-slim

@@ -1,0 +1,15 @@
+id: helloParametrized
+namespace: prod
+description: |
+  This flow takes runtime-specific input and uses it to log a message to the console.
+
+inputs:
+  - name: user
+    type: STRING
+    defaults: Data Engineer
+    required: false
+
+tasks:
+  - id: hello
+    type: io.kestra.core.tasks.log.Log
+    message: Hello {{ inputs.user }} from Kestra!
