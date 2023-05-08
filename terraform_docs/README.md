@@ -1,8 +1,3 @@
-The next video will provide a hands-on demo of how you can bring Infrastructure as Code best practices to your data pipelines using Terraform and Kestra.
-
-Thanks for watching and see you in the next video!
-
-
 # What is Terraform
 
 [Terraform](https://developer.hashicorp.com/terraform/intro) is an open-source infrastructure as code tool that allows defining and managing resources using human-readable **declarative configuration**, which is **cloud agnostic**. 
