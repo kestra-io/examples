@@ -102,7 +102,7 @@ I will name my workspace `kestra-prod`. And here we can choose the **workflow** 
 3. **API-driven workflow** - you trigger `terraform apply` runs via the Terraform Cloud API, usually required when you want to manage Terraform resources via internal or legacy infrastructure management systems. This is also required if you want to trigger Terraform Cloud runs from GitHub Actions.
 
 
-It's worth noting that there is an alternative option with a GitHub Action that you could implement yourself using the hashicorp/setup-terraform GitHub Action. However, this way you would need to maintain that workflow yourself. That's why I'd personally recommended leveraging the VCS workflow available by here default, because this workflow is based on a GitHub app, managed and officially maintained by Terraform Cloud. In contract, the GitHub Action has an experimental status. 
+It's worth noting that there is an alternative option with a GitHub Action that you could implement yourself using the hashicorp/setup-terraform GitHub Action. However, this way you would need to maintain that workflow yourself. That's why I'd personally recommended leveraging the VCS workflow available by default, because this workflow is based on a GitHub app, managed and officially maintained by Terraform Cloud. In contrast, the GitHub Action has an experimental status. 
 
 ![img_3.png](img_3.png)
 
