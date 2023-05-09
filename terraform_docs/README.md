@@ -34,7 +34,7 @@ You can use Terraform entirely for free in a team with up to 5 users. This means
 
 It's worth highlighting that the "Cloud Free" plan is NOT a trial. Even though the billing page implies a trial, it's a normal account, but it's limited to only 5 users and doesn't include enterprise features such as policies.
 
-If you need more than 5 users, Terraform charges 20 dollar per user per month.
+If you need more than 5 users, Terraform charges 20 dollar per user per month (as of May 2023).
 
 ![img_1.png](img_1.png)
 
