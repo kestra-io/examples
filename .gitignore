@@ -37,3 +37,4 @@ terraform.rc
 .idea/
 .vscode/
 .tmp/
+.DS_Store
