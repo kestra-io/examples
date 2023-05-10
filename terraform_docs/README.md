@@ -1,8 +1,3 @@
-The next video will provide a hands-on demo of how you can bring Infrastructure as Code best practices to your data pipelines using Terraform and Kestra.
-
-Thanks for watching and see you in the next video!
-
-
 # What is Terraform
 
 [Terraform](https://developer.hashicorp.com/terraform/intro) is an open-source infrastructure as code tool that allows defining and managing resources using human-readable **declarative configuration**, which is **cloud agnostic**. 
@@ -39,7 +34,7 @@ You can use Terraform entirely for free in a team with up to 5 users. This means
 
 It's worth highlighting that the "Cloud Free" plan is NOT a trial. Even though the billing page implies a trial, it's a normal account, but it's limited to only 5 users and doesn't include enterprise features such as policies.
 
-If you need more than 5 users, Terraform charges 20 dollar per user per month.
+If you need more than 5 users, Terraform charges 20 dollar per user per month (as of May 2023).
 
 ![img_1.png](img_1.png)
 
@@ -107,7 +102,7 @@ I will name my workspace `kestra-prod`. And here we can choose the **workflow** 
 3. **API-driven workflow** - you trigger `terraform apply` runs via the Terraform Cloud API, usually required when you want to manage Terraform resources via internal or legacy infrastructure management systems. This is also required if you want to trigger Terraform Cloud runs from GitHub Actions.
 
 
-It's worth noting that there is an alternative option with a GitHub Action that you could implement yourself using the hashicorp/setup-terraform GitHub Action. However, this way you would need to maintain that workflow yourself. That's why I'd personally recommended leveraging the VCS workflow available by here default, because this workflow is based on a GitHub app, managed and officially maintained by Terraform Cloud. In contract, the GitHub Action has an experimental status. 
+It's worth noting that there is an alternative option with a GitHub Action that you could implement yourself using the hashicorp/setup-terraform GitHub Action. However, this way you would need to maintain that workflow yourself. That's why I'd personally recommended leveraging the VCS workflow available by default, because this workflow is based on a GitHub app, managed and officially maintained by Terraform Cloud. In contrast, the GitHub Action has an experimental status. 
 
 ![img_3.png](img_3.png)
 
