@@ -1,4 +1,4 @@
-id: pythonVenvBashCommand
+id: pythonBashVenv
 namespace: prod
 description: |
   This flow creates a CSV file from a CLI using a Bash task.

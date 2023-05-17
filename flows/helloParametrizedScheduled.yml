@@ -1,0 +1,24 @@
+id: helloParametrizedScheduled
+namespace: prod
+description: |
+  This flow takes a runtime-specific input and uses it to log a message to the console.
+  The flow includes a schedule that runs every minute with a custom input parameter value.
+
+inputs:
+  - name: user
+    type: STRING
+    defaults: Data Engineer
+    required: false
+
+tasks:
+  - id: hello
+    type: io.kestra.core.tasks.log.Log
+    message: Hello {{ inputs.user }} from Kestra!
+
+triggers:
+  - id: everyMinute
+    type: io.kestra.core.models.triggers.types.Schedule
+    cron: "*/1 * * * *"
+    inputs:
+     name: user
+     value: custom value

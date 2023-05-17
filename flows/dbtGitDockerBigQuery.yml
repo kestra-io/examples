@@ -1,0 +1,44 @@
+id: dbtGitDockerDuckDB
+namespace: prod
+tasks:
+  - id: dbt
+    type: io.kestra.core.tasks.flows.Worker
+    tasks:
+    - id: clone-repository
+      type: io.kestra.plugin.git.Clone
+      url: https://github.com/dbt-labs/jaffle_shop
+      branch: main
+    - id: dbt-setup
+      type: io.kestra.plugin.dbt.cli.Setup
+      profiles:
+        jaffle_shop:
+          outputs:
+            dev:
+              type: bigquery
+              dataset: dwh
+              fixed_retries: 1
+              keyfile: sa.json
+              location: EU
+              method: service-account
+              priority: interactive
+              project: geller
+              threads: 8
+              timeout_seconds: 300
+          target: dev
+      requirements:
+        - dbt-bigquery
+      runner: DOCKER
+      dockerOptions:
+        image: python:3.10-slim
+      inputFiles:
+        sa.json: |
+          {{envs.gcp_creds}}
+    - id: dbt-build
+      type: io.kestra.plugin.dbt.cli.Build
+      debug: false
+      runner: DOCKER
+      dockerOptions:
+        image: python:3.10-slim
+      inputFiles:
+        sa.json: |
+          {{envs.gcp_creds}}

@@ -1,7 +1,7 @@
 id: helloParametrized
 namespace: prod
 description: |
-  This flow takes runtime-specific input and uses it to log a message to the console.
+  This flow takes a runtime-specific input and uses it to log a message to the console.
 
 inputs:
   - name: user

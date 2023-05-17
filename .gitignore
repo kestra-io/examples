@@ -38,3 +38,6 @@ terraform.rc
 .vscode/
 .tmp/
 .DS_Store
+.env
+credentials.json
+credentials.json
