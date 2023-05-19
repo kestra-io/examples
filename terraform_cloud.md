@@ -28,9 +28,9 @@ It's worth highlighting that the "Cloud Free" plan is NOT a trial. Even though t
 
 If you need more than 5 users, Terraform charges 20 dollar per user per month (as of May 2023).
 
-![img_1.png](img_1.png)
+![img_1.png](images/img_1.png)
 
-![img_2.png](img_2.png)
+![img_2.png](images/img_2.png)
 
 
 
@@ -72,7 +72,7 @@ Given that I have a multi-factor authentication enabled on my GitHub account, I 
 ### Troubleshooting tip
 If you see a message: "Failed to install GitHub App", you need to allow pop-ups from Terraform Cloud in your browser window. 
 
-![img.png](img.png)
+![img.png](images/img.png)
 
 
 ## Create a workspace
@@ -96,7 +96,7 @@ I will name my workspace `kestra-prod`. And here we can choose the **workflow** 
 
 It's worth noting that there is an alternative option with a GitHub Action that you could implement yourself using the hashicorp/setup-terraform GitHub Action. However, this way you would need to maintain that workflow yourself. That's why I'd personally recommended leveraging the VCS workflow available by default, because this workflow is based on a GitHub app, managed and officially maintained by Terraform Cloud. In contrast, the GitHub Action has an experimental status. 
 
-![img_3.png](img_3.png)
+![img_3.png](images/img_3.png)
 
 I will choose the most common `Version control workflow`.
 
