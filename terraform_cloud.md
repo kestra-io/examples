@@ -25,7 +25,7 @@ To start using Terraform Cloud, you first have to sign up for an account [here](
 
 You can use Terraform Cloud for free in order to manage up to 500 resources. You can reproduce everything we're gonna cover in this demo free of charge. 
 
-It's worth highlighting that the "Free" plan is NOT a trial. Even though the billing page implies a trial, it's a normal account. Only enterprise support is not included. 
+It's worth highlighting that the "Free" plan is NOT a trial. It's a normal account you can use for production use cases. You only need to upgrade to standard or enterprise plans once you cross the 500 resources threshold or when you need enterprise support. 
 
 Here is [pricing](https://www.hashicorp.com/products/terraform/pricing) overview as of end of May 2023:
 
