@@ -1,0 +1,9 @@
+id: passOutputs
+namespace: prod
+tasks:
+    - id: passOutput
+      type: io.kestra.core.tasks.debugs.Return
+      format: "hello world!"
+    - id: takeInput
+      type: io.kestra.core.tasks.log.Log
+      message: "data from previous task - {{outputs.passOutput.value}}"

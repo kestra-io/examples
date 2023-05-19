@@ -1,0 +1,16 @@
+id: analyzeCSV
+namespace: prod
+inputs:
+  - name: url
+    type: STRING
+    defaults: https://raw.githubusercontent.com/dbt-labs/jaffle_shop/main/seeds/raw_customers.csv
+tasks:
+  - id: pandas-task
+    type: io.kestra.core.tasks.scripts.Python
+    inputFiles:
+      main.py: |
+        import pandas as pd
+        df = pd.read_csv("{{inputs.url}}")
+        df.info()
+    requirements:
+      - pandas

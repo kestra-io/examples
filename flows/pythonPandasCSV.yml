@@ -1,0 +1,33 @@
+id: pythonPandasCSV
+namespace: prod
+description: |
+  ## Simple Python script
+  First task downloads CSV to Kestra's internal storage and will make it available via task outputs.
+  Next task will analyze it.
+inputs:
+  - name: csvUrl
+    type: STRING
+    defaults: https://www.data.gouv.fr/fr/datasets/r/d33eabc9-e2fd-4787-83e5-a5fcfb5af66d
+tasks:
+  - id: extract
+    type: io.kestra.plugin.fs.http.Download
+    uri: "{{inputs.csvUrl}}"
+  - id: analyzeData
+    type: io.kestra.core.tasks.scripts.Python
+    description: |
+      We define an input file named 'data.csv' that will be available in the Python task's working directory.
+      This file is fetched from the internal storage by using the 'uri' output of the 'extract' task.
+      Then, the file 'main.py' is the Python script that will be executed.
+      It uses Pandas to read the CSV file, computes the sum and sets is as task output.
+      Because the script uses `pandas`, we must list it in the requirements.
+    inputFiles:
+      data.csv: "{{outputs.extract.uri}}"
+      main.py: |
+        import pandas as pd
+        from kestra import Kestra
+        data = pd.read_csv("data.csv", sep=";")
+        data.info()
+        sumOfConsumption = data['conso'].sum()
+        Kestra.outputs({'sumOfConsumption': int(sumOfConsumption)})
+    requirements:
+      - pandas

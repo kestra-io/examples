@@ -1,0 +1,14 @@
+id: s3CreateBucket
+namespace: prod
+inputs:
+  - name: bucket
+    type: STRING
+    defaults: "declarative-data-orchestration"
+    required: true
+tasks:
+  - id: createBucket
+    type: io.kestra.plugin.aws.s3.CreateBucket
+    accessKeyId: "{{envs.aws_access_key_id}}"
+    secretKeyId: "{{envs.aws_secret_access_key}}"
+    region: "eu-central-1"
+    bucket: "{{ inputs.bucket }}"

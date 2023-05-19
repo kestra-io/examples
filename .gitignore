@@ -40,4 +40,3 @@ terraform.rc
 .DS_Store
 .env
 credentials.json
-credentials.json

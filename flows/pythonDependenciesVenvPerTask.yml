@@ -1,0 +1,23 @@
+id: pythonDependenciesVenvPerTask
+namespace: prod
+tasks:
+  - id: compareInstallTimesBetweenVersions
+    type: io.kestra.core.tasks.flows.Parallel
+    concurrent: 2
+    tasks:
+    - id: latestRequests
+      type: io.kestra.core.tasks.scripts.Python
+      inputFiles:
+        main.py: |
+          import requests
+          print(requests.__version__)
+      requirements:
+        - requests
+    - id: olderRequests
+      type: io.kestra.core.tasks.scripts.Python
+      inputFiles:
+        main.py: |
+          import requests
+          print(requests.__version__)
+      requirements:
+        - requests==2.20

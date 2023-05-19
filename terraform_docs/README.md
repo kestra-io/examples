@@ -6,141 +6,145 @@ With Terraform, you can **automate** provisioning and managing changes to your i
 
 It reduces the human error resulting from **manual operations**, often referred to as ClickOps. Instead of clicking through a UI or running a series of commands manually, you can define a **process** in **code** that you can execute with a single command.
 
-
-# What is Terraform Cloud
-
-[Terraform Cloud](https://cloud.hashicorp.com/products/terraform) builds on these features by managing Terraform runs in a consistent and reliable environment instead of on your local machine. It securely **stores state and secret data**, and can connect to version control systems to implement **CI/CD** best practices.
-
-There are many additional features including:
-
-- a private registry for custom modules and providers
-- access controls for approving changes
-- cost estimates for the provisioned infrastructure
-- detailed policy controls to ensure compliance of your Terraform configurations
-
-**The most important features are:**
-
-- making your infrastructure setup collaborative, observable and reliable
-- with any new change, someone from your team can review and approve the plan before you apply those changes
-- Terraform Cloud also locks the state during operations to prevent concurrent modifications that may corrupt the state file.
-
-# Terraform Cloud Demo
-
-## Prerequisites
-
-To start using Terraform Cloud, you first have to sign up for an account [here](https://app.terraform.io/signup/account). 
-
-You can use Terraform entirely for free in a team with up to 5 users. This means that you can reproduce everything we're gonna cover in this demo free of charge. 
-
-It's worth highlighting that the "Cloud Free" plan is NOT a trial. Even though the billing page implies a trial, it's a normal account, but it's limited to only 5 users and doesn't include enterprise features such as policies.
-
-If you need more than 5 users, Terraform charges 20 dollar per user per month (as of May 2023).
-
-![img_1.png](img_1.png)
-
-![img_2.png](img_2.png)
+---
 
 
+# How to integrate Kestra with IaC: CI/CD with Terraform
 
-## Agenda for the demo
-Once you have an account, we will walk through the following steps:
-1. Creating an **organization** 
-2. Connecting your **VCS Provider** (recommended) 
-3. Creating a **workspace**. 
-4. Connecting your workspace with the **repository** containing your Kestra flows and Terraform code.
-
-Specifically, we will:
-
-1. Create an organization named `data-team`
-2. Authorize **GitHub** as our VCS Provider
-3. Create a workspace named `kestra-prod` and assign it to a **project** named `Orchestration`.
-4. Create **Kestra resources** from a Terraform Cloud CI/CD.
+To deploy your workflows to Kestra, you can use the Kestra Terraform provider. This allows you to follow Infrastructure as Code best practices in your data engineering lifecycle. 
 
 
-# Demo
+## Deploying a single flow with Terraform
 
-## Create an account (if you don't have one yet)
+The `kestra_flow` Terraform resource type allows you to deploy a flow to Kestra. By default this resource will deploy only one specific flow:
 
-Visit https://app.terraform.io/signup/account and create a free Terraform Cloud account.
+```hcl
+resource "kestra_flow" "firstFlow" {
+  flow_id = "hello"
+  namespace = "prod"
+  content = <<EOF
+id: hello  
+namespace: prod
+tasks:
+  - id: hello
+    type: io.kestra.core.tasks.log.Log
+    message: Hello world!
+EOF
+}
+```
 
-When you sign up, you will receive an email asking you to confirm your email address. Confirm your email address before moving on. When you click the link to confirm your email address, the Terraform Cloud UI will ask which setup workflow you would like use. Select **Start from scratch**.
+A much friendlier alternative is to reference the [YAML file](flows/helloWorld.yml) directly using the `templatefile` function:
 
-[https://content.hashicorp.com/api/assets?product=tutorials&version=main&asset=public%2Fimg%2Fterraform%2Ftfc_getting-started_onboarding_workflow.png](https://content.hashicorp.com/api/assets?product=tutorials&version=main&asset=public%2Fimg%2Fterraform%2Ftfc_getting-started_onboarding_workflow.png)
+```hcl
+resource "kestra_flow" "helloWorld" {
+  flow_id = "helloWorld"
+  namespace = "dev"
+  content = templatefile("flows/helloWorld.yml", {})
+}
+```
 
+One drawback of both of the above mentioned approaches is that flow ID and namespace are defined twice - once in the flow YAML definition, and once here in the terraform resource. You can leverage the `yamldecode` function to avoid this duplication:
 
-## Create an organization
-Let's login to Terraform Cloud and create an organization. Let's name the organization `data-team`, and I'll enter my email address to receive alerts and notifications.
-
-## Add a VCS Provider
-Now that we have created an organization, let's go to Organization Settings, Providers, Version Control System Providers and connect to GitHub. I will authorize Terraform Cloud to access my GitHub account. Select my GitHub organization, all repositories, and click on Install to install the GitHub App. 
-
-Given that I have a multi-factor authentication enabled on my GitHub account, I need to enter a verification code on my phone.
-
-
-### Troubleshooting tip
-If you see a message: "Failed to install GitHub App", you need to allow pop-ups from Terraform Cloud in your browser window. 
-
-![img.png](img.png)
-
-
-## Create a workspace
-The next step is to create a workspace. 
-
-Terraform Cloud organizes resources by workspaces that contain:
-1. Resource definitions
-2. Variables
-3. State files
-
-Terraform compares the desired state declared in your Terraform code with the current state, stored in your state file.
-
-
-I will name my workspace `kestra-prod`. And here we can choose the **workflow** type. 
-
-
-1. **Version control workflow** - you store your Terraform configuration in a Git repository, and changes merged to the respective Git branch (_usually performed via Pull Requests_) automatically trigger `terraform plan & apply` runs.
-2. **CLI-driven workflow** - you run `terraform plan` and `terraform apply` manually from your local machine or CI/CD system, and those commands run against Terraform Cloud's ephemeral remote execution backend.
-3. **API-driven workflow** - you trigger `terraform apply` runs via the Terraform Cloud API, usually required when you want to manage Terraform resources via internal or legacy infrastructure management systems. This is also required if you want to trigger Terraform Cloud runs from GitHub Actions.
+```hcl
+resource "kestra_flow" "helloWorld" {
+  flow_id = yamldecode(templatefile("flows/helloWorld.yml", {}))["id"]
+  namespace = yamldecode(templatefile("flows/helloWorld.yml", {}))["namespace"]
+  content = templatefile("flows/helloWorld.yml", {})
+}
+```
 
 
-It's worth noting that there is an alternative option with a GitHub Action that you could implement yourself using the hashicorp/setup-terraform GitHub Action. However, this way you would need to maintain that workflow yourself. That's why I'd personally recommended leveraging the VCS workflow available by default, because this workflow is based on a GitHub app, managed and officially maintained by Terraform Cloud. In contrast, the GitHub Action has an experimental status. 
+## Deploying an entire [flows](flows) directory with Terraform
 
-![img_3.png](img_3.png)
+The above section showed how you can define a single flow. In reality, you would typically want to automatically discover and deploy all flows from a given directory. To accomplish that, you can combine `for_each` with the `fileset()` Terraform function to deploy an entire directory of flows:
 
-I will choose the most common `Version control workflow`.
+```hcl
+resource "kestra_flow" "com_flows" {
+  for_each = fileset(path.module, "flows/*.yml")
+  flow_id = yamldecode(templatefile(each.value, {}))["id"]
+  namespace = yamldecode(templatefile(each.value, {}))["namespace"]
+  content = templatefile(each.value, {})
+}
+```
 
-We've already connected to a version control provider. I will choose GitHub and select the repository that contains Kestra flows and Terraform code.
 
-In the project selection, I will create a new project named `Orchestration`. This way, within our **data team** organization we can have multiple projects, and each of those projects can contain several workspaces. For instance, the project `Orchestration` can contain workspaces `kestra-prod`, `kestra-staging`, etc.
+## Deploying flows with Terraform using the default Open-Source installation
+
+
+### Install Kestra
+You can start Kestra using Docker-Compose:
+
+```sh
+curl -o docker-compose.yml https://raw.githubusercontent.com/kestra-io/kestra/develop/docker-compose.yml
+docker-compose up
+```
+
+### Install Terraform
+
+You can install Terraform on your local machine using `Homebrew` (for detailed instructions of your OS, check the [Terraform CLI install guide Terraform](https://developer.hashicorp.com/terraform/tutorials/aws-get-started/install-cli)):
+
+```sh
+brew tap hashicorp/tap
+brew install hashicorp/tap/terraform
+``` 
+
+## Deploy flows to your local Kestra instance with Terraform
+
+For open-source installation of Kestra, there are no other resources you would need to provision other than the `kestra_flow` resource. 
+
+Create a file called `main.tf` with the following content:
+
+
+```hcl
+terraform {
+  required_providers {
+    kestra = {
+      source = "kestra-io/kestra" # namespace of Kestra provider
+      version = "~> 0.7.0" # don't worry about 0.7.0 being displayed here - the provider works across the latest version as well
+    }
+  }
+}
+
+provider "kestra" {
+  url = "http://localhost:8080"
+}
+
+resource "kestra_flow" "com_flows" {
+  for_each = fileset(path.module, "flows/*.yml")
+  flow_id = yamldecode(templatefile(each.value, {}))["id"]
+  namespace = yamldecode(templatefile(each.value, {}))["namespace"]
+  content = templatefile(each.value, {})
+}
+```
+
+Make sure to run both Terraform and Kestra on the same host when using the open-source version of Kestra. Alternatively, make sure that the Kestra URL is reachable from where you use Terraform CLI. 
+
+Execute the Terraform CLI commands:
+
+```sh
+terraform init
+terraform validate # optionally to cross-check the flow syntax works correctly
+terraform apply # confirm with yes or add the -auto-approve flag
+```
+
+## Troubleshooting Terraform
+
+Q: What if I get an error ``Error: status: 422, method: POST, body: {"message":"Invalid entity: flow.id: Flow id already exists"``? 
+A: This means that somebody has already created a flow with the same name (ID) in this namespace. To reconcile that, ensure that you don't manually modify your flow definition from the UI in the production environment. Instead, use Terraform to deploy your flows to production.
+
+To fix that error, delete the flow created from the UI and deploy it with Terraform: ``tf apply -auto-approve``. 
 
 ---
 
-# Kestra specific setup
+# Terraform Cloud & Kestra Enterprise Edition
 
-We will now move to the Kestra setup. 
-
-## Terraform Variables
-Given that our repository contains **variables** for username and password that represents Authentication to our Kestra instance, we need to first create a programmatic user that will have the least privileges to deploy Kestra resources.
-
-Let's go to our Kestra instance and create a new role and user. I will name both the role and user as `terraform`.
-
-First, let's create a role and assign it the following permissions.
-
-Now let's create a user and assign it the role we've just created. 
-
-Now we need to add those credentials as Variables in the Terraform Cloud Workspace. Let's go to the Workspace Overview -> Variables, and let's add the following variables:
-
-1. `username` - the username of the user we've just created
-2. `password` - the password of the user we've just created
-
-**Optional description for the username:** 
-Programmatic access user to deploy Kestra resources.
-
-**Optional description for the password:**
-Password for the programmatic access user.
+For a reliable, secure and easiest to manage CI/CD and IaC setup, we recommend deploying all Kestra-related production resources using Terraform Cloud. 
 
 
+## Kestra Enterprise
+To deploy Kestra Enterprise Edition, contact us using [this form](https://kestra.io/contact-us) or [book a call](https://meetings-eu1.hubspot.com/quentin-sinig/meeting-link-demo).
 
-## Terraform Runs
-Now that we have created a workspace and added the variables, we can trigger the first Terraform run. 
+## Terraform Cloud setup
 
+See the page [Terraform Cloud](terraform-cloud.md) for more details on how to implement Infrastructure as Code with Kestra and Terraform Cloud.
 

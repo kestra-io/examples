@@ -63,6 +63,8 @@ services:
                 username: airbyte
                 password: password
           url: http://localhost:8080/
+          variables:
+            env-vars-prefix: ""
     ports:
       - "8080:8080"
       - "8081:8081"

@@ -1,0 +1,15 @@
+id: metricsFromBash
+namespace: prod
+tasks:
+  - id: nrRowsMetric
+    type: io.kestra.core.tasks.scripts.Bash
+    commands:
+      - echo '::{"metrics":[{"name":"nr_rows","type":"counter","value":800,"tags":{"schema":"analytics"}}]}::'
+  - id: nrRowsOutput
+    type: io.kestra.core.tasks.scripts.Bash
+    commands:
+      - echo '::{"outputs":{"nr_rows":800}}::'
+  - id: metrics
+    type: io.kestra.core.tasks.scripts.Bash
+    commands:
+      - echo '::{"metrics":[{"name":"datasets_count","type":"counter","value":3,"tags":{"schema":"analytics"}}]}::'
