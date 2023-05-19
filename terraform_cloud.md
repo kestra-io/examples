@@ -1,9 +1,9 @@
 
 # What is Terraform Cloud
 
-[Terraform Cloud](https://cloud.hashicorp.com/products/terraform) builds on these features by managing Terraform runs in a consistent and reliable environment instead of on your local machine. It securely **stores state and secret data**, and can connect to version control systems to implement **CI/CD** best practices.
+[Terraform Cloud](https://cloud.hashicorp.com/products/terraform) centrally manages Terraform runs and Terraform state files in a consistent and reliable environment (_rather than on a single local machine_). It securely **stores state and secret data**, and can connect to version control systems to implement **CI/CD** best practices.
 
-There are many additional features including:
+Terraform Cloud offers many additional features including:
 
 - a private registry for custom modules and providers
 - access controls for approving changes
@@ -16,26 +16,26 @@ There are many additional features including:
 - with any new change, someone from your team can review and approve the plan before you apply those changes
 - Terraform Cloud also locks the state during operations to prevent concurrent modifications that may corrupt the state file.
 
+
 # Terraform Cloud Demo
 
 ## Prerequisites
 
 To start using Terraform Cloud, you first have to sign up for an account [here](https://app.terraform.io/signup/account). 
 
-You can use Terraform entirely for free in a team with up to 5 users. This means that you can reproduce everything we're gonna cover in this demo free of charge. 
+You can use Terraform Cloud for free in order to manage up to 500 resources. You can reproduce everything we're gonna cover in this demo free of charge. 
 
-It's worth highlighting that the "Cloud Free" plan is NOT a trial. Even though the billing page implies a trial, it's a normal account, but it's limited to only 5 users and doesn't include enterprise features such as policies.
+It's worth highlighting that the "Free" plan is NOT a trial. Even though the billing page implies a trial, it's a normal account. Only enterprise support is not included. 
 
-If you need more than 5 users, Terraform charges 20 dollar per user per month (as of May 2023).
+Here is [pricing](https://www.hashicorp.com/products/terraform/pricing) overview as of end of May 2023:
 
-![img_1.png](images/img_1.png)
-
-![img_2.png](images/img_2.png)
-
+![img.png](images/img_4.png)
 
 
 ## Agenda for the demo
+
 Once you have an account, we will walk through the following steps:
+
 1. Creating an **organization** 
 2. Connecting your **VCS Provider** (recommended) 
 3. Creating a **workspace**. 
@@ -57,7 +57,8 @@ Visit https://app.terraform.io/signup/account and create a free Terraform Cloud 
 
 When you sign up, you will receive an email asking you to confirm your email address. Confirm your email address before moving on. When you click the link to confirm your email address, the Terraform Cloud UI will ask which setup workflow you would like use. Select **Start from scratch**.
 
-[https://content.hashicorp.com/api/assets?product=tutorials&version=main&asset=public%2Fimg%2Fterraform%2Ftfc_getting-started_onboarding_workflow.png](https://content.hashicorp.com/api/assets?product=tutorials&version=main&asset=public%2Fimg%2Fterraform%2Ftfc_getting-started_onboarding_workflow.png)
+![img.png](images/img_5.png)
+
 
 
 ## Create an organization
@@ -110,7 +111,7 @@ In the project selection, I will create a new project named `Orchestration`. Thi
 
 We will now move to the Kestra setup. 
 
-## Terraform Variables
+## Create a role and a user in Kestra UI
 Given that our repository contains **variables** for username and password that represents Authentication to our Kestra instance, we need to first create a programmatic user that will have the least privileges to deploy Kestra resources.
 
 Let's go to our Kestra instance and create a new role and user. I will name both the role and user as `terraform`.
@@ -119,7 +120,9 @@ First, let's create a role and assign it the following permissions.
 
 Now let's create a user and assign it the role we've just created. 
 
-Now we need to add those credentials as Variables in the Terraform Cloud Workspace. Let's go to the Workspace Overview -> Variables, and let's add the following variables:
+## Terraform Variables
+
+Now we need to add those credentials as Variables in the Terraform Cloud Workspace. Let's go to the Workspace Overview - Variables, and let's add the following variables:
 
 1. `username` - the username of the user we've just created
 2. `password` - the password of the user we've just created
@@ -134,4 +137,12 @@ Password for the programmatic access user.
 ## Terraform Runs
 Now that we have created a workspace and added the variables, we can trigger the first Terraform run. 
 
+This run will be manual at first. Then, we'll add new flows to the GitHub repository, and Terraform runs will start automatically via Teraform Cloud CI/CD. 
 
+### Manual run
+
+Go to Actions - Start new run - Start run. 
+
+We can verify that the flows were correctly identified. Let's confirm plan and apply.
+
+And we can now verify that the flows have been successfully deployed to Kestra 🎉
