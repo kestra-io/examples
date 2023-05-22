@@ -129,22 +129,39 @@ On Windows:
 ## Open-source Kestra
 
 In the open-source version, you can leverage environment variables. 
-Add this variable to your .env file (paste your service account JSON as the value): 
+Create an `.env` file and add any environment variables there, as shown in the [.env_example](.env_example) file.
 
-```
-GCP_CREDS={"type":"service_account","project_id":"geller","private_key_id":"..."}
-```
+Then, you can reference that environment variable in your flow using ``{{envs.aws_access_key_id}}``. 
 
-Then, you can reference that environment variable in your flow using ``{{envs.gcp_creds}}``. 
-
-For security reason environment variables are fixed at the application startup (JVM startup).
+For security reasons, environment variables are fixed at the application startup (JVM startup).
 
 Note that the reference must be **lowercase**:
-- ``{{envs.gcp_creds}}`` is correct ✅ 
-- ``{{envs.GCP_CREDS}}`` is NOT correct ❌ because it must be referenced in lowercase, even though the ``.env`` file contains the variable in uppercase ``GCP_CREDS={"type":"service_account", ...}
+- ``{{envs.aws_access_key_id}}`` is correct ✅ 
+- ``{{envs.AWS_ACCESS_KEY_ID}}`` is NOT correct ❌ because it must be referenced in lowercase, even though the ``.env`` file contains the variable in uppercase ``AWS_ACCESS_KEY_ID=xxx``
 
+Also, make sure that your Kestra container contains this configuration in your [docker-compose.yml](docker-compose.yml) file:
+
+```yaml
+  kestra:
+    image: kestra/kestra:develop-full
+    ...
+    env_file:
+      - .env
+    environment:
+      KESTRA_CONFIGURATION: |
+        kestra:
+          ...
+          variables:
+            env-vars-prefix: ""
+```
+
+Setting `env-vars-prefix` to an empty string will allow you to reference environment variables without a prefix.
+
+Without this settings, your AWS_ACCESS_KEY_ID environment variable would need to be prefixed with `KESTRA_` in the `.env` file: ``KESTRA_AWS_ACCESS_KEY_ID``.
 
 ## Cloud & Eneterprise Edition
 
-You can add a Secret in the relevant namespace. To reference that secret in your flow, use: ``{{secret('GITHUB_ACCESS_TOKEN')}}``.  
+Cloud & Enterprise Editions have a dedicated credentials managers with extra encryption, namespace-bound credential inheritance hierarchy and an RBAC-setting behind it.
+
+You can add a Secret in the relevant namespace from the namespace tab in the UI. To reference that secret in your flow, use ``{{secret('AWS_ACCESS_KEY_ID')}}`` instead of ``{{envs.aws_access_key_id}}``.  
 
