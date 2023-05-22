@@ -30,6 +30,7 @@ The `kestra_flow` Terraform resource type allows you to deploy a flow to Kestra.
 
 ```hcl
 resource "kestra_flow" "firstFlow" {
+  keep_original_source = true
   flow_id = "hello"
   namespace = "prod"
   content = <<EOF
@@ -47,6 +48,7 @@ A much friendlier alternative is to reference the [YAML file](flows/helloWorld.y
 
 ```hcl
 resource "kestra_flow" "helloWorld" {
+  keep_original_source = true
   flow_id = "helloWorld"
   namespace = "dev"
   content = templatefile("flows/helloWorld.yml", {})
@@ -58,6 +60,7 @@ One drawback of both of the above mentioned approaches is that flow ID and names
 
 ```hcl
 resource "kestra_flow" "helloWorld" {
+  keep_original_source = true
   flow_id = yamldecode(templatefile("flows/helloWorld.yml", {}))["id"]
   namespace = yamldecode(templatefile("flows/helloWorld.yml", {}))["namespace"]
   content = templatefile("flows/helloWorld.yml", {})
@@ -71,6 +74,7 @@ The above section showed how you can define a single flow. In reality, you would
 
 ```hcl
 resource "kestra_flow" "com_flows" {
+  keep_original_source = true
   for_each = fileset(path.module, "flows/*.yml")
   flow_id = yamldecode(templatefile(each.value, {}))["id"]
   namespace = yamldecode(templatefile(each.value, {}))["namespace"]
@@ -121,6 +125,7 @@ provider "kestra" {
 }
 
 resource "kestra_flow" "flows" {
+  keep_original_source = true
   for_each = fileset(path.module, "flows/*.yml")
   flow_id = yamldecode(templatefile(each.value, {}))["id"]
   namespace = yamldecode(templatefile(each.value, {}))["namespace"]
