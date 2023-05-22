@@ -16,4 +16,5 @@ resource "kestra_flow" "flows" {
   flow_id   = yamldecode(templatefile(each.value, {}))["id"]
   namespace = yamldecode(templatefile(each.value, {}))["namespace"]
   content   = templatefile(each.value, {})
+  keep_original_source = true
 }
