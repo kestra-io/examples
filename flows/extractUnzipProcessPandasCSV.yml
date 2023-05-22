@@ -15,7 +15,7 @@ tasks:
     description: |
       if you check the plugin documentation, you will see that the output is a map of unzipped `files` and their 
       corresponding location within Kestra's internal storage accessible as `outputs.task_id.files['filename']`
-    from: "{{ outputs.getZipFile.uri }}"
+    from: "{{outputs.getZipFile.uri}}"
     algorithm: ZIP
 
   - id: processCSV

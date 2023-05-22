@@ -10,7 +10,7 @@ tasks:
       url: https://github.com/anna-geller/kestra-flows
       branch: main
       username: anna-geller
-      password: "{{ envs.github_access_token }}"
+      password: "{{envs.github_access_token}}"
 
     - id: py-bash
       type: io.kestra.core.tasks.scripts.Python

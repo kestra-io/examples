@@ -67,8 +67,6 @@ Here is an example of a flow with a single task triggering a Fivetran sync: [fiv
 ---
 
 
-
-
 # Custom Scripts
 
 ## How to run Bash and Python tasks
@@ -134,14 +132,17 @@ In the open-source version, you can leverage environment variables.
 Add this variable to your .env file (paste your service account JSON as the value): 
 
 ```
-KESTRA_GCP_CREDS={"type":"service_account","project_id":"geller","private_key_id":"..."}
+GCP_CREDS={"type":"service_account","project_id":"geller","private_key_id":"..."}
 ```
 
 Then, you can reference that environment variable in your flow using ``{{envs.gcp_creds}}``. 
 
-Note that the reference must be lowercase and without the ``KESTRA_`` prefix.
+For security reason environment variables are fixed at the application startup (JVM startup).
 
-For security reason env vars are fixed at the JVM startup
+Note that the reference must be **lowercase**:
+- ``{{envs.gcp_creds}}`` is correct ✅ 
+- ``{{envs.GCP_CREDS}}`` is NOT correct ❌ because it must be referenced in lowercase, even though the ``.env`` file contains the variable in uppercase ``GCP_CREDS={"type":"service_account", ...}
+
 
 ## Cloud & Eneterprise Edition
 

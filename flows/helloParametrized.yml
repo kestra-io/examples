@@ -12,4 +12,4 @@ inputs:
 tasks:
   - id: hello
     type: io.kestra.core.tasks.log.Log
-    message: Hello {{ inputs.user }} from Kestra!
+    message: Hello {{inputs.user}} from Kestra!

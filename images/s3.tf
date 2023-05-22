@@ -32,8 +32,8 @@ variable "namespace" {
 
 
 resource "aws_s3_bucket" "s3_bucket" {
-  bucket = "declarative-data-orchestration"
-  force_destroy = true # destroy bucket even if it's not empty
+  bucket = "declarative-orchestration"
+  force_destroy = true # delete bucket when needed even if it's not empty
   tags = {
     project = "kestra"
   }

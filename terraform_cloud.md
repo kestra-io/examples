@@ -146,3 +146,9 @@ Go to Actions - Start new run - Start run.
 We can verify that the flows were correctly identified. Let's confirm plan and apply.
 
 And we can now verify that the flows have been successfully deployed to Kestra 🎉
+
+### Automatic runs from CI/CD
+
+Now let's add a couple of more flows to our GitHub repository. We'll also modify an existing flow to demonstrate change, and we'll delete a flow to demonstrate deletion.
+
+Let's commit those changes. The CI/CD pipeline is now triggered automatically. 

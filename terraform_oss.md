@@ -1,12 +1,22 @@
+In this hands-on demonstration, we're gonna build a CI/CD process for data pipelines with Kestra and Terraform. 
+
 # What is Terraform
 
-[Terraform](https://developer.hashicorp.com/terraform/intro) is an open-source infrastructure as code tool that allows defining and managing resources using human-readable **declarative configuration**, which is **cloud agnostic**. 
+[Terraform](https://developer.hashicorp.com/terraform/intro) is an open-source infrastructure as code tool that allows developers to define and manage resources using a human-readable, cloud-agnostic,  **declarative configuration**. 
 
-With Terraform, you can **automate** provisioning and managing changes to your infrastructure using declarative code defined in HCL = HashiCorp configuration language. 
+With Terraform, you can **automate** provisioning and managing changes to your infrastructure using declarative code defined in HCL (HashiCorp Configuration Language). 
 
-It reduces the human error resulting from **manual operations**, often referred to as ClickOps. Instead of clicking through a UI or running a series of commands manually, you can define a **process** in **code** that you can execute with a single command.
+Here is an example syntax.
+
+The declarative "Infrastructure as Code" approach eliminates the need for the user to know whether a component needs to be provisioned, modified, or destroyed. What's declared in the configuration is what gets compared to the current state and applied.
+
+In this example, we declare that an S3 bucket resource should exist. In square brackets we specify the criteria such as bucket name. 
+
+When you run terraform apply, Terraform will compare the desired state with the current state and deploy changes if necessary. 
+In this example, the S3 bucket had to be created.
 
 ---
+
 
 
 # How to integrate Kestra with IaC: CI/CD with Terraform
@@ -43,7 +53,8 @@ resource "kestra_flow" "helloWorld" {
 }
 ```
 
-One drawback of both of the above mentioned approaches is that flow ID and namespace are defined twice - once in the flow YAML definition, and once here in the terraform resource. You can leverage the `yamldecode` function to avoid this duplication:
+One drawback of both of the above mentioned approaches is that flow ID and namespace are defined twice - once in the flow YAML definition, and once here in the terraform resource. To avoid this duplication, you can leverage the `yamldecode` function which parses a string as a subset of YAML, allowing to retrieve the flow id and namespace from YAML and use it in the Terraform definition.
+
 
 ```hcl
 resource "kestra_flow" "helloWorld" {
@@ -109,7 +120,7 @@ provider "kestra" {
   url = "http://localhost:8080"
 }
 
-resource "kestra_flow" "com_flows" {
+resource "kestra_flow" "flows" {
   for_each = fileset(path.module, "flows/*.yml")
   flow_id = yamldecode(templatefile(each.value, {}))["id"]
   namespace = yamldecode(templatefile(each.value, {}))["namespace"]
