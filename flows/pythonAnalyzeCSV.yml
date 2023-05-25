@@ -1,4 +1,4 @@
-id: analyzeCSV
+id: pythonAnalyzeCSV
 namespace: prod
 inputs:
   - name: url

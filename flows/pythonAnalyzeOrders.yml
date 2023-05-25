@@ -1,4 +1,4 @@
-id: analyzeOrdersPython
+id: pythonAnalyzeOrders
 namespace: prod
 tasks:
   - id: outputCsvAndMetrics

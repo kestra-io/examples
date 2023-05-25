@@ -37,7 +37,7 @@ Here is a simple example logging hello world message to the terminal:
 
 ```yaml
 id: hello  
-namespace: dev
+namespace: prod
 tasks:
   - id: hello-world
     type: io.kestra.core.tasks.log.Log
@@ -48,7 +48,7 @@ tasks:
 
 Here is how you can add a schedule trigger to run the flow every minute: [helloParametrizedScheduled.yml](flows/helloParametrizedScheduled.yml)
 
-To add multiple schedules, each running with different input parameter values, use [helloParametrizedMultipleSchedules.yml](flows/helloParametrizedMultipleSchedules.yml)
+To add multiple schedules, each running with different input parameter values, use [helloParametrizedMultipleSchedules.yml](flows/helloParametrizedSchedulesMultiple.yml)
 
 ---
 

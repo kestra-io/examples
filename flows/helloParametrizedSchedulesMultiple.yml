@@ -1,4 +1,4 @@
-id: helloParametrizedMultipleSchedules
+id: helloParametrizedSchedulesMultiple
 namespace: prod
 description: |
   This flow takes a runtime-specific input and uses it to log a message to the console.

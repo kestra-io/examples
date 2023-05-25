@@ -1,0 +1,44 @@
+id: pythonMetrics
+namespace: prod
+description:
+  This flow will fetch an API and will use Kestra to report metrics & outputs.
+inputs:
+  - type: DATETIME
+    name: date
+    description: The exchange rate date you want to be downloaded
+    required: false
+tasks:
+  - id: download
+    type: io.kestra.core.tasks.scripts.Python
+    description: Download the schedule date data from api, if the execution is manual (not schedule), use the current day
+    dockerOptions:
+      image: python:3.11-slim
+    inputFiles:
+      main.py: |
+        import json
+        import requests
+        from kestra import Kestra
+        import sys
+
+        date = "{{ inputs.date ?? schedule.date ?? execution.startDate | dateAdd(-1, 'DAYS', format='yyyy-MM-dd')  }}"
+        print(f"Starting request for {date}")
+
+        response = requests.get(f"https://api.exchangerate.host/{date}")
+        data = response.json()
+
+        print(f"Found {len(data['rates'])} rates")
+
+        with open ("{{ outputFiles.exported }}", 'w') as f:
+          for currency, exchange in data['rates'].items():
+            f.write(json.dumps({'date': date, 'currency': currency, 'exchange': exchange}) + chr(10))
+
+        # add kestra metrics & outputs
+        Kestra.counter('rates.count', len(data['rates']))
+        Kestra.outputs({'date': date})
+
+        print("Done !")
+    outputFiles:
+      - exported
+    requirements:
+      - requests
+    runner: DOCKER

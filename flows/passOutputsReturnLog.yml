@@ -1,4 +1,4 @@
-id: passOutputs
+id: passOutputsReturnLog
 namespace: prod
 tasks:
     - id: passOutput

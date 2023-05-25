@@ -1,4 +1,4 @@
-id: partitions
+id: pythonPartitions
 namespace: prod
 description: Process partitions in parallel
 

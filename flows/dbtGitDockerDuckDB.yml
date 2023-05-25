@@ -12,7 +12,7 @@ tasks:
   - id: dbt
     type: io.kestra.core.tasks.flows.Worker
     tasks:
-      - id: clone-repository
+      - id: cloneRepository
         type: io.kestra.plugin.git.Clone
         url: https://github.com/dbt-labs/jaffle_shop
         branch: main

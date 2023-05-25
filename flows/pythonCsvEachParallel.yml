@@ -1,0 +1,31 @@
+id: pythonCsvEachParallel
+namespace: prod
+description: Welcome to Kestra! 👋
+
+inputs:
+  - name: user
+    type: STRING
+    defaults: Data Platform Engineer
+
+tasks:
+  - id: hello
+    type: io.kestra.core.tasks.log.Log
+    message: Hey there, {{ inputs.user }}!
+  - id: csv
+    type: io.kestra.core.tasks.flows.EachParallel
+    value: ["https://raw.githubusercontent.com/dbt-labs/jaffle_shop/main/seeds/raw_customers.csv", "https://raw.githubusercontent.com/dbt-labs/jaffle_shop/main/seeds/raw_orders.csv", "https://raw.githubusercontent.com/dbt-labs/jaffle_shop/main/seeds/raw_payments.csv"]
+    tasks:
+    - id: pandasTransform
+      type: io.kestra.core.tasks.scripts.Python
+      inputFiles:
+        data.csv: "{{taskrun.value}}"
+        main.py: |
+          import pandas as pd
+          df = pd.read_csv("data.csv")
+          df.info()
+      requirements:
+        - pandas
+  - id: goodbye
+    type: io.kestra.core.tasks.scripts.Bash
+    commands:
+      - echo See you soon, {{ inputs.user }}!

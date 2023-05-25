@@ -21,6 +21,7 @@ services:
 
   kestra:
     image: kestra/kestra:develop-full
+    pull_policy: always # use only during development
     entrypoint: /bin/bash
     user: "root"
     env_file:

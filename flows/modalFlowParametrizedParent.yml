@@ -1,0 +1,11 @@
+id: modalFlowParametrizedParent
+namespace: prod
+tasks:
+  - id: modal
+    type: io.kestra.core.tasks.flows.Flow
+    namespace: prod
+    flowId: modalFlow
+    inputs:
+      script: modal-scripts/getting_started.py
+    wait: true
+    transmitFailed: true

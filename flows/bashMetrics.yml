@@ -1,4 +1,4 @@
-id: metricsFromBash
+id: bashMetrics
 namespace: prod
 tasks:
   - id: nrRowsMetric

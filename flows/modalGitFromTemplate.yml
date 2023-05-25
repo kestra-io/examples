@@ -1,0 +1,9 @@
+id: modalGitFromTemplate
+namespace: prod
+tasks:
+  - id: modal
+    type: io.kestra.core.tasks.flows.Template
+    namespace: prod
+    templateId: modalGitTemplate
+    args:
+      script: modal-scripts/getting_started.py

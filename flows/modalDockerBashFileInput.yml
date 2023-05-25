@@ -1,0 +1,20 @@
+id: modalDockerBashFileInput
+namespace: prod
+inputs:
+  - name: script
+    type: FILE
+    required: true
+tasks:
+  - id: bash
+    type: io.kestra.core.tasks.scripts.Bash
+    runner: DOCKER
+    commands:
+      - modal run main.py
+    inputFiles:
+      main.py: "{{inputs.script}}"
+    dockerOptions:
+      image: modal
+      pullImage: false
+    env:
+      MODAL_TOKEN_ID: "{{envs.modal_token_id}}"
+      MODAL_TOKEN_SECRET: "{{envs.modal_token_secret}}"

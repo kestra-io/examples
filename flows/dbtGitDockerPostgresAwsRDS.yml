@@ -4,12 +4,14 @@ tasks:
   - id: dbt
     type: io.kestra.core.tasks.flows.Worker
     tasks:
-    - id: clone-repository
+    - id: cloneRepository
       type: io.kestra.plugin.git.Clone
       url: https://github.com/dbt-labs/jaffle_shop
       branch: main
     - id: dbt-setup
       type: io.kestra.plugin.dbt.cli.Setup
+      description: |
+        for more robust setup with Terraform, check [this repository](https://github.com/anna-geller/kestra-terraform-examples/tree/main/aws_rds_postgres_dbt)
       profiles:
         jaffle_shop:
           target: dev
