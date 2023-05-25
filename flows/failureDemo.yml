@@ -1,0 +1,11 @@
+id: failureDemo
+namespace: prod
+tasks:
+  - id: fail
+    type: io.kestra.core.tasks.scripts.Bash
+    commands:
+      - exit 1
+  - id: never
+    type: io.kestra.core.tasks.scripts.Bash
+    commands:
+      - echo "this will never run"

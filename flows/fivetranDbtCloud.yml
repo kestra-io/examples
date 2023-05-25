@@ -1,0 +1,30 @@
+id: fivetranDbtCloud
+namespace: prod
+tasks:
+  - id: marketing-pipeline
+    type: io.kestra.core.tasks.flows.Worker
+    tasks:
+      - id: fivetran-syncs
+        type: io.kestra.core.tasks.flows.Parallel
+        tasks:
+          - id: salesforce
+            type: io.kestra.plugin.fivetran.connectors.Sync
+            apiKey: apiKey
+            apiSecret: apiSecret
+            connectorId: "<connectorId>"
+          - id: google-analytics
+            type: io.kestra.plugin.fivetran.connectors.Sync
+            apiKey: apiKey
+            apiSecret: apiSecret
+            connectorId: "<connectorId>"
+          - id: facebook
+            type: io.kestra.plugin.fivetran.connectors.Sync
+            apiKey: apiKey
+            apiSecret: apiSecret
+            connectorId: "<connectorId>"
+      - id: dbtCloudJob
+        type: io.kestra.plugin.dbt.cloud.TriggerRun
+        accountId: "{{envs.dbt_cloud_account_id}}"
+        token: "{{envs.dbt_cloud_api_token}}"
+        jobId: "396284"
+        wait: true

@@ -1,0 +1,22 @@
+id: failureDemoAllowFailure
+namespace: prod
+tasks:
+  - id: allowFailure
+    type: io.kestra.core.tasks.flows.AllowFailure
+    tasks:
+      - id: failSilently
+        type: io.kestra.core.tasks.scripts.Bash
+        commands:
+          - exit 1
+  - id: allowed
+    type: io.kestra.core.tasks.scripts.Bash
+    commands:
+      - echo "this will run - allowed to fail ✅"
+  - id: fail
+    type: io.kestra.core.tasks.scripts.Bash
+    commands:
+      - exit 1
+  - id: willNeverRun
+    type: io.kestra.core.tasks.scripts.Bash
+    commands:
+      - echo "this will never run ❌"

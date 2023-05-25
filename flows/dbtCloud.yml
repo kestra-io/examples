@@ -1,0 +1,9 @@
+id: dbtCloud
+namespace: prod
+tasks:
+  - id: dbtCloudJob
+    type: io.kestra.plugin.dbt.cloud.TriggerRun
+    accountId: "{{envs.dbt_cloud_account_id}}"
+    token: "{{envs.dbt_cloud_api_token}}"
+    jobId: "396284"
+    wait: true

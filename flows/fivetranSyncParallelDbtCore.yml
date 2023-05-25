@@ -15,7 +15,7 @@ tasks:
             connectorId: cell_delivery
           - id: google-analytics
             type: io.kestra.plugin.fivetran.connectors.Sync
-            connectorId: cargo_movement
+            connectorId: equivocal_sandy
           - id: facebook-ads
             type: io.kestra.plugin.fivetran.connectors.Sync
             connectorId: molecule_transport

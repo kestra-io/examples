@@ -37,6 +37,8 @@ terraform.rc
 .idea/
 .vscode/
 .tmp/
+.archive/
+.wip/
 .DS_Store
 .env
 credentials.json
