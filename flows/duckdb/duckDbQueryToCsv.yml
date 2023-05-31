@@ -20,7 +20,7 @@ tasks:
       GROUP BY job_title
       HAVING COUNT(job_title) > 10
       ORDER BY avg_salary DESC;
-    store: true
+    fetch: true
 
   - id: export_result
     type: io.kestra.plugin.serdes.csv.CsvWriter

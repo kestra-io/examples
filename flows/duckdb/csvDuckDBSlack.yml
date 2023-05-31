@@ -1,0 +1,24 @@
+id: csvDuckDBSlack
+namespace: prod
+inputs:
+  - name: file
+    type: STRING
+    defaults: https://gist.githubusercontent.com/anna-geller/15f19626d975877b40c3653b6745dcd6/raw/849e8f69a251ece8bfb32dbd6097e69af6fa7f7f/orders.csv
+tasks:
+  - id: downloadCSV
+    type: io.kestra.plugin.fs.http.Download
+    uri: "{{inputs.file}}"
+  - id: analyzeSales
+    type: io.kestra.plugin.jdbc.duckdb.Query
+    inputFiles:
+      data.csv: "{{outputs.downloadCSV.uri}}"
+    sql: |
+      SELECT sum(total) as total, avg(quantity) as avg_quantity
+      FROM read_csv_auto('{{workingDir}}/data.csv', header=True);
+    fetch: true
+  - id: slack
+    type: io.kestra.plugin.notifications.slack.SlackIncomingWebhook
+    url: "{{envs.slack_webhook_reporting}}"
+    payload: |
+      {"channel": "#reporting", 
+      "text": "Current Sales numbers: total sales is `${{outputs.analyzeSales.rows[0].total}}` and average sales quantity is `{{outputs.analyzeSales.rows[0].avg_quantity}}`"}

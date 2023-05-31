@@ -34,7 +34,7 @@ gcloud iam service-accounts create terraform \
   --description="Service Account to use with Terraform"
 
 # Create a JSON key file and put it into your Terraform directory. Add this file to .gitignore if you commit the code to Git
-gcloud iam service-accounts keys create account.json \
+gcloud iam service-accounts keys create credentials.json \
   --iam-account=terraform@YOUR_PROJECT_ID.iam.gserviceaccount.com
 
 # Grant the basic Editor role

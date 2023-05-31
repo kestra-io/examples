@@ -1,0 +1,158 @@
+id: dwhRefresh
+namespace: prod
+tasks:
+  - id: extractLoadToDatalake
+    type: io.kestra.core.tasks.flows.Parallel
+    concurrent: 8
+    tasks:
+      - id: salesforce
+        type: io.kestra.plugin.fivetran.connectors.Sync
+        connectorId: salesforce-connector
+        apiKey: "{{envs.fivetran_api_key}}"
+        apiSecret: "{{envs.fivetran_api_secret}}"
+      - id: stripe
+        type: io.kestra.plugin.fivetran.connectors.Sync
+        connectorId: stripe-connector
+        apiKey: "{{envs.fivetran_api_key}}"
+        apiSecret: "{{envs.fivetran_api_secret}}"
+      - id: mailchimp
+        type: io.kestra.plugin.fivetran.connectors.Sync
+        connectorId: mailchimp-connector
+        apiKey: "{{envs.fivetran_api_key}}"
+        apiSecret: "{{envs.fivetran_api_secret}}"
+      - id: greenhouse
+        type: io.kestra.plugin.fivetran.connectors.Sync
+        connectorId: greenhouse-connector
+        apiKey: "{{envs.fivetran_api_key}}"
+        apiSecret: "{{envs.fivetran_api_secret}}"
+      - id: microsoftAdvertising
+        type: io.kestra.plugin.fivetran.connectors.Sync
+        connectorId: microsoft-advertising-connector
+        apiKey: "{{envs.fivetran_api_key}}"
+        apiSecret: "{{envs.fivetran_api_secret}}"
+      - id: microsoftDynamicsNAV
+        type: io.kestra.plugin.fivetran.connectors.Sync
+        connectorId: dynamics-connector
+        apiKey: "{{envs.fivetran_api_key}}"
+        apiSecret: "{{envs.fivetran_api_secret}}"
+  - id: customExtractScripts
+    type: io.kestra.core.tasks.flows.EachParallel
+    value: [ "https://raw.githubusercontent.com/dbt-labs/jaffle_shop/main/seeds/raw_customers.csv", "https://raw.githubusercontent.com/dbt-labs/jaffle_shop/main/seeds/raw_orders.csv", "https://raw.githubusercontent.com/dbt-labs/jaffle_shop/main/seeds/raw_payments.csv" ]
+    tasks:
+      - id: pythonScraper
+        type: io.kestra.core.tasks.scripts.Python
+        inputFiles:
+          data.csv: "{{taskrun.value}}"
+          main.py: |
+            import pandas as pd
+            df = pd.read_csv("data.csv")
+            df.info()
+        requirements:
+          - pandas
+  - id: rawMasterDataToBigQueryStage
+    type: io.kestra.core.tasks.flows.Parallel
+    concurrent: 20
+    tasks:
+      - id: customer
+        type: io.kestra.plugin.gcp.bigquery.LoadFromGcs
+      - id: employees
+        type: io.kestra.plugin.gcp.bigquery.LoadFromGcs
+      - id: employee_privileges
+        type: io.kestra.plugin.gcp.bigquery.LoadFromGcs
+      - id: privileges
+        type: io.kestra.plugin.gcp.bigquery.LoadFromGcs
+      - id: products
+        type: io.kestra.plugin.gcp.bigquery.LoadFromGcs
+  - id: rawSupplyChainToBigQueryStage
+    type: io.kestra.core.tasks.flows.Parallel
+    concurrent: 8
+    tasks:
+      - id: inventory_transaction_types
+        type: io.kestra.plugin.gcp.bigquery.LoadFromGcs
+      - id: inventory_transactions
+        type: io.kestra.plugin.gcp.bigquery.LoadFromGcs
+      - id: shippers
+        type: io.kestra.plugin.gcp.bigquery.LoadFromGcs
+      - id: suppliers
+        type: io.kestra.plugin.gcp.bigquery.LoadFromGcs
+  - id: rawSalesToBigQueryStage
+    type: io.kestra.core.tasks.flows.Parallel
+    concurrent: 10
+    tasks:
+      - id: order_details
+        type: io.kestra.plugin.gcp.bigquery.LoadFromGcs
+      - id: order_details_status
+        type: io.kestra.plugin.gcp.bigquery.LoadFromGcs
+      - id: orders
+        type: io.kestra.plugin.gcp.bigquery.LoadFromGcs
+      - id: orders_status
+        type: io.kestra.plugin.gcp.bigquery.LoadFromGcs
+      - id: orders_tax_status
+        type: io.kestra.plugin.gcp.bigquery.LoadFromGcs
+      - id: purchase_order_status
+        type: io.kestra.plugin.gcp.bigquery.LoadFromGcs
+      - id: purchase_orders
+        type: io.kestra.plugin.gcp.bigquery.LoadFromGcs
+      - id: purchase_order_details
+        type: io.kestra.plugin.gcp.bigquery.LoadFromGcs
+      - id: invoices
+        type: io.kestra.plugin.gcp.bigquery.LoadFromGcs
+      - id: sales_reports
+        type: io.kestra.plugin.gcp.bigquery.LoadFromGcs
+  - id: dbt
+    type: io.kestra.core.tasks.flows.Worker
+    tasks:
+    - id: cloneRepository
+      type: io.kestra.plugin.git.Clone
+      url: https://github.com/anna-geller/kestra-ee
+      branch: main
+      username: anna-geller
+      password: "{{envs.github_access_token}}"
+    - id: dbt-setup
+      type: io.kestra.plugin.dbt.cli.Setup
+      profiles:
+        marketplace:
+          outputs:
+            prod:
+              type: bigquery
+              dataset: dwh
+              job_retries: 1
+              keyfile: sa.json
+              method: service-account
+              project: geller
+              threads: 8
+              timeout_seconds: 600
+          target: prod
+      requirements:
+        - dbt-bigquery
+      runner: DOCKER
+      dockerOptions:
+        image: python:3.10-slim
+      inputFiles:
+        sa.json: |
+          {{envs.gcp_creds}}
+    - id: dbt-build
+      type: io.kestra.plugin.dbt.cli.Build
+      debug: false
+      runner: DOCKER
+      dockerOptions:
+        image: python:3.10-slim
+      inputFiles:
+        sa.json: |
+          {{envs.gcp_creds}}
+taskDefaults:
+  - type: io.kestra.plugin.gcp.bigquery.LoadFromGcs
+    values:
+      destinationTable: "geller.dwh.{{task.id}}"
+      from:
+        - "gs://dwh-geller/{{task.id}}.csv"
+      writeDisposition: "WRITE_TRUNCATE"
+      projectId: geller
+      serviceAccount: "{{envs.gcp_creds}}"
+      ignoreUnknownValues: true
+      autodetect: true
+      format: CSV
+      csvOptions:
+        allowJaggedRows: true
+        encoding: UTF-8
+        fieldDelimiter: ","

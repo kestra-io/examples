@@ -1,4 +1,4 @@
-id: dbtGitDockerDuckDB
+id: dbtGitDockerBigQuery
 namespace: prod
 tasks:
   - id: dbt

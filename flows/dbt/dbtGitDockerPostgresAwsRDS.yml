@@ -1,4 +1,4 @@
-id: dbtGitDockerPostgres
+id: dbtGitDockerPostgresAwsRDS
 namespace: prod
 tasks:
   - id: dbt

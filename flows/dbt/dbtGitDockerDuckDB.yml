@@ -1,4 +1,4 @@
-id: dbtGitDuckDBDocker
+id: dbtGitDockerDuckDB
 namespace: prod
 description: |
   First, build a Docker image:  `docker build -t dbt_duckdb . --platform linux/amd64`

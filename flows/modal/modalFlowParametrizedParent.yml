@@ -1,4 +1,4 @@
-id: modalFlowParametrizedParent
+id: modalFlowParametrizedParentGettingStarted
 namespace: prod
 tasks:
   - id: modal

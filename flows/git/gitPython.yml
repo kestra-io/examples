@@ -1,17 +1,18 @@
-id: gitPythonPublicRepository
+id: gitPython
 namespace: prod
 tasks:
-  - id: pythonScript
+  - id: pythonScripts
     type: io.kestra.core.tasks.flows.Worker
     tasks:
-
     - id: cloneRepository
       type: io.kestra.plugin.git.Clone
+      description: password is only required for private repositories
       url: https://github.com/anna-geller/kestra-flows
       branch: main
       username: anna-geller
+      password: "{{envs.github_access_token}}"
 
-    - id: pythonScript
+    - id: pythonETL
       type: io.kestra.core.tasks.scripts.Python
       commands:
         - ./bin/python python-scripts/etl_script.py

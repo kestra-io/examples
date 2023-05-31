@@ -1,4 +1,4 @@
-id: fivetranSyncParallel
+id: fivetranSyncParallelDbtCloud
 namespace: prod
 tasks:
   - id: marketingExtractLoad
@@ -10,7 +10,7 @@ tasks:
           - id: salesforce
             type: io.kestra.plugin.fivetran.connectors.Sync
             connectorId: vesicle_movement
-          - id: salesforce
+          - id: stripe
             type: io.kestra.plugin.fivetran.connectors.Sync
             connectorId: cell_delivery
           - id: google-analytics

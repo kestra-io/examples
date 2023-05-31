@@ -1,0 +1,8 @@
+id: personalizations
+namespace: prod.product
+tasks:
+  - id: dataIngestionSync
+    type: io.kestra.plugin.fivetran.connectors.Sync
+    connectorId: personalizations
+    apiKey: "{{envs.fivetran_api_key}}"
+    apiSecret: "{{envs.fivetran_api_secret}}"
