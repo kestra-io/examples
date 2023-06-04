@@ -1,0 +1,63 @@
+id: loadFromGCSNorthwind
+namespace: prod.staging
+tasks:
+  - id: csv-to-bq
+    type: io.kestra.core.tasks.flows.Parallel
+    concurrent: 20
+    tasks:
+      - id: customer
+        type: io.kestra.plugin.gcp.bigquery.LoadFromGcs
+      - id: employees
+        type: io.kestra.plugin.gcp.bigquery.LoadFromGcs
+      - id: employee_privileges
+        type: io.kestra.plugin.gcp.bigquery.LoadFromGcs
+      - id: inventory_transaction_types
+        type: io.kestra.plugin.gcp.bigquery.LoadFromGcs
+      - id: inventory_transactions
+        type: io.kestra.plugin.gcp.bigquery.LoadFromGcs
+      - id: invoices
+        type: io.kestra.plugin.gcp.bigquery.LoadFromGcs
+      - id: order_details
+        type: io.kestra.plugin.gcp.bigquery.LoadFromGcs
+      - id: order_details_status
+        type: io.kestra.plugin.gcp.bigquery.LoadFromGcs
+      - id: orders
+        type: io.kestra.plugin.gcp.bigquery.LoadFromGcs
+      - id: orders_status
+        type: io.kestra.plugin.gcp.bigquery.LoadFromGcs
+      - id: orders_tax_status
+        type: io.kestra.plugin.gcp.bigquery.LoadFromGcs
+      - id: privileges
+        type: io.kestra.plugin.gcp.bigquery.LoadFromGcs
+      - id: products
+        type: io.kestra.plugin.gcp.bigquery.LoadFromGcs
+      - id: purchase_order_details
+        type: io.kestra.plugin.gcp.bigquery.LoadFromGcs
+      - id: purchase_order_status
+        type: io.kestra.plugin.gcp.bigquery.LoadFromGcs
+      - id: purchase_orders
+        type: io.kestra.plugin.gcp.bigquery.LoadFromGcs
+      - id: sales_reports
+        type: io.kestra.plugin.gcp.bigquery.LoadFromGcs
+      - id: shippers
+        type: io.kestra.plugin.gcp.bigquery.LoadFromGcs
+      - id: strings
+        type: io.kestra.plugin.gcp.bigquery.LoadFromGcs
+      - id: suppliers
+        type: io.kestra.plugin.gcp.bigquery.LoadFromGcs
+taskDefaults:
+  - type: io.kestra.plugin.gcp.bigquery.LoadFromGcs
+    values:
+      destinationTable: "kestraio.dl_northwind.{{task.id}}"
+      from:
+        - "gs://kestraio/{{task.id}}.csv"
+      writeDisposition: "WRITE_TRUNCATE"
+      projectId: kestraio
+      serviceAccount: "{{envs.gcp_creds}}"
+      ignoreUnknownValues: true
+      autodetect: true
+      format: CSV
+      csvOptions:
+        allowJaggedRows: true
+        encoding: UTF-8
+        fieldDelimiter: ","

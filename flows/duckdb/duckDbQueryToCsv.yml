@@ -21,7 +21,6 @@ tasks:
       HAVING COUNT(job_title) > 10
       ORDER BY avg_salary DESC;
     fetch: true
-
   - id: export_result
     type: io.kestra.plugin.serdes.csv.CsvWriter
     from: "{{ outputs.average_salary_by_position.uri }}"

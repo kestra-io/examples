@@ -1,5 +1,5 @@
 id: attribution
-namespace: prod.staging
+namespace: prod.marketing
 tasks:
   - id: dataIngestionSync
     type: io.kestra.plugin.fivetran.connectors.Sync

@@ -1,5 +1,6 @@
 id: modalFlowParametrizedParentGettingStarted
 namespace: prod
+desciption: a practical example of using a subflow
 tasks:
   - id: modal
     type: io.kestra.core.tasks.flows.Flow

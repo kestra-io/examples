@@ -1,0 +1,14 @@
+id: wikipedia
+namespace: prod.staging
+tasks:
+- id: output-from-query
+  type: io.kestra.plugin.gcp.bigquery.Query
+  sql: |
+    SELECT * FROM `bigquery-public-data.wikipedia.pageviews_2023`
+    WHERE DATE(datehour) = current_date()
+    ORDER BY datehour desc, views desc
+    LIMIT 10
+  store: true
+- id: write-to-csv
+  type: io.kestra.plugin.serdes.csv.CsvWriter
+  from: "{{outputs['output-from-query'].uri}}"

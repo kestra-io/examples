@@ -6,3 +6,13 @@ tasks:
     connectorId: billing
     apiKey: "{{envs.fivetran_api_key}}"
     apiSecret: "{{envs.fivetran_api_secret}}"
+triggers:
+  - id: runAfterDwhRefresh
+    type: io.kestra.core.models.triggers.types.Flow
+    conditions:
+      - type: io.kestra.core.models.conditions.types.ExecutionStatusCondition
+        in:
+          - SUCCESS
+      - type: io.kestra.core.models.conditions.types.ExecutionFlowCondition
+        namespace: prod
+        flowId: dataWarehouseRefresh
