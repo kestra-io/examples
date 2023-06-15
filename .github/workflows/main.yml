@@ -1,35 +1,50 @@
-name: Publish a container image to ghcr.io
+name: Container Image Packages
 
 on:
   schedule:
     - cron: '0 9 * * MON'
   workflow_dispatch:
 
-env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: "kestra-io/pydata" # ${{ github.repository }}
-
 jobs:
-  image:
+  list-dockerfiles:
     runs-on: ubuntu-latest
+    needs: deploy-container
+    outputs:
+      matrix: ${{ steps.dockerfiles.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v3
+      - id: dockerfiles
+        run: echo "matrix=$(ls dockerfiles/ | jq -R -s -c 'split("\n")[:-1]')" >> $GITHUB_OUTPUT
+
+  ghcr:
+    runs-on: ubuntu-latest
+    needs: list-dockerfiles
     permissions:
       contents: read
       packages: write
+    strategy:
+      matrix: 
+        image: ${{ fromJson(needs.list-dockerfiles.outputs.matrix) }}
     steps:
       - name: checkout
         uses: actions/checkout@v3
 
-      - name: Log in to Container registry
+      - name: GHCR Login
         uses: docker/login-action@v2
         with:
-          registry: ${{ env.REGISTRY }}
+          registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-
+      
+      - id: image-tag  # example output: "ghcr.io/kestra-io/pydata:latest"
+        run: |
+          export IMAGE=$(basename ${{ matrix.image }} .Dockerfile)
+          echo "image_url=ghcr.io/kestra-io/$IMAGE:latest" >> $GITHUB_OUTPUT
+      
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
         with:
           context: .
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-          file: "pydata.Dockerfile"
+          tags: ${{ steps.image-tag.outputs.image_url }}
+          file: "dockerfiles/{{ matrix.image }}"
