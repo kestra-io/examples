@@ -8,7 +8,6 @@ on:
 jobs:
   list-dockerfiles:
     runs-on: ubuntu-latest
-    needs: deploy-container
     outputs:
       matrix: ${{ steps.dockerfiles.outputs.matrix }}
     steps:
