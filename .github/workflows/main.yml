@@ -7,7 +7,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: kestra-io/pydata # ${{ github.repository }}
+  IMAGE_NAME: "kestra-io/pydata" # ${{ github.repository }}
 
 jobs:
   image:
@@ -32,4 +32,4 @@ jobs:
           context: .
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-          file: {context}/pydata.Dockerfile
+          file: "{context}/pydata.Dockerfile"
