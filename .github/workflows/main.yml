@@ -32,4 +32,4 @@ jobs:
           context: .
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-          file: "{context}/pydata.Dockerfile"
+          file: "pydata.Dockerfile"
