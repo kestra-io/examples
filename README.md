@@ -46,9 +46,9 @@ tasks:
 
 ## Adding a schedule
 
-Here is how you can add a schedule trigger to run the flow every minute: [helloParametrizedScheduled.yml](flows/helloParametrizedScheduled.yml)
+Here is how you can add a schedule trigger to run the flow every minute: [helloParametrizedScheduled.yml](flows/getting_started/helloParametrizedScheduled.yml)
 
-To add multiple schedules, each running with different input parameter values, use [helloParametrizedMultipleSchedules.yml](flows/helloParametrizedSchedulesMultiple.yml)
+To add multiple schedules, each running with different input parameter values, use [helloParametrizedMultipleSchedules.yml](flows/getting_started/helloParametrizedSchedulesMultiple.yml)
 
 ---
 
@@ -56,13 +56,13 @@ To add multiple schedules, each running with different input parameter values, u
 
 ## Airbyte
 
-Here is an example of using Kestra with Airbyte running in other Docker container: [airbyteSync.yml](flows/airbyteSync.yml)
+Here is an example of using Kestra with Airbyte running in other Docker container: [airbyteSync.yml](flows/airbyte/airbyteSync.yml)
 
-And example running multiple Airbyte syncs in parallel: [airbyteSyncParallel.yml](flows/airbyteSyncParallel.yml) 
+And example running multiple Airbyte syncs in parallel: [airbyteSyncParallel.yml](flows/airbyte/airbyteSyncParallel.yml) 
 
 ## Fivetran
 
-Here is an example of a flow with a single task triggering a Fivetran sync: [fivetranSync.yml](flows/fivetranSync.yml)
+Here is an example of a flow with a single task triggering a Fivetran sync: [fivetranSync.yml](flows/fivetran/fivetranSync.yml)
 
 ---
 
@@ -71,12 +71,12 @@ Here is an example of a flow with a single task triggering a Fivetran sync: [fiv
 
 ## How to run Bash and Python tasks
 
-Here is an example of a Bash task: [pythonBashContainer](flows/pythonBashContainer.yml)
+Here is an example of a Bash task: [csvKit](flows/python/csvKit.yml)
 
 
 ### Custom Docker image per task 
 
-If you prefer to run the Python or Bash task in a (_potentially custom_) Docker container: [pythonScriptContainer](flows/pythonScriptContainer.yml)
+If you prefer to run the Python or Bash task in a (_potentially custom_) Docker container: [pythonScriptContainer](flows/python/pythonScriptContainer.yml)
 
 Using `dockerOptions` with the `dockerConfig` attribute, you can also configure credentials to private Docker registries:
 
