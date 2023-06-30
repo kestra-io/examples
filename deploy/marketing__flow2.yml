@@ -1,0 +1,6 @@
+id: flow2
+namespace: prod.marketing
+tasks:
+- id: iac
+  type: io.kestra.core.tasks.log.Log
+  message: Hello from {{ flow.id }} in {{ flow.namespace }}

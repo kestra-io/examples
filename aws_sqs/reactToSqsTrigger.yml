@@ -1,0 +1,24 @@
+id: reactToSqsTrigger
+namespace: blueprint
+description: |
+  This flow reacts to an SQS trigger.
+  Any time there is a new message in the queue, the flow is triggered.
+  The queue URL points to an already existing queue.
+  The `{{trigger.uri}}` points to a file in Kestra's internal storage containing the content of the SQS message. You can read the contents of that file in any task using the `inputFiles` property.
+
+tasks:
+  - id: printMessage
+    type: io.kestra.core.tasks.scripts.Bash
+    inputFiles:
+      message.ion: "{{trigger.uri}}"
+    commands:
+      - cat message.ion
+
+triggers:
+  - id: sqs
+    type: io.kestra.plugin.aws.sqs.Trigger
+    accessKeyId: "{{envs.aws_access_key_id}}"
+    secretKeyId: "{{envs.aws_secret_access_key}}"
+    region: eu-central-1
+    queueUrl: https://sqs.eu-central-1.amazonaws.com/338306982838/kestra
+    maxRecords: 1

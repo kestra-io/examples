@@ -1,0 +1,20 @@
+id: sqsPublishMessage
+namespace: blueprints
+description: |
+  This flow publishes a message to an SQS queue.
+  The queue URL points to an already existing queue.
+
+inputs:
+  - name: message
+    type: STRING
+    defaults: "Hi from SQS!"
+
+tasks:
+  - id: publishMessage
+    type: io.kestra.plugin.aws.sqs.Publish
+    accessKeyId: "{{envs.aws_access_key_id}}"
+    secretKeyId: "{{envs.aws_secret_access_key}}"
+    region: eu-central-1
+    queueUrl: https://sqs.eu-central-1.amazonaws.com/338306982838/kestra
+    from:
+      data: "{{inputs.message}}"

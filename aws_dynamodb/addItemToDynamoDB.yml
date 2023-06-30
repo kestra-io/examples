@@ -1,0 +1,35 @@
+id: addItemToDynamoDB
+namespace: blueprint
+description: |
+  This flow adds an item to a DynamoDB table.
+  The `item` property can be either a map or a JSON string.
+  The `tableName` property must point to an already existing DynamoDB table.
+  The `region` property must be a valid AWS region.
+  It's recommended to set the `accessKeyId` and `secretKeyId` properties as environment variables.
+
+tasks:
+  - id: firstItemAsMap
+    type: io.kestra.plugin.aws.dynamodb.PutItem
+    tableName: demo
+    region: eu-central-1
+    accessKeyId: "{{envs.aws_access_key_id}}"
+    secretKeyId: "{{envs.aws_secret_access_key}}"
+    item:
+      id: 1
+      flow: "{{ flow.id }}"
+      task: "{{ task.id }}"
+      executionId: "{{ execution.id }}"
+
+  - id: secondItemAsJSON
+    type: io.kestra.plugin.aws.dynamodb.PutItem
+    tableName: demo
+    region: eu-central-1
+    accessKeyId: "{{envs.aws_access_key_id}}"
+    secretKeyId: "{{envs.aws_secret_access_key}}"
+    item: |
+        {
+            "id": 2,
+            "flow": "{{ flow.id }}",
+            "task": "{{ task.id }}",
+            "executionId": "{{ execution.id }}"
+        }

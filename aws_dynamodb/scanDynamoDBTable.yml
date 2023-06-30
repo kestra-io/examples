@@ -1,0 +1,16 @@
+id: scanDynamoDBTable
+namespace: blueprint
+
+tasks:
+  - id: extractData
+    type: io.kestra.plugin.aws.dynamodb.Scan
+    tableName: demo
+    fetchType: FETCH
+    region: eu-central-1
+    accessKeyId: "{{envs.aws_access_key_id}}"
+    secretKeyId: "{{envs.aws_secret_access_key}}"
+
+  - id: processData
+    type: io.kestra.core.tasks.scripts.Bash
+    commands:
+      - echo {{outputs.scanTable.rows}}
