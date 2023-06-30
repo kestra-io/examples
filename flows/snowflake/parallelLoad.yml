@@ -1,0 +1,72 @@
+id: parallelLoad
+namespace: dev
+
+tasks:
+  - id: createDatabase
+    type: io.kestra.plugin.jdbc.snowflake.Query
+    sql: CREATE OR REPLACE DATABASE kestra;
+
+  - id: createTable
+    type: io.kestra.plugin.jdbc.snowflake.Query
+    sql: |
+      CREATE OR REPLACE TABLE KESTRA.PUBLIC.EMPLOYEES (
+        first_name STRING ,
+        last_name STRING ,
+        email STRING ,
+        streetaddress STRING ,
+        city STRING ,
+        start_date DATE
+        );
+
+  - id: extractParallel
+    type: io.kestra.core.tasks.flows.EachParallel
+    value:
+      - employees01.csv
+      - employees02.csv
+      - employees03.csv
+      - employees04.csv
+      - employees05.csv
+    tasks:
+      - id: extract
+        type: io.kestra.plugin.fs.http.Download
+        uri: https://raw.githubusercontent.com/kestra-io/examples/main/datasets/{{taskrun.value}}
+
+  - id: loadParallel
+    type: io.kestra.core.tasks.flows.EachParallel
+    value:
+      - employees01.csv
+      - employees02.csv
+      - employees03.csv
+      - employees04.csv
+      - employees05.csv
+    tasks:
+      - id: load
+        type: io.kestra.plugin.jdbc.snowflake.Upload
+        from: "{{outputs.extract.uri}}"
+        fileName: '{{outputs.extract.uri}}'
+        prefix: raw
+        stageName: "@kestra.public.%employees"
+        compress: true
+        disabled: false
+
+  - id: loadFromStage
+    type: io.kestra.plugin.jdbc.snowflake.Query
+    sql: |
+      COPY INTO KESTRA.PUBLIC.EMPLOYEES
+      FROM @kestra.public.%employees
+      FILE_FORMAT = (type = csv field_optionally_enclosed_by='"')
+      PATTERN = 'raw/employees0[1-5].csv.gz'
+      ON_ERROR = 'skip_file';
+    disabled: false
+
+taskDefaults:
+  - type: io.kestra.plugin.jdbc.snowflake.Query
+    values:
+      url: jdbc:snowflake://fauphkj-vf53516.snowflakecomputing.com?warehouse=DEMO
+      username: ANNA
+      password: '{{envs.snowflake_password}}'
+  - type: io.kestra.plugin.jdbc.snowflake.Upload
+    values:
+      url: jdbc:snowflake://fauphkj-vf53516.snowflakecomputing.com?warehouse=DEMO
+      username: ANNA
+      password: '{{envs.snowflake_password}}'
