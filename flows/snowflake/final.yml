@@ -1,0 +1,63 @@
+id: snowflakeTutorial
+namespace: dev
+description: |
+  This flow is an end-to-end tutorial for Snowflake.
+  It creates a database and a table. 
+  It extracts data from an external source, and loads that data as a CSV file into Snowflake's internal stage.
+  The CSV file uploaded to stage is then loaded into the table.
+  Finally, a Query task validates that everything works as expected by running a query on the table and fetches the results to Kestra's internal storage.
+
+tasks:
+  - id: createDatabase
+    type: io.kestra.plugin.jdbc.snowflake.Query
+    sql: CREATE OR REPLACE DATABASE kestra;
+
+  - id: createTable
+    type: io.kestra.plugin.jdbc.snowflake.Query
+    sql: |
+      CREATE OR REPLACE TABLE KESTRA.PUBLIC.EMPLOYEES (
+        first_name STRING ,
+        last_name STRING ,
+        email STRING ,
+        streetaddress STRING ,
+        city STRING ,
+        start_date DATE
+        );
+
+  - id: extract
+    type: io.kestra.plugin.fs.http.Download
+    uri: https://raw.githubusercontent.com/kestra-io/examples/main/datasets/employees00.csv
+
+  - id: loadToInternalStage
+    type: io.kestra.plugin.jdbc.snowflake.Upload
+    from: "{{outputs.extract.uri}}"
+    fileName: employees00.csv
+    prefix: raw
+    stageName: "@kestra.public.%employees"
+    compress: true
+
+  - id: loadFromStageToTable
+    type: io.kestra.plugin.jdbc.snowflake.Query
+    sql: |
+      COPY INTO KESTRA.PUBLIC.EMPLOYEES
+      FROM @kestra.public.%employees
+      FILE_FORMAT = (type = csv field_optionally_enclosed_by='"' skip_header = 1)
+      PATTERN = '.*employees0[0-9].csv.gz'
+      ON_ERROR = 'skip_file';
+
+  - id: downloadResult
+    type: io.kestra.plugin.jdbc.snowflake.Query
+    sql: SELECT * FROM KESTRA.PUBLIC.EMPLOYEES;
+    store: true
+
+taskDefaults:
+  - type: io.kestra.plugin.jdbc.snowflake.Query
+    values:
+      url: jdbc:snowflake://fauphkj-vf53516.snowflakecomputing.com?warehouse=DEMO
+      username: ANNA
+      password: '{{envs.snowflake_password}}'
+  - type: io.kestra.plugin.jdbc.snowflake.Upload
+    values:
+      url: jdbc:snowflake://fauphkj-vf53516.snowflakecomputing.com?warehouse=DEMO
+      username: ANNA
+      password: '{{envs.snowflake_password}}'
