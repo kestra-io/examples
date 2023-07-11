@@ -1,8 +1,0 @@
-{
-    "postgres_host": "localhost",
-    "postgres_port": 5432,
-    "postgres_database": "postgres",
-    "postgres_username": "postgres",
-    "postgres_password": "qwerasdfyxcv1234",
-    "postgres_schema": "public"
-}
