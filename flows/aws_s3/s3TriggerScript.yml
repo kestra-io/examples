@@ -6,11 +6,6 @@ tasks:
   - id: wdir
     type: io.kestra.core.tasks.flows.WorkingDirectory
     tasks:
-      - id: cloneRepo
-        type: io.kestra.plugin.git.Clone
-        url: https://github.com/kestra-io/examples
-        branch: main
-
       - id: local
         type: io.kestra.core.tasks.storages.LocalFiles
         inputs:
@@ -18,13 +13,23 @@ tasks:
 
       - id: python
         type: io.kestra.plugin.scripts.python.Script
-        description: this script expects to. receive a file `data.csv` as input from S3 trigger
         runner: DOCKER
         docker:
           image: ghcr.io/kestra-io/pydata:latest
         warningOnStdErr: false
-        beforeCommands:
-          - python scripts/clean_messy_dataset.py
+        script: |
+          import pandas as pd
+
+          df = pd.read_csv("data.csv")
+
+          # Replace non-numeric age values with NaN
+          df['Age'] = pd.to_numeric(df['Age'], errors='coerce')
+
+          # mean imputation: fill NaN values with the mean age
+          mean_age = int(df['Age'].mean())
+          print(f"Filling NULL values with mean: {mean_age}")
+          df['Age'] = df['Age'].fillna(mean_age)
+          df.to_csv("clean_dataset.csv", index=False)
 
       - id: output
         type: io.kestra.core.tasks.storages.LocalFiles
