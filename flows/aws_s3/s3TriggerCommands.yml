@@ -17,7 +17,7 @@ tasks:
           data.csv: "{{ trigger.objects | jq('.[].uri') | first }}"
 
       - id: python
-        type: io.kestra.plugin.scripts.python.Script
+        type: io.kestra.plugin.scripts.python.Commands
         description: this script expects to. receive a file `data.csv` as input from S3 trigger
         runner: DOCKER
         docker:
