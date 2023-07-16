@@ -1,5 +1,8 @@
 id: failureDemoAllowFailure
-namespace: prod
+namespace: blueprint
+description: |
+
+
 tasks:
   - id: allowFailure
     type: io.kestra.core.tasks.flows.AllowFailure
@@ -8,14 +11,17 @@ tasks:
         type: io.kestra.core.tasks.scripts.Bash
         commands:
           - exit 1
-  - id: allowed
+
+  - id: printToConsole
     type: io.kestra.core.tasks.scripts.Bash
     commands:
-      - echo "this will run - allowed to fail ✅"
+      - echo "this will run since previous failure was allowed ✅"
+
   - id: fail
     type: io.kestra.core.tasks.scripts.Bash
     commands:
-      - exit 1
+      - echo "failing and blocking downstream tasks" && exit 1
+
   - id: willNeverRun
     type: io.kestra.core.tasks.scripts.Bash
     commands:

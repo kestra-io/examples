@@ -1,0 +1,14 @@
+id: list-listen
+namespace: dev
+
+tasks:
+  - id: echo trigger file
+    type: io.kestra.core.tasks.debugs.Echo
+    format: "{{ trigger.uri') }} containing {{ trigger.count }} lines"
+
+triggers:
+  - id: watch
+    type: io.kestra.plugin.redis.TriggerList
+    url: redis://host.docker.internal:6379/0
+    key: mylist
+    maxRecords: 2

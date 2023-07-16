@@ -1,31 +1,37 @@
 id: fivetranSyncParallelDbtCore
-namespace: prod
+namespace: blueprint
+description: |
+    This flow runs Fivetran syncs in parallel and then runs dbt core's CLI commands.
+    The Fivetran API credentials, referenced in the `taskDefaults`, must be provided in the environment variables.
+
 tasks:
-  - id: marketingExtractLoad
-    type: io.kestra.core.tasks.flows.Worker
+  - id: dataIngestion
+    type: io.kestra.core.tasks.flows.Parallel
     tasks:
-      - id: dataIngestion
-        type: io.kestra.core.tasks.flows.Parallel
-        tasks:
-          - id: salesforce
-            type: io.kestra.plugin.fivetran.connectors.Sync
-            connectorId: vesicle_movement
-          - id: stripe
-            type: io.kestra.plugin.fivetran.connectors.Sync
-            connectorId: cell_delivery
-          - id: google-analytics
-            type: io.kestra.plugin.fivetran.connectors.Sync
-            connectorId: equivocal_sandy
-          - id: facebook-ads
-            type: io.kestra.plugin.fivetran.connectors.Sync
-            connectorId: molecule_transport
-  - id: dbt
-    type: io.kestra.core.tasks.flows.Worker
+      - id: salesforce
+        type: io.kestra.plugin.fivetran.connectors.Sync
+        connectorId: vesicle_movement
+
+      - id: stripe
+        type: io.kestra.plugin.fivetran.connectors.Sync
+        connectorId: cell_delivery
+
+      - id: google-analytics
+        type: io.kestra.plugin.fivetran.connectors.Sync
+        connectorId: equivocal_sandy
+
+      - id: facebook-ads
+        type: io.kestra.plugin.fivetran.connectors.Sync
+        connectorId: molecule_transport
+
+  - id: dbtCore
+    type: io.kestra.core.tasks.flows.WorkingDirectory
     tasks:
     - id: cloneRepository
       type: io.kestra.plugin.git.Clone
       url: https://github.com/dbt-labs/jaffle_shop
       branch: main
+
     - id: dbt-setup
       type: io.kestra.plugin.dbt.cli.Setup
       profiles:
@@ -51,6 +57,7 @@ tasks:
       inputFiles:
         sa.json: |
           {{envs.gcp_creds}}
+
     - id: dbt-build
       type: io.kestra.plugin.dbt.cli.Build
       debug: false
@@ -60,8 +67,9 @@ tasks:
       inputFiles:
         sa.json: |
           {{envs.gcp_creds}}
+
 taskDefaults:
   - type: io.kestra.plugin.fivetran.connectors.Sync
     values:
-      apiKey: "{{envs.fivetran_api_key}}"
-      apiSecret: "{{envs.fivetran_api_secret}}"
+      apiKey: "{{secret('FIVETRAN_API_KEY')}}"
+      apiSecret: "{{secret('FIVETRAN_API_SECRET')}}"

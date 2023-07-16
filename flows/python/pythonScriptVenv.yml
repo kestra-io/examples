@@ -7,7 +7,7 @@ description: |
 
 tasks:
   - id: csv
-    type: io.kestra.core.tasks.flows.Worker
+    type: io.kestra.core.tasks.flows.WorkingDirectory
     tasks:
       - id: extractCSV
         type: io.kestra.core.tasks.scripts.Bash

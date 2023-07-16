@@ -1,16 +1,18 @@
 id: gitPython
-namespace: prod
+namespace: blueprint
+description: |
+  This flow clones a git repository and runs a python ETL script.
+  The python tasks will install the required packages before running the script.
+
 tasks:
   - id: pythonScripts
-    type: io.kestra.core.tasks.flows.Worker
+    type: io.kestra.core.tasks.flows.WorkingDirectory
     tasks:
     - id: cloneRepository
       type: io.kestra.plugin.git.Clone
       description: password is only required for private repositories
-      url: https://github.com/anna-geller/kestra-flows
+      url: https://github.com/kestra-io/examples
       branch: main
-      username: anna-geller
-      password: "{{envs.github_access_token}}"
 
     - id: pythonETL
       type: io.kestra.core.tasks.scripts.Python

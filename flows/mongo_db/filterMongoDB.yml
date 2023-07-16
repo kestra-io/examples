@@ -1,0 +1,17 @@
+id: filterMongoDB
+namespace: dev
+description: |
+  This flow will filter a MongoDB collection to find Pokemon with a base experience greater than 100.
+
+tasks:
+  - id: filter
+    type: io.kestra.plugin.mongodb.Find
+    connection:
+      uri: "mongodb://host.docker.internal:27017/"
+    database: "local"
+    collection: "pokemon"
+    store: true
+    filter:
+      base_experience:
+        $gt: 100
+      # name: psyduck

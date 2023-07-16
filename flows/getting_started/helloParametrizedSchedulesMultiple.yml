@@ -1,10 +1,13 @@
 id: helloParametrizedSchedulesMultiple
-namespace: prod
+namespace: blueprint
 description: |
   This flow takes a runtime-specific input and uses it to log a message to the console.
   The flow has two scheduled attached to it: 
   - it runs every 15 minutes with the default input parameter value
   - it runs every 1 minute with a custom input parameter value
+  
+  Note that both schedules are currently disabled. 
+  To start scheduling the flow, set the `disabled` property to `false` or delete that property.
 
 inputs:
   - name: user
@@ -20,11 +23,14 @@ tasks:
 triggers:
   - id: quarterHourly
     type: io.kestra.core.models.triggers.types.Schedule
+    disabled: true
     cron: "*/15 * * * *"
     inputs:
      name: user
+  
   - id: everyMinute
     type: io.kestra.core.models.triggers.types.Schedule
+    disabled: true
     cron: "*/1 * * * *"
     inputs:
      name: user

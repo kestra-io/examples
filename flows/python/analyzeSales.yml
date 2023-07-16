@@ -4,6 +4,7 @@ tasks:
   - id: downloadCSV
     type: io.kestra.plugin.fs.http.Download
     uri: https://gist.githubusercontent.com/anna-geller/15f19626d975877b40c3653b6745dcd6/raw/849e8f69a251ece8bfb32dbd6097e69af6fa7f7f/orders.csv
+
   - id: analyzeSales
     type: io.kestra.core.tasks.scripts.Python
     inputFiles:

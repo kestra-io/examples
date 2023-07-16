@@ -2,11 +2,6 @@ id: pythonCsvEachParallel
 namespace: prod
 description: Welcome to Kestra! 👋
 
-inputs:
-  - name: user
-    type: STRING
-    defaults: Data Platform Engineer
-
 tasks:
   - id: hello
     type: io.kestra.core.tasks.log.Log

@@ -1,0 +1,14 @@
+id: write
+namespace: prod.staging
+tasks:
+  - id: write
+    type: io.kestra.plugin.mongodb.InsertOne
+    connection:
+      uri: "mongodb://root:example@mongo:27017/"
+    database: "my_database"
+    collection: "my_collection"
+    document:
+      _id:
+        $oid: 60930c39a982931c20ef6cd6
+      name: "John Doe"
+      city: "Berlin"

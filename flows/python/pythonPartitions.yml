@@ -1,6 +1,8 @@
 id: pythonPartitions
 namespace: prod
-description: Process partitions in parallel
+description: |
+    This flow extracts a list of partitions and then processes each partition in parallel in isolated Python scripts. The flow will then track the
+    number of rows and the processing time for each partition, which you can inspect in the Metrics tab.
 
 tasks:
   - id: getPartitions

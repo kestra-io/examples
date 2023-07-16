@@ -13,3 +13,11 @@ tasks:
     type: io.kestra.core.tasks.scripts.Bash
     commands:
       - echo '::{"metrics":[{"name":"datasets_count","type":"counter","value":3,"tags":{"schema":"analytics"}}]}::'
+  - id: randomMetrics
+    type: io.kestra.core.tasks.scripts.Bash
+    commands:
+      - RANDOM=$$$(date +%s)
+      - random_number=$(( RANDOM % 4 ))
+      - echo "Sleep for $random_number"
+      - sleep "$(( RANDOM % 4 ))"
+      - echo "::{\"metrics\":[{\"name\":\"time\",\"type\":\"timer\",\"value\":$random_number}]}::"

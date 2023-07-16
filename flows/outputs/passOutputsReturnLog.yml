@@ -1,9 +1,19 @@
-id: passOutputsReturnLog
-namespace: prod
+id: passDataBetweenTasks
+namespace: blueprint
+description: |
+
 tasks:
     - id: passOutput
       type: io.kestra.core.tasks.debugs.Return
       format: "hello world!"
+
+    - id: pythonVars
+      type: io.kestra.core.tasks.scripts.Python
+      inputFiles:
+        main.py: |
+          from kestra import Kestra
+          Kestra.outputs({'somekey': 'some value'})
+
     - id: takeInput
       type: io.kestra.core.tasks.log.Log
-      message: "data from previous task - {{outputs.passOutput.value}}"
+      message: "data from previous tasks - {{outputs.passOutput.value}} and {{outputs.pythonVars.vars.somekey}}"

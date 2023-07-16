@@ -2,7 +2,7 @@ id: fivetranSyncParallel
 namespace: prod
 tasks:
   - id: marketingExtractLoad
-    type: io.kestra.core.tasks.flows.Worker
+    type: io.kestra.core.tasks.flows.WorkingDirectory
     tasks:
       - id: dataIngestion
         type: io.kestra.core.tasks.flows.Parallel
@@ -22,5 +22,5 @@ tasks:
 taskDefaults:
   - type: io.kestra.plugin.fivetran.connectors.Sync
     values:
-      apiKey: "{{envs.fivetran_api_key}}"
-      apiSecret: "{{envs.fivetran_api_secret}}"
+      apiKey: "{{secret('FIVETRAN_API_KEY')}}"
+      apiSecret: "{{secret('FIVETRAN_API_SECRET')}}"
