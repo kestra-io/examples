@@ -2,6 +2,8 @@ name: Container Image Packages
 
 on:
   push:
+    paths:
+      - dockerfiles/*
     branches:
       - main
   schedule:
