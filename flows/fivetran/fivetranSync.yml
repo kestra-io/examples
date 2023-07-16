@@ -4,5 +4,5 @@ tasks:
   - id: dataIngestionSync
     type: io.kestra.plugin.fivetran.connectors.Sync
     connectorId: vesicle_movement
-    apiKey: "{{envs.fivetran_api_key}}"
-    apiSecret: "{{envs.fivetran_api_secret}}"
+    apiKey: "{{secret('FIVETRAN_API_KEY')}}"
+    apiSecret: "{{secret('FIVETRAN_API_SECRET')}}"

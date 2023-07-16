@@ -4,8 +4,8 @@ tasks:
   - id: dataIngestionSync
     type: io.kestra.plugin.fivetran.connectors.Sync
     connectorId: billing
-    apiKey: "{{envs.fivetran_api_key}}"
-    apiSecret: "{{envs.fivetran_api_secret}}"
+    apiKey: "{{secret('FIVETRAN_API_KEY')}}"
+    apiSecret: "{{secret('FIVETRAN_API_SECRET')}}"
 triggers:
   - id: runAfterDwhRefresh
     type: io.kestra.core.models.triggers.types.Flow

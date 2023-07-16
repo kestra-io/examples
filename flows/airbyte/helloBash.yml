@@ -1,0 +1,11 @@
+id: hello-bash
+namespace: dev
+tasks:
+  - id: hello
+    type: io.kestra.plugin.scripts.shell.Script
+    runner: PROCESS
+    script: |
+      #!/bin/bash
+      echo "Hey there"
+      echo "Today's date is:"
+      date

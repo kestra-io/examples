@@ -1,0 +1,15 @@
+#taskDefaults:
+- type: io.kestra.plugin.airbyte.connections.Sync
+  values:
+    url: http://host.docker.internal:8000/
+    username: "{{secret('AIRBYTE_USERNAME')}}"
+    password: "{{secret('AIRBYTE_PASSWORD')}}"
+- type: io.kestra.plugin.airbyte.cloud.jobs.Sync
+  values:
+    url: http://host.docker.internal:8000/
+    token: "{{secret('AIRBYTE_CLOUD_API_TOKEN')}}"
+- type: io.kestra.plugin.gcp.bigquery.Query
+  values:
+    store: true
+    projectId: geller
+    serviceAccount: "{{envs.gcp_creds}}"

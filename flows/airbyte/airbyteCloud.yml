@@ -3,5 +3,5 @@ namespace: prod
 tasks:
   - id: sampleDataToS3
     type: io.kestra.plugin.airbyte.cloud.jobs.Sync
-    connectionId: f3d74e40-2f7e-447d-81a4-ea550a64227b
+    connectionId: ac127cf2-9ae3-4f9b-9dd0-e3a0944d1447
     token: "{{envs.airbyte_cloud_api_token}}"

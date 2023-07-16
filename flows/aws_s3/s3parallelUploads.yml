@@ -1,5 +1,8 @@
 id: s3parallelUploads
 namespace: prod
+description: |
+  This flow downloads a zip file, unzips it, and uploads the contents to S3 in parallel
+
 inputs:
   - name: bucket
     type: STRING
@@ -9,20 +12,22 @@ tasks:
   - id: getZipFile
     type: io.kestra.plugin.fs.http.Download
     uri: https://wri-dataportal-prod.s3.amazonaws.com/manual/global_power_plant_database_v_1_3.zip
+
   - id: unzip
     type: io.kestra.plugin.compress.ArchiveDecompress
     algorithm: ZIP
     from: "{{outputs.getZipFile.uri}}"
+
   - id: parallelUploadToS3
     type: io.kestra.core.tasks.flows.Parallel
     tasks:
       - id: csv
         type: io.kestra.plugin.aws.s3.Upload
-        accessKeyId: "{{envs.aws_access_key_id}}"
+        accessKeyId: "{{secret('AWS_ACCESS_KEY_ID')}}"
         from: "{{outputs.unzip.files['global_power_plant_database.csv']}}"
         key: powerplant/global_power_plant_database.csv
         region: eu-central-1
-        secretKeyId: "{{envs.aws_secret_access_key}}"
+        secretKeyId: "{{secret('AWS_SECRET_ACCESS_KEY')}}"
       - id: pdf
         type: io.kestra.plugin.aws.s3.Upload
         from: "{{outputs.unzip.files['Estimating_Power_Plant_Generation_in_the_Global_Power_Plant_Database.pdf']}}"
@@ -31,13 +36,16 @@ tasks:
         type: io.kestra.plugin.aws.s3.Upload
         from: "{{outputs.unzip.files['RELEASE_NOTES.txt']}}"
         key: powerplant/RELEASE_NOTES.txt
+
   - id: listObjects
     type: io.kestra.plugin.aws.s3.List
     bucket: "{{inputs.bucket}}"
     prefix: powerplant/
+
   - id: printObjects
     type: io.kestra.core.tasks.log.Log
     message: "found objects {{outputs.listObjects.objects}}"
+
   - id: mapOverS3Objects
     type: io.kestra.core.tasks.flows.EachParallel
     value: "{{outputs.listObjects.objects}}"
@@ -49,12 +57,12 @@ tasks:
 taskDefaults:
   - type: io.kestra.plugin.aws.s3.Upload
     values:
-      accessKeyId: "{{envs.aws_access_key_id}}"
-      secretKeyId: "{{envs.aws_secret_access_key}}"
+      accessKeyId: "{{secret('AWS_ACCESS_KEY_ID')}}"
+      secretKeyId: "{{secret('AWS_SECRET_ACCESS_KEY')}}"
       region: eu-central-1
       bucket: "{{inputs.bucket}}"
   - type: io.kestra.plugin.aws.s3.List
     values:
-      accessKeyId: "{{envs.aws_access_key_id}}"
-      secretKeyId: "{{envs.aws_secret_access_key}}"
+      accessKeyId: "{{secret('AWS_ACCESS_KEY_ID')}}"
+      secretKeyId: "{{secret('AWS_SECRET_ACCESS_KEY')}}"
       region: eu-central-1

@@ -1,0 +1,30 @@
+id: s3Trigger
+namespace: blueprint
+description: |
+  This flow will trigger on new objects in an S3 bucket. It will download the files into the internal storage 
+  and move the S3 objects to an `archive` folder (i.e. prefix with that name).
+  It will iterate over the objects and print their URIs.
+  It's recommended to set the `accessKeyId` and `secretKeyId` properties as environment variables.
+
+tasks:
+  - id: each
+    type: io.kestra.core.tasks.flows.EachParallel
+    tasks:
+      - id: s3object
+        type: io.kestra.core.tasks.debugs.Return
+        format: "{{taskrun.value}}"
+    value: "{{ trigger.objects | jq('.[].uri') }}"
+
+triggers:
+  - id: waitForS3object
+    type: io.kestra.plugin.aws.s3.Trigger
+    bucket: declarative-orchestration
+    prefix: demo
+    interval: PT1S
+    filter: FILES
+    action: MOVE
+    moveTo:
+      key: archive/demo/
+    region: eu-central-1
+    accessKeyId: "{{secret('AWS_ACCESS_KEY_ID')}}"
+    secretKeyId: "{{secret('AWS_SECRET_ACCESS_KEY')}}"

@@ -69,8 +69,8 @@ tasks:
     type: io.kestra.plugin.aws.dynamodb.PutItem
     tableName: ${var.table_name}
     region: ${var.region}
-    accessKeyId: "{{envs.aws_access_key_id}}"
-    secretKeyId: "{{envs.aws_secret_access_key}}"
+    accessKeyId: "{{secret('AWS_ACCESS_KEY_ID')}}"
+    secretKeyId: "{{secret('AWS_SECRET_ACCESS_KEY')}}"
     item:
       id: 1
       flow: "{{ flow.id }}"
@@ -81,8 +81,8 @@ tasks:
     type: io.kestra.plugin.aws.dynamodb.PutItem
     tableName: ${var.table_name}
     region: ${var.region}
-    accessKeyId: "{{envs.aws_access_key_id}}"
-    secretKeyId: "{{envs.aws_secret_access_key}}"
+    accessKeyId: "{{secret('AWS_ACCESS_KEY_ID')}}"
+    secretKeyId: "{{secret('AWS_SECRET_ACCESS_KEY')}}"
     item: |
         {
             "id": 2,
@@ -107,8 +107,8 @@ tasks:
     tableName: ${var.table_name}
     region: ${var.region}
     fetchType: FETCH
-    accessKeyId: "{{envs.aws_access_key_id}}"
-    secretKeyId: "{{envs.aws_secret_access_key}}"
+    accessKeyId: "{{secret('AWS_ACCESS_KEY_ID')}}"
+    secretKeyId: "{{secret('AWS_SECRET_ACCESS_KEY')}}"
 
   - id: processData
     type: io.kestra.core.tasks.scripts.Bash

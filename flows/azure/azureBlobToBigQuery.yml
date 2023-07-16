@@ -1,0 +1,43 @@
+id: azureBlobToBigQuery
+namespace: dev
+
+tasks:
+  - id: each
+    type: io.kestra.core.tasks.flows.EachSequential
+    value: "{{ trigger.blobs | jq('.[].uri') }}"
+    tasks:
+      - id: uploadFromFile
+        type: io.kestra.plugin.gcp.bigquery.Load
+        destinationTable: geller.stage.orders
+        from: "{{taskrun.value}}"
+        writeDisposition: "WRITE_TRUNCATE"
+        projectId: geller
+        serviceAccount: "{{envs.gcp_creds}}"
+        ignoreUnknownValues: true
+        autodetect: true
+        format: CSV
+        csvOptions:
+          allowJaggedRows: true
+          encoding: UTF-8
+          fieldDelimiter: ","
+
+  - id: dbtCloudJob
+    type: io.kestra.plugin.dbt.cloud.TriggerRun
+    accountId: "{{secret('DBT_CLOUD_ACCOUNT_ID')}}"
+    token: "{{envs.dbt_cloud_api_token}}"
+    jobId: "366381"
+    wait: true
+
+triggers:
+  - id: watch
+    type: io.kestra.plugin.azure.storage.blob.Trigger
+    disabled: true
+    interval: PT1S
+    endpoint: "https://kestra.blob.core.windows.net"
+    connectionString: "{{secret('AZURE_CONNECTION_STRING')}}"
+    container: "stage"
+    prefix: "marketplace/"
+    action: MOVE
+    moveTo:
+      container: stage
+      name: archive/marketplace/

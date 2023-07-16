@@ -8,33 +8,33 @@ tasks:
       - id: salesforce
         type: io.kestra.plugin.fivetran.connectors.Sync
         connectorId: salesforce-connector
-        apiKey: "{{envs.fivetran_api_key}}"
-        apiSecret: "{{envs.fivetran_api_secret}}"
+        apiKey: "{{secret('FIVETRAN_API_KEY')}}"
+        apiSecret: "{{secret('FIVETRAN_API_SECRET')}}"
       - id: stripe
         type: io.kestra.plugin.fivetran.connectors.Sync
         connectorId: stripe-connector
-        apiKey: "{{envs.fivetran_api_key}}"
-        apiSecret: "{{envs.fivetran_api_secret}}"
+        apiKey: "{{secret('FIVETRAN_API_KEY')}}"
+        apiSecret: "{{secret('FIVETRAN_API_SECRET')}}"
       - id: mailchimp
         type: io.kestra.plugin.fivetran.connectors.Sync
         connectorId: mailchimp-connector
-        apiKey: "{{envs.fivetran_api_key}}"
-        apiSecret: "{{envs.fivetran_api_secret}}"
+        apiKey: "{{secret('FIVETRAN_API_KEY')}}"
+        apiSecret: "{{secret('FIVETRAN_API_SECRET')}}"
       - id: greenhouse
         type: io.kestra.plugin.fivetran.connectors.Sync
         connectorId: greenhouse-connector
-        apiKey: "{{envs.fivetran_api_key}}"
-        apiSecret: "{{envs.fivetran_api_secret}}"
+        apiKey: "{{secret('FIVETRAN_API_KEY')}}"
+        apiSecret: "{{secret('FIVETRAN_API_SECRET')}}"
       - id: microsoftAdvertising
         type: io.kestra.plugin.fivetran.connectors.Sync
         connectorId: microsoft-advertising-connector
-        apiKey: "{{envs.fivetran_api_key}}"
-        apiSecret: "{{envs.fivetran_api_secret}}"
+        apiKey: "{{secret('FIVETRAN_API_KEY')}}"
+        apiSecret: "{{secret('FIVETRAN_API_SECRET')}}"
       - id: microsoftDynamicsNAV
         type: io.kestra.plugin.fivetran.connectors.Sync
         connectorId: dynamics-connector
-        apiKey: "{{envs.fivetran_api_key}}"
-        apiSecret: "{{envs.fivetran_api_secret}}"
+        apiKey: "{{secret('FIVETRAN_API_KEY')}}"
+        apiSecret: "{{secret('FIVETRAN_API_SECRET')}}"
   - id: customExtractScripts
     type: io.kestra.core.tasks.flows.EachParallel
     value: [ "https://raw.githubusercontent.com/dbt-labs/jaffle_shop/main/seeds/raw_customers.csv", "https://raw.githubusercontent.com/dbt-labs/jaffle_shop/main/seeds/raw_orders.csv", "https://raw.githubusercontent.com/dbt-labs/jaffle_shop/main/seeds/raw_payments.csv" ]
@@ -100,7 +100,7 @@ tasks:
       - id: sales_reports
         type: io.kestra.plugin.gcp.bigquery.LoadFromGcs
   - id: dbt
-    type: io.kestra.core.tasks.flows.Worker
+    type: io.kestra.core.tasks.flows.WorkingDirectory
     tasks:
     - id: cloneRepository
       type: io.kestra.plugin.git.Clone

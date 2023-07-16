@@ -1,0 +1,24 @@
+id: uploadFileToS3
+namespace: blueprint
+
+inputs:
+  - name: bucket
+    type: STRING
+    defaults: declarative-data-orchestration
+  - name: fileURL
+    type: STRING
+    defaults: https://wri-dataportal-prod.s3.amazonaws.com/manual/global_power_plant_database_v_1_3.zip
+
+tasks:
+  - id: downloadFile
+    type: io.kestra.plugin.fs.http.Download
+    uri: "{{inputs.fileURL}}"
+
+  - id: uploadToS3
+    type: io.kestra.plugin.aws.s3.Upload
+    from: "{{outputs.downloadFile.uri}}"
+    key: powerplant/global_power_plant_database.zip
+    bucket: "{{inputs.bucket}}"
+    region: eu-central-1
+    accessKeyId: "{{secret('AWS_ACCESS_KEY_ID')}}"
+    secretKeyId: "{{secret('AWS_SECRET_ACCESS_KEY')}}"

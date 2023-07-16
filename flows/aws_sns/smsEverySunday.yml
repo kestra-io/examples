@@ -1,0 +1,25 @@
+id: sendSMS
+namespace: blueprint
+description: |
+  This flow sends an SMS message to a phone number using AWS SNS.
+  The phone number must be registered in AWS SNS.
+  The AWS credentials must be provided in the environment variables.
+  The AWS SNS topic ARN must be provided in the inputs.
+  The SMS text must be provided in the inputs.
+inputs:
+  - name: smsText
+    type: STRING
+    defaults: "Hello from Kestra and AWS SNS!"
+  - name: topicArn
+    type: STRING
+    defaults: arn:aws:sns:eu-central-1:338306982838:kestra
+tasks:
+  - id: sendSMS
+    type: io.kestra.plugin.aws.sns.Publish
+    region: eu-central-1
+    accessKeyId: "{{secret('AWS_ACCESS_KEY_ID')}}"
+    secretKeyId: "{{secret('AWS_SECRET_ACCESS_KEY')}}"
+    topicArn: "{{inputs.topicArn}}"
+    from:
+      data: |
+        {{inputs.smsText}}

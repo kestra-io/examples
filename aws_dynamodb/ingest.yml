@@ -16,5 +16,5 @@ tasks:
     item: "{{inputs.values}}"
     tableName: demo
     region: eu-central-1
-    accessKeyId: "{{envs.aws_access_key_id}}"
-    secretKeyId: "{{envs.aws_secret_access_key}}"
+    accessKeyId: "{{secret('AWS_ACCESS_KEY_ID')}}"
+    secretKeyId: "{{secret('AWS_SECRET_ACCESS_KEY')}}"

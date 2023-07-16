@@ -109,14 +109,14 @@ tasks:
 taskDefaults:
   - type: io.kestra.plugin.aws.s3.Upload
     values:
-      accessKeyId: "{{envs.aws_access_key_id}}"
-      secretKeyId: "{{envs.aws_secret_access_key}}"
+      accessKeyId: "{{secret('AWS_ACCESS_KEY_ID')}}"
+      secretKeyId: "{{secret('AWS_SECRET_ACCESS_KEY')}}"
       region: ${var.region}
       bucket: "{{inputs.bucket}}"
   - type: io.kestra.plugin.aws.s3.List
     values:
-      accessKeyId: "{{envs.aws_access_key_id}}"
-      secretKeyId: "{{envs.aws_secret_access_key}}"
+      accessKeyId: "{{secret('AWS_ACCESS_KEY_ID')}}"
+      secretKeyId: "{{secret('AWS_SECRET_ACCESS_KEY')}}"
       region: ${var.region}
 EOF
 }

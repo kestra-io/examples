@@ -1,26 +1,26 @@
 id: airbyteSyncParallel
-namespace: prod
+namespace: blueprint
+description: |
+    This flow will sync data from multiple sources in parallel using Airbyte.
+    The Airbyte API credentials, referenced in the `taskDefaults`, must be provided in the environment variables.
+
 tasks:
-  - id: marketingExtractLoad
-    type: io.kestra.core.tasks.flows.Worker
+  - id: data-ingestion
+    type: io.kestra.core.tasks.flows.Parallel
     tasks:
-      - id: dataIngestion
-        type: io.kestra.core.tasks.flows.Parallel
-        tasks:
-          - id: salesforce
-            type: io.kestra.plugin.airbyte.connections.Sync
-            url: http://host.docker.internal:8000/
-            connectionId: e3b1ce92-547c-436f-b1e8-23b6936c12ab
-          - id: google-analytics
-            type: io.kestra.plugin.airbyte.connections.Sync
-            url: http://host.docker.internal:8000/
-            connectionId: e3b1ce92-547c-436f-b1e8-23b6936c12cd
-          - id: facebook-ads
-            type: io.kestra.plugin.airbyte.connections.Sync
-            url: http://host.docker.internal:8000/
-            connectionId: e3b1ce92-547c-436f-b1e8-23b6936c12ef
+      - id: salesforce
+        type: io.kestra.plugin.airbyte.connections.Sync
+        connectionId: e3b1ce92-547c-436f-b1e8-23b6936c12ab
+      - id: google-analytics
+        type: io.kestra.plugin.airbyte.connections.Sync
+        connectionId: e3b1ce92-547c-436f-b1e8-23b6936c12cd
+      - id: facebook-ads
+        type: io.kestra.plugin.airbyte.connections.Sync
+        connectionId: e3b1ce92-547c-436f-b1e8-23b6936c12ef
+
 taskDefaults:
   - type: io.kestra.plugin.airbyte.connections.Sync
     values:
-      username: "{{envs.airbyte_username}}"
-      password: "{{envs.airbyte_password}}"
+      url: http://host.docker.internal:8000/
+      username: "{{secret('AIRBYTE_USERNAME')}}"
+      password: "{{secret('AIRBYTE_PASSWORD')}}"

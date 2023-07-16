@@ -21,21 +21,23 @@ services:
       retries: 10
 
   kestra:
-    image: kestra/kestra:develop-full
-    pull_policy: always # use only during development; missing
+    image: kestra/kestra:develop-full # use only during development; otherwise use kestra/kestra:latest-full
+    pull_policy: always
     entrypoint: /bin/bash
     user: "root"
     env_file:
-      - .env_encoded
       - .env
+      - .env_encoded
     command:
       - -c
       - /app/kestra server standalone --worker-thread=128
     volumes:
-      - kestra-data:/app/storage
+      - /Users/anna/.kestra/storage:/app/storage
       - /var/run/docker.sock:/var/run/docker.sock
       - /tmp/kestra-wd:/tmp/kestra-wd
     environment:
+      MOTHERDUCK_TOKEN: |
+        xxx
       JAVA_OPTS: "--add-opens java.base/java.nio=ALL-UNNAMED"
       NODE_OPTIONS: "--max-old-space-size=4096"
       KESTRA_CONFIGURATION: |

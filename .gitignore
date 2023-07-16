@@ -48,3 +48,4 @@ blueprints/
 credentials.json
 sql/
 *.hcl
+.env_encoded

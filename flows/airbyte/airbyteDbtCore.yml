@@ -1,0 +1,55 @@
+id: airbyteDbtCore
+namespace: dev
+
+tasks:
+  - id: data-ingestion
+    type: io.kestra.core.tasks.flows.Parallel
+    tasks:
+      - id: psyduck
+        type: io.kestra.plugin.airbyte.connections.Sync
+        connectionId: 4de8ab1e-50ef-4df0-aa01-7f21491081f1
+
+      - id: sample-data
+        type: io.kestra.plugin.airbyte.connections.Sync
+        connectionId: 71291950-ccc1-4875-91b7-e801376c549e
+
+      - id: charizard
+        type: io.kestra.plugin.airbyte.connections.Sync
+        connectionId: 9bb96539-73e7-4b9a-9937-6ce861b49cb9
+
+      - id: pikachu
+        type: io.kestra.plugin.airbyte.connections.Sync
+        connectionId: 39c38950-b0b9-4fce-a303-06ced3dbfa75
+
+  - id: dbt
+    type: io.kestra.core.tasks.flows.WorkingDirectory
+    tasks:
+      - id: cloneRepository
+        type: io.kestra.plugin.git.Clone
+        url: https://github.com/jwills/jaffle_shop_duckdb
+        branch: duckdb
+
+      - id: dbt-build
+        type: io.kestra.plugin.dbt.cli.Build
+        debug: true
+        runner: DOCKER
+        dockerOptions:
+          image: ghcr.io/kestra-io/dbt-duckdb:latest
+        dbtPath: /usr/local/bin/dbt
+        inputFiles:
+          .profile/profiles.yml: |
+            jaffle_shop:
+              outputs:
+                dev:
+                  type: duckdb
+                  path: ':memory:'
+                  extensions:
+                    - parquet
+              target: dev
+
+taskDefaults:
+  - type: io.kestra.plugin.airbyte.connections.Sync
+    values:
+      url: http://host.docker.internal:8000/
+      username: "{{secret('AIRBYTE_USERNAME')}}"
+      password: "{{secret('AIRBYTE_PASSWORD')}}"
