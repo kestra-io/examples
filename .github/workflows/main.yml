@@ -32,6 +32,9 @@ jobs:
     needs: [changes]
     if: ${{ needs.changes.outputs.dockerfiles_changed == 'true' }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     strategy:
       matrix: 
         image: ${{ fromJson(needs.changes.outputs.dockerfiles) }}
