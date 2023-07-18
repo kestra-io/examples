@@ -50,7 +50,7 @@ jobs:
         run: |
           export IMAGE=$(basename ${{ matrix.image }} .Dockerfile)
           echo "image_url=ghcr.io/kestra-io/$IMAGE:latest" >> $GITHUB_OUTPUT
-          echo "file=dockerfiles/${{ matrix.image }}" >> $GITHUB_OUTPUT
+          echo "file=${{ matrix.image }}" >> $GITHUB_OUTPUT
       
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
