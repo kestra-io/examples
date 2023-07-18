@@ -1,0 +1,36 @@
+id: pandasETL
+namespace: blueprint
+
+tasks:
+  - id: extractCsv
+    type: io.kestra.core.tasks.scripts.Python
+    outputFiles:
+      - csvFile
+    inputFiles:
+      main.py: |
+        import pandas as pd
+        data = {
+            'Column1': ['A', 'B', 'C', 'D'],
+            'Column2': [1, 2, 3, 4],
+            'Column3': [5, 6, 7, 8]
+        }
+        df = pd.DataFrame(data)
+        df.to_csv("{{ outputFiles.csvFile }}", index=False)
+    runner: DOCKER
+    dockerOptions:
+      image: ghcr.io/kestra-io/pydata:latest
+
+  - id: transformAndLoadCsv
+    type: io.kestra.core.tasks.scripts.Python
+    outputFiles:
+      - finalResult
+    inputFiles:
+      data.csv: "{{ outputs.extractCsv.outputFiles.csvFile }}"
+      main.py: |
+        import pandas as pd
+        df = pd.read_csv("data.csv")
+        df['Column4'] = df['Column2'] + df['Column3']
+        df.to_csv("{{ outputFiles.finalResult }}", index=False)
+    runner: DOCKER
+    dockerOptions:
+      image: ghcr.io/kestra-io/pydata:latest

@@ -1,0 +1,43 @@
+id: dbtCLI
+namespace: dev
+
+tasks:
+  - id: wdir
+    type: io.kestra.core.tasks.flows.WorkingDirectory
+    tasks:
+      - id: cloneRepository
+        type: io.kestra.plugin.git.Clone
+        url: https://github.com/dbt-labs/jaffle_shop
+        branch: main
+
+      - id: profile
+        type: io.kestra.core.tasks.storages.LocalFiles
+        inputs:
+          packages.yml: |
+            packages:
+              - package: brooklyn-data/dbt_artifacts
+                version: 2.4.2
+          profiles.yml: |
+            jaffle_shop:
+              outputs:
+                dev:
+                  type: bigquery
+                  dataset: dwh
+                  fixed_retries: 1
+                  keyfile: sa.json
+                  location: EU
+                  method: service-account
+                  priority: interactive
+                  project: geller
+                  threads: 8
+                  timeout_seconds: 300
+              target: dev
+          sa.json: "{{ secret('GCP_CREDS') }}"
+
+      - id: dbt
+        type: io.kestra.plugin.scripts.shell.Commands
+        docker:
+          image: ghcr.io/kestra-io/dbt-bigquery:latest
+        commands:
+          - dbt deps --profiles-dir .
+          - dbt build --profiles-dir .

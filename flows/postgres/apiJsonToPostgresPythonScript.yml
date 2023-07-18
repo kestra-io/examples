@@ -1,0 +1,57 @@
+id: apiJsonToPostgresPythonScript
+namespace: dev
+
+tasks:
+  - id: download
+    type: io.kestra.plugin.fs.http.Download
+    uri: https://gorest.co.in/public/v2/users
+
+  - id: addColumn
+    type: io.kestra.plugin.scripts.jython.FileTransform
+    from: "{{outputs.download.uri}}"
+    script: |
+      logger.info('row: {}', row)
+      for dict_obj in row:
+        dict_obj['inserted_from'] = 'kestra'
+
+  - id: toJSON
+    type: io.kestra.plugin.serdes.json.JsonWriter
+    from: "{{outputs.addColumn.uri}}"
+
+  - id: save-users-s3
+    type: io.kestra.plugin.aws.s3.Upload
+    from: "{{outputs.toJSON.uri}}"
+    key: users.json
+    bucket: kestraio
+    region: eu-central-1
+    accessKeyId: "{{ secret('AWS_ACCESS_KEY_ID')}}"
+    secretKeyId: "{{ secret('AWS_SECRET_ACCESS_KEY')}}"
+
+  - id: wdir
+    type: io.kestra.core.tasks.flows.WorkingDirectory
+    tasks:
+      - id: input
+        type: io.kestra.core.tasks.storages.LocalFiles
+        inputs:
+          data.jsonl: "{{outputs.toJSON.uri}}"
+
+      - id: save-users-postgres
+        type: io.kestra.plugin.scripts.python.Script
+        beforeCommands:
+          - pip install pandas psycopg2 sqlalchemy > /dev/null
+        warningOnStdErr: false
+        script: |
+          import json
+          import pandas as pd
+          from sqlalchemy import create_engine
+
+
+          with open("data.jsonl", "r") as f:
+              users = json.load(f)
+
+          users = pd.DataFrame(users)
+          users.head()
+
+          engine = create_engine(f"postgresql://postgres:"{{ secret('DB_PASSWORD') }}"@host.docker.internal:5432")
+
+          users.to_sql("users", engine, if_exists="append", index=False)

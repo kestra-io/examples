@@ -1,0 +1,32 @@
+id: passDataBetweenTasks
+namespace: blueprint
+
+tasks:
+    - id: passOutput
+      type: io.kestra.core.tasks.debugs.Return
+      format: "hello"
+
+    - id: pyOutputs
+      type: io.kestra.plugin.scripts.python.Script
+      docker:
+        image: ghcr.io/kestra-io/pydata:latest
+      script: |
+        import json
+        from kestra import Kestra
+
+        my_kv_pair = {'mykey': 'from Kestra'}
+        Kestra.outputs(my_kv_pair)
+
+        with open('{{outputDir}}/myoutput.json', 'w') as f:
+            json.dump(my_kv_pair, f)
+
+    - id: takeInputs
+      type: io.kestra.core.tasks.log.Log
+      message: |
+        data from previous tasks: {{outputs.passOutput.value}} and {{outputs.pyOutputs.vars.mykey}}
+
+    - id: checkOutputFile
+      type: io.kestra.plugin.scripts.shell.Commands
+      runner: PROCESS
+      commands:
+        - cat {{outputs.pyOutputs.outputFiles['myoutput.json']}}

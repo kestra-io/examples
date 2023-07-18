@@ -1,0 +1,76 @@
+id: apiJsonToPostgres
+namespace: dev
+tasks:
+  - id: download
+    type: io.kestra.plugin.fs.http.Download
+    uri: https://gorest.co.in/public/v2/users
+
+  - id: ionToJSON
+    type: "io.kestra.plugin.serdes.json.JsonReader"
+    from: "{{outputs.download.uri}}"
+    newLine: false
+
+  - id: json
+    type: io.kestra.plugin.serdes.json.JsonWriter
+    from: "{{outputs.ionToJSON.uri}}"
+
+  - id: addColumn
+    type: io.kestra.plugin.scripts.jython.FileTransform
+    from: "{{outputs.json.uri}}"
+    script: |
+      logger.info('row: {}', row)
+      row['inserted_from'] = 'kestra'
+
+  - id: parallel
+    type: io.kestra.core.tasks.flows.Parallel
+    tasks:
+      - id: postgres
+        type: io.kestra.core.tasks.flows.Sequential
+        tasks:
+          - id: finalCSV
+            type: io.kestra.plugin.serdes.csv.CsvWriter
+            from: "{{outputs.addColumn.uri}}"
+            header: true
+
+          - id: createTable
+            type: io.kestra.plugin.jdbc.postgresql.Query
+            url: jdbc:postgresql://host.docker.internal:5432/
+            username: postgres
+            password: "{{ secret('DB_PASSWORD') }}"
+            sql: |
+              CREATE TABLE IF NOT EXISTS public.newusers
+                (
+                    id            int,
+                    name          VARCHAR,
+                    email         VARCHAR,
+                    gender        VARCHAR,
+                    status        VARCHAR,
+                    inserted_from VARCHAR
+                );
+
+          - id: loadData
+            type: io.kestra.plugin.jdbc.postgresql.CopyIn
+            url: jdbc:postgresql://host.docker.internal:5432/
+            username: postgres
+            password: "{{ secret('DB_PASSWORD') }}"
+            format: CSV
+            from: "{{outputs.finalCSV.uri}}"
+            table: public.newusers
+            header: true
+
+      - id: s3
+        type: io.kestra.core.tasks.flows.Sequential
+        tasks:
+          - id: finalJSON
+            type: io.kestra.plugin.serdes.json.JsonWriter
+            from: "{{outputs.addColumn.uri}}"
+
+          - id: jsonToS3
+            type: io.kestra.plugin.aws.s3.Upload
+            disabled: true
+            from: "{{outputs.finalJSON.uri}}"
+            key: users.json
+            bucket: kestraio
+            region: eu-central-1
+            accessKeyId: "{{ secret('AWS_ACCESS_KEY_ID') }}"
+            secretKeyId: "{{ secret('AWS_SECRET_ACCESS_KEY') }}"

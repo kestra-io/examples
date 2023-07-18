@@ -1,0 +1,45 @@
+id: copyIn
+namespace: blueprint
+
+tasks:
+  - id: download
+    type: io.kestra.plugin.fs.http.Download
+    uri: https://raw.githubusercontent.com/lukes/ISO-3166-Countries-with-Regional-Codes/master/all/all.csv
+
+  - id: create_table
+    type: io.kestra.plugin.jdbc.postgresql.Query
+    url: jdbc:postgresql://host.docker.internal:5432/
+    username: postgres
+    password: "{{ secret('DB_PASSWORD') }}"
+    sql: |
+      CREATE TABLE IF NOT EXISTS country_referential(
+        name VARCHAR,
+        "alpha-2" VARCHAR,
+        "alpha-3" VARCHAR,
+        "country-code" VARCHAR,
+        "iso_3166-2" VARCHAR,
+        region VARCHAR,
+        "sub-region" VARCHAR,
+        "intermediate-region" VARCHAR,
+        "region-code" VARCHAR,
+        "sub-region-code" VARCHAR,
+        "intermediate-region-code" VARCHAR
+      );
+
+  - id: copyin
+    type: io.kestra.plugin.jdbc.postgresql.CopyIn
+    url: jdbc:postgresql://host.docker.internal:5432/
+    username: postgres
+    password: "{{ secret('DB_PASSWORD') }}"
+    format: CSV
+    from: '{{ outputs.download.uri }}'
+    table: country_referential
+    header: true
+
+  - id: read
+    type: io.kestra.plugin.jdbc.postgresql.Query
+    url: jdbc:postgresql://host.docker.internal:5432/
+    username: postgres
+    password: "{{ secret('DB_PASSWORD') }}"
+    sql: SELECT * FROM country_referential LIMIT 10
+    fetch: true

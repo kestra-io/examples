@@ -36,8 +36,6 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - /tmp/kestra-wd:/tmp/kestra-wd
     environment:
-      MOTHERDUCK_TOKEN: |
-        xxx
       JAVA_OPTS: "--add-opens java.base/java.nio=ALL-UNNAMED"
       NODE_OPTIONS: "--max-old-space-size=4096"
       KESTRA_CONFIGURATION: |

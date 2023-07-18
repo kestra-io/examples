@@ -1,0 +1,20 @@
+id: pythonCsvEachParallelScriptPlugin
+namespace: blueprint
+
+tasks:
+  - id: csv
+    type: io.kestra.core.tasks.flows.EachParallel
+    value:
+      - https://raw.githubusercontent.com/dbt-labs/jaffle_shop/main/seeds/raw_customers.csv
+      - https://raw.githubusercontent.com/dbt-labs/jaffle_shop/main/seeds/raw_orders.csv
+      - https://raw.githubusercontent.com/dbt-labs/jaffle_shop/main/seeds/raw_payments.csv
+    tasks:
+      - id: pandas
+        type: io.kestra.plugin.scripts.python.Script
+        warningOnStdErr: false
+        docker:
+          image: ghcr.io/kestra-io/pydata:latest
+        script: |
+          import pandas as pd
+          df = pd.read_csv("{{taskrun.value}}")
+          df.info()

@@ -10,7 +10,7 @@ tasks:
     port: 5432
     dbName: postgres
     username: postgres
-    password: qwerasdfyxcv1234
+    password: "{{ secret('DB_PASSWORD') }}"
     streamsConfigurations:
       - replicationMethod: FULL_TABLE
         selected: true
@@ -24,7 +24,7 @@ tasks:
     port: 5432
     dbName: demo
     username: postgres
-    password: qwerasdfyxcv1234
+    password: "{{ secret('DB_PASSWORD') }}"
     from: "{{ outputs.extractTap.raw }}"
     addMetadataColumns: true
     # primaryKeyRequired: false
