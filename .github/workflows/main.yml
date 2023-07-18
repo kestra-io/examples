@@ -34,7 +34,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix: 
-        image: ${{ fromJson(needs.changes.outputs.dockerfiles_files) }}
+        image: ${{ fromJson(needs.changes.outputs.dockerfiles) }}
     steps:
       - name: checkout
         uses: actions/checkout@v3
