@@ -12,8 +12,8 @@ jobs:
     name: Dockerfile changes
     runs-on: ubuntu-latest
     outputs:
-      dockerfiles: ${{ steps.filter.outputs.dockerfiles }}
-      dockerfiles_changed: ${{ steps.filter.outputs.dockerfiles_changed }}
+      dockerfiles: ${{ steps.filter.outputs.dockerfiles_files }}
+      dockerfiles_changed: ${{ steps.filter.outputs.dockerfiles }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -26,7 +26,7 @@ jobs:
               - added|modified: 'dockerfiles/*.Dockerfile'
       - name: Generate Markdown Summary
         run: | 
-          echo New/modified Dockerfiles: ${{ steps.filter.outputs.dockerfiles }} >> $GITHUB_STEP_SUMMARY
+          echo New/modified Dockerfiles: ${{ steps.filter.outputs.dockerfiles_files }} >> $GITHUB_STEP_SUMMARY
 
   ghcr:
     needs: [changes]
@@ -34,7 +34,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix: 
-        image: ${{ fromJson(needs.changes.outputs.dockerfiles) }}
+        image: ${{ fromJson(needs.changes.outputs.dockerfiles_files) }}
     steps:
       - name: checkout
         uses: actions/checkout@v3
