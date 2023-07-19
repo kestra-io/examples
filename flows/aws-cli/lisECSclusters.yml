@@ -1,4 +1,4 @@
-id: lisECSclusters
+id: listECSclusters
 namespace: dev
 
 tasks:
@@ -14,6 +14,7 @@ tasks:
       commands:
         - aws ecs list-clusters --query 'clusterArns[*]'
         - aws ecs list-clusters > output.json
+        - aws s3api list-buckets | tr -d '' | xargs -0 -I {} echo '::{"outputs":{}}::'
       docker:
         image: amazon/aws-cli
         entryPoint:

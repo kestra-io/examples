@@ -30,9 +30,10 @@ services:
       - .env_encoded
     command:
       - -c
-      - /app/kestra server standalone --worker-thread=128
+      - /app/kestra server standalone --worker-thread=128 && /app/kestra plugins install custom_plugins/
     volumes:
       - /Users/anna/.kestra/storage:/app/storage
+      - /Users/anna/.kestra/plugins:/app/custom_plugins
       - /var/run/docker.sock:/var/run/docker.sock
       - /tmp/kestra-wd:/tmp/kestra-wd
     environment:
