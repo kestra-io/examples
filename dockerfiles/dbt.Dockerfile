@@ -10,3 +10,6 @@ RUN pip install --no-cache-dir dbt-databricks
 RUN pip install --no-cache-dir dbt-dremio
 RUN pip install --no-cache-dir dbt-trino
 RUN pip install --no-cache-dir dbt-duckdb
+RUN pip install --no-cache-dir dbt-fabric
+RUN pip install --no-cache-dir dbt-synapse
+RUN pip install --no-cache-dir dbt-teradata
