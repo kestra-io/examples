@@ -3,3 +3,5 @@ while IFS='=' read -r key value; do
 done < .env > .env_encoded
 
 echo "SECRET_GCP_CREDS=$(base64 --input=credentials.json)" >> .env_encoded
+
+# .env file must end with an empty line

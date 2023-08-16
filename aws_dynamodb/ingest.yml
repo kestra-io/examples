@@ -15,6 +15,6 @@ tasks:
     type: io.kestra.plugin.aws.dynamodb.PutItem
     item: "{{inputs.values}}"
     tableName: demo
-    region: eu-central-1
-    accessKeyId: "{{secret('AWS_ACCESS_KEY_ID')}}"
-    secretKeyId: "{{secret('AWS_SECRET_ACCESS_KEY')}}"
+    region: "{{ secret('AWS_DEFAULT_REGION') }}"
+    accessKeyId: "{{ secret('AWS_ACCESS_KEY_ID') }}"
+    secretKeyId: "{{ secret('AWS_SECRET_ACCESS_KEY') }}"
