@@ -1,0 +1,106 @@
+# id: 109
+# https://demo.kestra.io/ui/blueprints/community/109
+# http://localhost:8080/ui/blueprints/109
+# Upload data to S3 in Python using boto3, transform it in a SQL query with DuckDB and send a CSV report via email every first day of the month
+# Tags: Notifications, DuckDB, S3, Schedule, Python, Outputs
+description: |
+  Replace the S3 bucket `kestraio` with your bucket name to reproduce the example.
+  
+  This flow assumes:
+  - an in-process DuckDB
+  - AWS credentials with S3 access permissions stored using Kestra [secrets](https://kestra.io/docs/developer-guide/secrets).
+  
+  If you use [MotherDuck](https://motherduck.com/) and [MotherDuck's managed S3 secrets](https://motherduck.com/docs/authenticating-to-s3), you can replace the `query` task with the following simpler configuration:
+  
+  ```yaml
+    - id: query
+      type: io.kestra.plugin.jdbc.duckdb.Query
+      sql: |
+        SELECT month(order_date) as month, sum(total) as total 
+        FROM read_csv_auto('s3://{{vars.bucket}}/monthly_orders/*.csv', FILENAME = 1) 
+        GROUP BY 1
+        ORDER BY 2 desc;
+      store: true
+      timeout: PT30S
+      url: "jdbc:duckdb:md:my_db?motherduck_token={{ secret('MOTHERDUCK_TOKEN') }}"
+  ```
+
+id: 109_monthlySalesReport
+namespace: blueprint
+
+variables:
+  bucket: kestraio
+
+tasks:
+  - id: rawDataToS3
+    type: io.kestra.plugin.scripts.python.Script
+    docker:
+      image: ghcr.io/kestra-io/aws:latest
+    env:
+      AWS_ACCESS_KEY_ID: "{{ secret('AWS_ACCESS_KEY_ID') }}"
+      AWS_SECRET_ACCESS_KEY: "{{ secret('AWS_SECRET_ACCESS_KEY') }}"
+      AWS_DEFAULT_REGION: "{{ secret('AWS_DEFAULT_REGION') }}"
+    script: |
+      import requests
+      import boto3
+      from kestra import Kestra
+
+      BUCKET = "{{vars.bucket}}"
+
+
+      def extract_and_upload(file):
+          url = f"https://raw.githubusercontent.com/kestra-io/datasets/main/{file}"
+
+          response = requests.get(url)
+          data = response.content.decode("utf-8")
+          s3 = boto3.resource("s3")
+          s3.Bucket(BUCKET).put_object(Key=file, Body=data)
+          print(f"{url} downloaded and saved to {BUCKET}/{file}")
+
+
+      for month in range(1, 13):
+          filename = f"monthly_orders/2023_{str(month).zfill(2)}.csv"
+          extract_and_upload(filename)
+          Kestra.outputs({f"{filename}": f"s3://{BUCKET}/{filename}"})
+
+  - id: query
+    type: io.kestra.plugin.jdbc.duckdb.Query
+    sql: |
+      INSTALL httpfs;
+      LOAD httpfs;
+      SET s3_region='{{ secret('AWS_DEFAULT_REGION') }}';
+      SET s3_access_key_id='{{ secret('AWS_ACCESS_KEY_ID') }}';
+      SET s3_secret_access_key='{{ secret('AWS_SECRET_ACCESS_KEY') }}';
+      SELECT month(order_date) as month, sum(total) as total 
+      FROM read_csv_auto('s3://kestraio/monthly_orders/*.csv', FILENAME = 1) 
+      GROUP BY 1
+      ORDER BY 2 desc;
+    store: true
+    timeout: PT30S
+
+  - id: csv
+    type: io.kestra.plugin.serdes.csv.CsvWriter
+    from: "{{ outputs.query.uri }}"
+
+  - id: email
+    type: io.kestra.plugin.notifications.mail.MailSend
+    subject: The monthly sales report is ready
+    from: hello@kestra.io
+    to: you@example.com;yourboss@example.com
+    username: hello@kestra.io
+    host: mail.privateemail.com
+    port: 465 # 587
+    password: "{{ secret('EMAIL_PASSWORD') }}"
+    sessionTimeout: 6000
+    attachments:
+      - name: monthly_sales_report.csv
+        uri: "{{ outputs.csv.uri }}"
+    htmlTextContent: |
+      Please find attached the current sales report. <br /><br />
+      Best regards,<br />
+      Data Team
+
+triggers:
+  - id: monthly
+    type: io.kestra.core.models.triggers.types.Schedule
+    cron: 0 9 1 * * # every first day of the month

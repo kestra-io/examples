@@ -1,0 +1,43 @@
+# id: 39
+# https://demo.kestra.io/ui/blueprints/community/39
+# http://localhost:8080/ui/blueprints/39
+# Allow failure of certain tasks
+# Tags: -
+description: |
+  This flow demonstrates how to use the `AllowFailure` task to allow a task to fail without blocking downstream tasks.
+  The `AllowFailure` task is useful for when you want to run a task that may fail, but you don't want to block downstream tasks.
+  
+  
+  In this example, the task `failSilently` will fail, but the flow will continue to run and the task `printToConsole` will run.
+  The task `willNeverRun` will never run because the task `fail` will fail and block downstream tasks.
+
+id: 39_allowFailureDemo
+namespace: blueprint
+
+tasks:
+  - id: allowFailure
+    type: io.kestra.core.tasks.flows.AllowFailure
+    tasks:
+      - id: failSilently
+        type: io.kestra.plugin.scripts.shell.Commands
+        runner: PROCESS
+        commands:
+          - exit 1
+
+  - id: printToConsole
+    type: io.kestra.plugin.scripts.shell.Commands
+    runner: PROCESS
+    commands:
+      - echo "this will run since previous failure was allowed ✅"
+
+  - id: fail
+    type: io.kestra.plugin.scripts.shell.Commands
+    runner: PROCESS
+    commands:
+      - echo "failing and blocking downstream tasks" && exit 1
+
+  - id: willNeverRun
+    type: io.kestra.plugin.scripts.shell.Commands
+    runner: PROCESS
+    commands:
+      - echo "this will never run ❌"

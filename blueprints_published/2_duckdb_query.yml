@@ -1,0 +1,34 @@
+# id: 2
+# https://demo.kestra.io/ui/blueprints/community/2
+# http://localhost:8080/ui/blueprints/2
+# Analyze salaries of data professionals using a SQL query in DuckDB, extract the results to a CSV file
+# Tags: DuckDB, SQL, Outputs
+description: |
+  Download a CSV file and query data with DuckDB. Then, extract the results to a CSV file.
+
+id: 2_duckdb_query
+namespace: blueprint
+
+tasks:
+  - id: download_csv
+    type: io.kestra.plugin.fs.http.Download
+    description: salaries of data professionals from 2020 to 2023 (source ai-jobs.net)
+    uri: https://raw.githubusercontent.com/kestra-io/datasets/main/csv/salaries.csv
+
+  - id: avg_salary_by_job_title
+    type: io.kestra.plugin.jdbc.duckdb.Query
+    inputFiles:
+      data.csv: "{{ outputs.download_csv.uri }}"
+    sql: |
+      SELECT 
+        job_title,
+        ROUND(AVG(salary),2) AS avg_salary
+      FROM read_csv_auto('{{workingDir}}/data.csv', header=True)
+      GROUP BY job_title
+      HAVING COUNT(job_title) > 10
+      ORDER BY avg_salary DESC;
+    store: true
+
+  - id: result
+    type: io.kestra.plugin.serdes.csv.CsvWriter
+    from: "{{ outputs.avg_salary_by_job_title.uri }}"

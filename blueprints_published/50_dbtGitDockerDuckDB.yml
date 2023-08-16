@@ -1,0 +1,40 @@
+# id: 50
+# https://demo.kestra.io/ui/blueprints/community/50
+# http://localhost:8080/ui/blueprints/50
+# Git workflow for dbt with DuckDB
+# Tags: Git, dbt, DuckDB
+description: |
+  This flow:
+  - clones a dbt Git repository from GitHub, 
+  - pulls a public [container image with the required dependencies](https://github.com/kestra-io/examples/pkgs/container/dbt-duckdb)
+  - runs dbt CLI commands in a Docker container.
+
+id: 50_dbtGitDockerDuckDB
+namespace: blueprint
+
+tasks:
+  - id: dbt
+    type: io.kestra.core.tasks.flows.WorkingDirectory
+    tasks:
+      - id: cloneRepository
+        type: io.kestra.plugin.git.Clone
+        url: https://github.com/kestra-io/dbt-demo
+        branch: main
+
+      - id: dbt-build
+        type: io.kestra.plugin.dbt.cli.Build
+        debug: true
+        dockerOptions:
+          image: ghcr.io/kestra-io/dbt-duckdb:latest
+        runner: DOCKER
+        dbtPath: /usr/local/bin/dbt
+        inputFiles:
+          .profile/profiles.yml: |
+            jaffle_shop:
+              outputs:
+                dev:
+                  type: duckdb
+                  path: ':memory:'
+                  extensions:
+                    - parquet
+              target: dev

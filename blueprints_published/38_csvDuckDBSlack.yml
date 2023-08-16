@@ -1,0 +1,40 @@
+# id: 38
+# https://demo.kestra.io/ui/blueprints/community/38
+# http://localhost:8080/ui/blueprints/38
+# Query a CSV file with DuckDB and send results via Slack every Monday
+# Tags: DuckDB, SQL, Notifications, Schedule, Outputs
+description: |
+  This flow will read a CSV file, analyze it with DuckDB, and send the results via Slack.
+  This flow assumes `SLACK_WEBHOOK` [secret](https://kestra.io/docs/developer-guide/secrets). 
+  
+  If you use [MotherDuck](https://motherduck.com/), use Kestra [secret](https://kestra.io/docs/developer-guide/secrets) to store the [MotherDuck service token](https://motherduck.com/docs/authenticating-to-motherduck). Then, add the `url` property to point the task to your MotherDuck database.
+  
+  ```yaml
+    - id: transform
+      type: io.kestra.plugin.jdbc.duckdb.Query
+      url: "jdbc:duckdb:md:my_db?motherduck_token={{ secret('MOTHERDUCK_TOKEN') }}"
+  ```
+
+id: 38_csvDuckDBSlack
+namespace: blueprint
+
+tasks:
+  - id: analyzeSales
+    type: io.kestra.plugin.jdbc.duckdb.Query
+    sql: |
+      INSTALL httpfs;
+      LOAD httpfs;
+      SELECT sum(total) as total, avg(quantity) as avg_quantity
+      FROM read_csv_auto('https://raw.githubusercontent.com/kestra-io/datasets/main/csv/orders.csv', header=True);
+    fetch: true
+
+  - id: slack
+    type: io.kestra.plugin.notifications.slack.SlackIncomingWebhook
+    url: "{{ secret('SLACK_WEBHOOK') }}"
+    payload: |
+      {"channel":"#reporting","text":"Current Sales numbers: total sales is `${{outputs.analyzeSales.rows[0].total}}` and average sales quantity is `{{outputs.analyzeSales.rows[0].avg_quantity}}`"}
+
+triggers:
+  - id: everyMonday
+    type: io.kestra.core.models.triggers.types.Schedule
+    cron: 0 9 * * MON

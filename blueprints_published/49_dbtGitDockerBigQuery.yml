@@ -1,0 +1,50 @@
+# id: 49
+# https://demo.kestra.io/ui/blueprints/community/49
+# http://localhost:8080/ui/blueprints/49
+# Git workflow for dbt with Google BigQuery
+# Tags: Git, dbt, BigQuery
+description: |
+  This flow:
+  - clones a dbt Git repository from GitHub, 
+  - pulls a public container image with the required dependencies
+  - runs dbt CLI commands within a container.
+  
+  This flow assumes that your Google Cloud Service Account JSON key file's content is stored as a secret named `GCP_CREDS`. 
+  
+  Before you run this blueprint, simply copy-paste the contents of your `~/.dbt/profiles.yml` into the `.profile/profiles.yml` input file section and you're good to go!
+
+id: 49_dbtGitDockerBigQuery
+namespace: blueprint
+
+tasks:
+  - id: dbt
+    type: io.kestra.core.tasks.flows.WorkingDirectory
+    tasks:
+    - id: cloneRepository
+      type: io.kestra.plugin.git.Clone
+      url: https://github.com/kestra-io/dbt-demo
+      branch: main
+
+    - id: dbt-build
+      type: io.kestra.plugin.dbt.cli.Build
+      runner: DOCKER
+      dbtPath: /usr/local/bin/dbt
+      dockerOptions:
+        image: ghcr.io/kestra-io/dbt-bigquery:latest
+      inputFiles:
+        .profile/profiles.yml: |
+          jaffle_shop:
+            outputs:
+              dev:
+                type: bigquery
+                dataset: your_big_query_dataset_name
+                project: your_big_query_project
+                fixed_retries: 1
+                keyfile: sa.json
+                location: EU
+                method: service-account
+                priority: interactive
+                threads: 8
+                timeout_seconds: 300
+            target: dev
+        sa.json: "{{ secret('GCP_CREDS') }}"

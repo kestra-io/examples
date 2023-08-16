@@ -1,0 +1,63 @@
+# id: 3
+# https://demo.kestra.io/ui/blueprints/community/3
+# http://localhost:8080/ui/blueprints/3
+# Run multiple subflows in parallel and wait for their completion - use taskDefaults to avoid boilerplate code
+# Tags: Parallel
+description: |
+  Add the child flows first: 
+  
+  First flow:    
+  ```yaml
+  id: flow1
+  namespace: blueprint
+  tasks:
+  - id: get
+    type: io.kestra.core.tasks.debugs.Return
+    format: hi from {{flow.id}}
+  ```
+  
+  Second flow:
+  ```yaml
+  id: flow2
+  namespace: blueprint
+  tasks:
+  - id: get
+    type: io.kestra.core.tasks.debugs.Return
+    format: hi from {{flow.id}}
+  ```
+  
+  Third flow:
+  ```yaml
+  id: flow3
+  namespace: blueprint
+  tasks:
+  - id: get
+    type: io.kestra.core.tasks.debugs.Return
+    format: hi from {{flow.id}}
+  ```
+    
+  Then run the parent flow `parallelSubflows` to trigger multiple subflows in parallel.
+
+id: 3_parallelSubflows
+namespace: blueprint
+
+tasks:
+  - id: parallel
+    type: io.kestra.core.tasks.flows.Parallel
+    tasks:
+      - id: flow1
+        type: io.kestra.core.tasks.flows.Flow
+        flowId: flow1
+      - id: flow2
+        type: io.kestra.core.tasks.flows.Flow
+        flowId: flow2
+      - id: flow3
+        type: io.kestra.core.tasks.flows.Flow
+        flowId: flow3
+
+taskDefaults:
+  - type: io.kestra.core.tasks.flows.Flow
+    values:
+      namespace: blueprint
+      wait: true
+      transmitFailed: true

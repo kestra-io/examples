@@ -1,0 +1,23 @@
+# id: 47
+# https://demo.kestra.io/ui/blueprints/community/47
+# http://localhost:8080/ui/blueprints/47
+# Extract data via an HTTP API call and upload it as a file to Azure Blog Storage
+# Tags: Azure, Outputs
+description: |
+  This flow downloads a file via an HTTPS request and then upload it to Azure Blob Storage.
+
+id: 47_azureBlobUpload
+namespace: blueprint
+
+tasks:
+  - id: extract
+    type: io.kestra.plugin.fs.http.Download
+    uri: https://raw.githubusercontent.com/kestra-io/datasets/main/csv/salaries.csv
+
+  - id: load
+    type: io.kestra.plugin.azure.storage.blob.Upload
+    endpoint: "https://kestra.blob.core.windows.net"
+    connectionString: "{{ secret('AZURE_CONNECTION_STRING') }}"
+    container: kestra
+    from: "{{ outputs.download_data.uri }}"
+    name: data.csv

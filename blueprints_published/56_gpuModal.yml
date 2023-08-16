@@ -1,0 +1,36 @@
+# id: 56
+# https://demo.kestra.io/ui/blueprints/community/56
+# http://localhost:8080/ui/blueprints/56
+# GPU-accelerated Python script with Modal
+# tags python CLI SaaS
+description: |
+  This flow clones a repository, pulls a public container image with the required dependencies and runs a Python script in a Docker container.
+    
+  The Python script uses Modal Python Client to run the script on a GPU-enabled server. 
+  - To learn more about GPU support on modal.com, check the [Modal documentation](https://modal.com/docs/guide/gpu)
+  - The Python script is available in the repository: [kestra-io/scripts](https://github.com/kestra-io/scripts/blob/main/modal/gpu.py)
+  
+  This flow assumes that you have a Modal account and that you stored the Modal credentials as secrets.
+
+id: 56_gpuModal
+namespace: blueprint
+
+tasks:
+  - id: pythonRepository
+    type: io.kestra.core.tasks.flows.WorkingDirectory
+    tasks:
+      - id: cloneRepository
+        type: io.kestra.plugin.git.Clone
+        branch: main
+        url: https://github.com/kestra-io/scripts
+
+      - id: runModal
+        type: io.kestra.plugin.scripts.shell.Commands
+        commands:
+          - modal run modal/gpu.py
+        runner: DOCKER
+        docker:
+          image: ghcr.io/kestra-io/modal:latest
+        env:
+          MODAL_TOKEN_ID: "{{ secret('MODAL_TOKEN_ID') }}"
+          MODAL_TOKEN_SECRET: "{{ secret('MODAL_TOKEN_SECRET') }}"

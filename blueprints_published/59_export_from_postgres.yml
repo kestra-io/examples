@@ -1,0 +1,27 @@
+# id: 59
+# https://demo.kestra.io/ui/blueprints/community/59
+# http://localhost:8080/ui/blueprints/59
+# Export output of a Postgres SQL query to a CSV file
+# Tags: Postgres, SQL, Outputs
+# TODO add instructions about this postgres image with dataset, better show how to add that data manually to DB
+
+description: |
+  This example shows how to extract a table from a Postgres table. The flow logs the number of extracted rows. The extracted file can be retrieved with the `{{ outputs.export.uri }}` command.
+
+id: 59_export_from_postgres
+namespace: blueprint
+
+tasks:
+  - id: export
+    type: io.kestra.plugin.jdbc.postgresql.CopyOut
+    url: jdbc:postgresql://sample_postgres:5433/world
+    username: postgres
+    password: postgres
+    format: CSV
+    header: true
+    sql: SELECT * FROM country LIMIT 10
+    delimiter: ","
+
+  - id: log
+    type: io.kestra.core.tasks.log.Log
+    message: '{{ outputs.export.rowCount }}'

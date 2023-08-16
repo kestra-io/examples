@@ -52,8 +52,8 @@ inputs:
 tasks:
   - id: publishMessage
     type: io.kestra.plugin.aws.sqs.Publish
-    accessKeyId: "{{secret('AWS_ACCESS_KEY_ID')}}"
-    secretKeyId: "{{secret('AWS_SECRET_ACCESS_KEY')}}"
+    accessKeyId: "{{ secret('AWS_ACCESS_KEY_ID') }}"
+    secretKeyId: "{{ secret('AWS_SECRET_ACCESS_KEY') }}"
     region: ${var.region}
     queueUrl: ${aws_sqs_queue.queue.id}
     from:
@@ -71,8 +71,8 @@ namespace: ${var.namespace}
 tasks:
   - id: pollSqsForMessages
     type: io.kestra.plugin.aws.sqs.Consume
-    accessKeyId: "{{secret('AWS_ACCESS_KEY_ID')}}"
-    secretKeyId: "{{secret('AWS_SECRET_ACCESS_KEY')}}"
+    accessKeyId: "{{ secret('AWS_ACCESS_KEY_ID') }}"
+    secretKeyId: "{{ secret('AWS_SECRET_ACCESS_KEY') }}"
     region: ${var.region}
     queueUrl: ${aws_sqs_queue.queue.id}
     maxRecords: 1
@@ -102,8 +102,8 @@ tasks:
 triggers:
   - id: sqs
     type: io.kestra.plugin.aws.sqs.Trigger
-    accessKeyId: "{{secret('AWS_ACCESS_KEY_ID')}}"
-    secretKeyId: "{{secret('AWS_SECRET_ACCESS_KEY')}}"
+    accessKeyId: "{{ secret('AWS_ACCESS_KEY_ID') }}"
+    secretKeyId: "{{ secret('AWS_SECRET_ACCESS_KEY') }}"
     region: ${var.region}
     queueUrl: ${aws_sqs_queue.queue.id}
     maxRecords: 1

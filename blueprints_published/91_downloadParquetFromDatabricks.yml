@@ -1,0 +1,29 @@
+# id: 91
+# https://demo.kestra.io/ui/blueprints/community/91
+# http://localhost:8080/ui/blueprints/91
+# Download a Parquet file from Databricks and use it in a Python script
+# Tags: Databricks Python Outputs
+description: |
+  This flow will:
+  1. Download a Parquet file from Databricks File System (DBFS) to Kestra's internal storage 
+  2. Use the file in a Python script running in a container
+id: 91_downloadParquetFromDatabricks
+namespace: blueprint
+
+tasks:
+  - id: download
+    type: io.kestra.plugin.databricks.dbfs.Download
+    authentication:
+      token: "{{ secret('DATABRICKS_TOKEN') }}"
+    host: "{{ secret('DATABRICKS_HOST') }}"
+    from: /Share/myFile.parquet
+
+  - id: processDownloadedFile
+    type: io.kestra.plugin.scripts.python.Script
+    docker:
+      image: ghcr.io/kestra-io/pydata:latest
+    script: |
+      import pandas as pd
+
+      df = pd.read_parquet("{{outputs.download.uri}}")
+      df.head()

@@ -1,0 +1,63 @@
+# id: 88
+# https://demo.kestra.io/ui/blueprints/community/88
+# http://localhost:8080/ui/blueprints/88
+# Use BigQuery and Python script running in Docker to analyze Wikipedia page views
+# python bigquery local files outputs metrics
+description: |
+  This flow will do the following:
+  
+  1. Use `bigquery.Query` task to query the top 10 wikipedia pages for the current day 
+  2. Use `CsvWriter` to store the results in a CSV file. 
+  3. Use `python.Script` task to read the CSV file and use pandas to find the maximum number of views.
+  4. Use Kestra `outputs` to track the maximum number of views over time.
+  
+  The Python script will run in a Docker container based on the public image `ghcr.io/kestra-io/pydata:latest`. 
+  
+  The BigQuery task exposes (by default) a variety of **metrics** such as:
+  - total.bytes.billed
+  - total.partitions.processed
+  - number of rows processed
+  - query duration.
+  
+  You can view those metrics on the Execution page in the Metrics tab. 
+
+id: 88_wikipediaTop10pythonPandas
+namespace: blueprint
+
+tasks:
+  - id: query
+    type: io.kestra.plugin.gcp.bigquery.Query
+    sql: |
+      SELECT DATETIME(datehour) as date, title, views FROM `bigquery-public-data.wikipedia.pageviews_2023`
+      WHERE DATE(datehour) = current_date() and wiki = 'en'
+      ORDER BY datehour desc, views desc
+      LIMIT 10
+    store: true
+    projectId: "{{envs.gcp_project_id}}"
+    serviceAccount: "{{ secret('GCP_CREDS') }}"
+
+  - id: write-csv
+    type: io.kestra.plugin.serdes.csv.CsvWriter
+    from: "{{outputs.query.uri}}"
+
+  - id: wdir
+    type: io.kestra.core.tasks.flows.WorkingDirectory
+    tasks:
+    - id: file
+      type: io.kestra.core.tasks.storages.LocalFiles
+      inputs:
+        data.csv: "{{outputs['write-csv'].uri}}"
+
+    - id: pandas
+      type: io.kestra.plugin.scripts.python.Script
+      warningOnStdErr: false
+      docker:
+        image: ghcr.io/kestra-io/pydata:latest
+      script: |
+        import pandas as pd
+        from kestra import Kestra
+        
+        df = pd.read_csv("data.csv")
+        df.head(10)
+        views = df['views'].max()
+        Kestra.outputs({'views': int(views)})

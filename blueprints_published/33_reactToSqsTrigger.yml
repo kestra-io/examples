@@ -1,0 +1,31 @@
+# id: 33
+# https://demo.kestra.io/ui/blueprints/community/33
+# http://localhost:8080/ui/blueprints/33
+# React to an SQS trigger
+# Tags: AWS, Trigger, Variables
+description: |
+  This flow reacts to an SQS trigger. Any time there is a new message in the queue, the flow is triggered.
+  
+  The queue URL points to an already existing queue. The `{{trigger.uri}}` points to a file in Kestra's internal storage containing the content of the SQS message. You can read the contents of that file in any task.
+  
+  This flow assumes AWS credentials stored as secrets `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` and `AWS_DEFAULT_REGION`.
+
+id: 33_reactToSqsTrigger
+namespace: blueprint
+
+tasks:
+  - id: printMessage
+    type: io.kestra.plugin.scripts.shell.Commands
+    runner: PROCESS
+    commands:
+      - cat "{{trigger.uri}}"
+
+triggers:
+  - id: sqs
+    type: io.kestra.plugin.aws.sqs.Trigger
+    accessKeyId: "{{ secret('AWS_ACCESS_KEY_ID') }}"
+    secretKeyId: "{{ secret('AWS_SECRET_ACCESS_KEY') }}"
+    region: "{{ secret('AWS_DEFAULT_REGION') }}"
+    queueUrl: https://sqs.eu-central-1.amazonaws.com/338306982838/kestra
+    maxRecords: 1
+

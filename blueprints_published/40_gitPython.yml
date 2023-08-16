@@ -1,0 +1,30 @@
+# id: 40
+# https://demo.kestra.io/ui/blueprints/community/40
+# http://localhost:8080/ui/blueprints/40
+# Clone a GitHub repository and run a Python ETL script
+# Tags git python CLI
+description: |
+  This flow clones a git repository and runs a Python ETL script.
+  - The Python task can install additional pip packages before running the script using `beforeCommands`.
+  - The image used in this flow is public and you can use it in your workflows.
+  - You can add `username` and `password` on the `git.Clone` task but note that they are required only for private repositories. When using public GitHub repositories such as [this one](https://github.com/kestra-io/scripts), you can only reference the `url` and `branch`  name.
+
+id: 40_gitPython
+namespace: blueprint
+
+tasks:
+  - id: pythonScripts
+    type: io.kestra.core.tasks.flows.WorkingDirectory
+    tasks:
+    - id: cloneRepository
+      type: io.kestra.plugin.git.Clone
+      url: https://github.com/kestra-io/scripts
+      branch: main
+
+    - id: python
+      type: io.kestra.plugin.scripts.python.Commands
+      warningOnStdErr: false
+      docker:
+        image: ghcr.io/kestra-io/pydata:latest
+      commands:
+        - python etl/global_power_plant.py

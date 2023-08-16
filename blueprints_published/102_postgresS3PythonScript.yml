@@ -1,0 +1,49 @@
+# id: 102
+# https://demo.kestra.io/ui/blueprints/community/102
+# http://localhost:8080/ui/blueprints/102
+# Extract data from an API using Python, then load it to Postgres and S3
+# Tags: python pip ingest s3 postgres
+description: |
+  This flow runs a Python script that:
+  1. Extracts data from an API  
+  2. Loads that extracted data to Postgres and a local JSON file. The local file is then uploaded to S3 in the following task. 
+  
+  The Python task runs in a Docker container. Before starting the script, Kestra will install custom package dependencies, as defined by the `beforeCommands` property.
+
+id: 102_postgresS3PythonScript
+namespace: dev
+
+tasks:
+  - id: apiToPostgres
+    type: io.kestra.plugin.scripts.python.Script
+    beforeCommands:
+      - pip install requests pandas psycopg2 sqlalchemy > /dev/null
+    warningOnStdErr: false
+    script: |
+      import pandas as pd
+      import requests
+      from sqlalchemy import create_engine
+      
+      URL = "https://gorest.co.in/public/v2/users"
+      req = requests.get(url=URL)
+      res = req.json()
+      
+      df_users = pd.DataFrame(res)
+      df_users["inserted_from"] = "kestra"
+      df_users.head()
+      password = "{{secret('DB_PASSWORD')}}"
+      host = "host.docker.internal"
+      
+      engine = create_engine(f"postgresql://postgres:{password}@{host}:5432")
+      
+      df_users.to_sql("users", engine, if_exists="append", index=False)
+      df_users.to_json("{{outputDir}}/users.json")
+
+  - id: s3upload
+    type: io.kestra.plugin.aws.s3.Upload
+    from: "{{ outputs.apiToPostgres.outputFiles['users.json'] }}"
+    key: users.json
+    bucket: kestraio
+    region: eu-central-1
+    accessKeyId: "{{ secret('AWS_ACCESS_KEY_ID') }}"
+    secretKeyId: "{{ secret('AWS_SECRET_ACCESS_KEY') }}"

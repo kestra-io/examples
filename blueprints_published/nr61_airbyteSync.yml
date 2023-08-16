@@ -1,0 +1,24 @@
+# id: 61
+# https://demo.kestra.io/ui/blueprints/community/61
+# http://localhost:8080/ui/blueprints/61
+# Trigger a single Airbyte sync on schedule
+# Tags: Ingst, Schedule
+description: |
+  This flow will sync data using Airbyte.
+
+  It's best to provide Airbyte server credentials (the `username` and `password`) as secrets, but you can also paste them in plain text during testing.
+
+id: 61_airbyteSync
+namespace: blueprint
+tasks:
+  - id: data-ingestion
+    type: io.kestra.plugin.airbyte.connections.Sync
+    connectionId: e3b1ce92-547c-436f-b1e8-23b6936c12ab
+    url: http://host.docker.internal:8000/
+    username: "{{ secret('AIRBYTE_USERNAME') }}"
+    password: "{{ secret('AIRBYTE_PASSWORD') }}"
+
+triggers:
+  - id: everyMinute
+    type: io.kestra.core.models.triggers.types.Schedule
+    cron: "*/1 * * * *"

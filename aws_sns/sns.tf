@@ -57,8 +57,8 @@ namespace: ${var.namespace}
 tasks:
   - id: sendSMS
     type: io.kestra.plugin.aws.sns.Publish
-    accessKeyId: "{{secret('AWS_ACCESS_KEY_ID')}}"
-    secretKeyId: "{{secret('AWS_SECRET_ACCESS_KEY')}}"
+    accessKeyId: "{{ secret('AWS_ACCESS_KEY_ID') }}"
+    secretKeyId: "{{ secret('AWS_SECRET_ACCESS_KEY') }}"
     region: ${var.region}
     topicArn: "${aws_sns_topic.topic.arn}"
     from:

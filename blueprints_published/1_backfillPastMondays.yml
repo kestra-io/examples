@@ -1,0 +1,28 @@
+# id: 1
+# https://demo.kestra.io/ui/blueprints/community/1
+# http://localhost:8080/ui/blueprints/1
+# Run a flow on the first Monday of each month at 9 AM and backfill past intervals
+# Tags: Schedule, Backfills
+description: |
+  This flow will run only on the first Monday of each month at 9 AM. Before starting the regularly scheduled runs, Kestra will first execute runs for the past intervals from the `start` date until the current date. 
+
+id: 1_backfillPastMondays
+namespace: blueprint
+
+tasks:
+  - id: logTriggerOrExecutionDate
+    type: io.kestra.core.tasks.log.Log
+    message: "{{schedule.date ?? execution.startDate}}"
+
+triggers:
+  - id: firstMondayOfTheMonth
+    type: io.kestra.core.models.triggers.types.Schedule
+    timezone: Europe/Berlin
+    backfill:
+      start: 2023-04-01T00:00:00Z
+    cron: "0 11 * * MON" # at 11 on every Monday
+    scheduleConditions: # only first Monday of the month
+      - type: io.kestra.core.models.conditions.types.DayWeekInMonthCondition
+        date: "{{ trigger.date }}"
+        dayOfWeek: "MONDAY"
+        dayInMonth: "FIRST"

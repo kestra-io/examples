@@ -1,0 +1,43 @@
+# id: 41
+# https://demo.kestra.io/ui/blueprints/community/41
+# http://localhost:8080/ui/blueprints/41
+# Process partitions in parallel in Python, report outputs and metrics about number of rows and processing time for all partitioned files
+# Tags: Python Parallel Outputs Metrics
+description: |
+  This flow extracts a list of partitions and then processes each partition in parallel in isolated Python scripts, each running in a separate Docker container. The flow will then track the number of rows and the processing time for each partition, which you can inspect in the Metrics tab.
+
+id: 41_pythonPartitionsMetrics
+namespace: blueprint
+
+tasks:
+  - id: getPartitions
+    type: io.kestra.plugin.scripts.python.Script
+    runner: DOCKER
+    docker:
+      image: ghcr.io/kestra-io/pydata:latest
+    script: |
+      from kestra import Kestra
+      partitions = [f"file_{nr}.parquet" for nr in range(1, 10)]
+      Kestra.outputs({'partitions': partitions})
+
+  - id: processPartitions
+    type: io.kestra.core.tasks.flows.EachParallel
+    value: '{{outputs.getPartitions.vars.partitions}}'
+    tasks:
+      - id: partition
+        type: io.kestra.plugin.scripts.python.Script
+        runner: DOCKER
+        docker:
+          image: ghcr.io/kestra-io/pydata:latest
+        script: |
+          import random
+          import time
+          from kestra import Kestra
+
+          filename = '{{ taskrun.value }}'
+          print(f"Reading and processing partition {filename}")
+          nr_rows = random.randint(1, 1000)
+          processing_time = random.randint(1, 20)
+          time.sleep(processing_time)
+          Kestra.counter('nr_rows', nr_rows, {'partition': filename})
+          Kestra.timer('processing_time', processing_time, {'partition': filename})

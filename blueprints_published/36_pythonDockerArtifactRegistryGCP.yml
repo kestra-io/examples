@@ -1,0 +1,65 @@
+# id: 36
+# https://demo.kestra.io/ui/blueprints/community/36
+# http://localhost:8080/ui/blueprints/36
+# Run Python script in a Docker container based on Google Artifact Registry container image
+# Tags: GCP Docker Python
+description: |
+  This flow downloads a CSV file from a public URL, analyzes it with a Python script, and outputs the results.
+  The Python script is executed in a Docker container.
+  The Docker image is stored in Google Artifact Registry.
+  
+  To push an image to Google Artifact Registry, you need to:
+  - Create a Google Cloud Platform service account with the `Artifact Registry Writer` role.
+  - Create a JSON key for the service account.
+  - Create a secret with the contents of the JSON key. 
+  - Build a Docker image: `docker build -t yourGcpRegion-docker.pkg.dev/YOUR_GCP_PROJECT_NAME/flows/python:latest .`
+  - Push the image to Google Artifact Registry: `docker push yourGcpRegion-docker.pkg.dev/YOUR_GCP_PROJECT_NAME/flows/python:latest`
+  
+  Note that the `OauthAccessToken` task is necessary to securely fetch a short-lived [access token](https://cloud.google.com/artifact-registry/docs/docker/authentication#token).
+
+id: 36_pythonDockerArtifactRegistryGCP
+namespace: blueprint
+
+tasks:
+  - id: wdir
+    type: io.kestra.core.tasks.flows.WorkingDirectory
+    tasks:
+      - id: downloadCSV
+        type: io.kestra.plugin.fs.http.Download
+        uri: https://raw.githubusercontent.com/kestra-io/examples/main/datasets/orders.csv
+
+      - id: fetchAuthToken
+        type: io.kestra.plugin.gcp.auth.OauthAccessToken
+        projectId: YOUR_GCP_PROJECT_NAME
+        serviceAccount: "{{ secret('GCP_CREDS') }}"
+
+      - id: local
+        type: io.kestra.core.tasks.storages.LocalFiles
+        inputs:
+          data.csv: "{{outputs.downloadCSV.uri}}"
+
+      - id: analyzeSales
+        type: io.kestra.plugin.scripts.python.Script
+        script: |
+          import pandas as pd
+          from kestra import Kestra
+
+          df = pd.read_csv("data.csv")
+          sales = df.total.sum()
+          med = df.quantity.median()
+
+          Kestra.outputs({"total_sales": sales, "median_quantity": med})
+
+          top_sellers = df.sort_values(by="total", ascending=False).head(3)
+          print(f"Top 3 orders: {top_sellers}")
+        docker:
+          image: yourGcpRegion-docker.pkg.dev/YOUR_GCP_PROJECT_NAME/flows/python:latest
+          config: |
+            {
+              "auths": {
+                "europe-west3-docker.pkg.dev": {
+                    "username": "oauth2accesstoken",
+                    "password": "{{outputs.fetchAuthToken.accessToken.tokenValue}}"
+                  }
+              }
+            }

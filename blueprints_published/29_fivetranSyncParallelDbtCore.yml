@@ -1,0 +1,69 @@
+# id: 29
+# https://demo.kestra.io/ui/blueprints/community/29
+# http://localhost:8080/ui/blueprints/29
+# Trigger multiple Fivetran syncs in parallel, then run a dbt job
+# Tags: ingest parallel git dbt BigQuery
+description: |
+  This flow runs Fivetran syncs in parallel and then runs dbt core's CLI commands.
+  The flow assumes that you store the Fivetran API credentials, referenced in the `taskDefaults`, as secrets.
+
+id: 29_fivetranSyncParallelDbtCore
+namespace: blueprint
+
+tasks:
+  - id: dataIngestion
+    type: io.kestra.core.tasks.flows.Parallel
+    tasks:
+      - id: salesforce
+        type: io.kestra.plugin.fivetran.connectors.Sync
+        connectorId: vesicle_movement
+
+      - id: stripe
+        type: io.kestra.plugin.fivetran.connectors.Sync
+        connectorId: cell_delivery
+
+      - id: google-analytics
+        type: io.kestra.plugin.fivetran.connectors.Sync
+        connectorId: equivocal_sandy
+
+      - id: facebook-ads
+        type: io.kestra.plugin.fivetran.connectors.Sync
+        connectorId: molecule_transport
+
+  - id: dbtCore
+    type: io.kestra.core.tasks.flows.WorkingDirectory
+    tasks:
+    - id: cloneRepository
+      type: io.kestra.plugin.git.Clone
+      url: https://github.com/kestra-io/dbt-demo
+      branch: main
+
+    - id: dbt-build
+      type: io.kestra.plugin.dbt.cli.Build
+      runner: DOCKER
+      dbtPath: /usr/local/bin/dbt
+      dockerOptions:
+        image: ghcr.io/kestra-io/dbt-bigquery:latest
+      inputFiles:
+        .profile/profiles.yml: |
+          jaffle_shop:
+            outputs:
+              dev:
+                type: bigquery
+                dataset: your_big_query_dataset_name
+                project: your_big_query_project
+                fixed_retries: 1
+                keyfile: sa.json
+                location: EU
+                method: service-account
+                priority: interactive
+                threads: 8
+                timeout_seconds: 300
+            target: dev
+        sa.json: "{{ secret('GCP_CREDS') }}"
+
+taskDefaults:
+  - type: io.kestra.plugin.fivetran.connectors.Sync
+    values:
+      apiKey: "{{ secret('FIVETRAN_API_KEY') }}"
+      apiSecret: "{{ secret('FIVETRAN_API_SECRET') }}"

@@ -12,9 +12,9 @@ inputs:
 tasks:
   - id: publishMessage
     type: io.kestra.plugin.aws.sqs.Publish
-    accessKeyId: "{{secret('AWS_ACCESS_KEY_ID')}}"
-    secretKeyId: "{{secret('AWS_SECRET_ACCESS_KEY')}}"
-    region: eu-central-1
+    accessKeyId: "{{ secret('AWS_ACCESS_KEY_ID') }}"
+    secretKeyId: "{{ secret('AWS_SECRET_ACCESS_KEY') }}"
+    region: "{{ secret('AWS_DEFAULT_REGION') }}"
     queueUrl: https://sqs.eu-central-1.amazonaws.com/338306982838/kestra
     from:
       data: "{{inputs.message}}"
