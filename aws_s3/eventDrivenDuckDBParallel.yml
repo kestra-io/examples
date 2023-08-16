@@ -1,0 +1,45 @@
+id: s3duck
+namespace: dev
+
+variables:
+  bucket: kestraio
+  prefix: monthly_orders
+  moved_prefix: stage_orders
+
+tasks:
+  - id: each
+    type: io.kestra.core.tasks.flows.EachSequential
+    value: "{{ trigger.objects | jq('.[].key') }}"
+    tasks:
+      - id: query
+        type: io.kestra.plugin.jdbc.duckdb.Query
+        sql: |
+          SELECT *
+          FROM read_csv_auto('s3://{{vars.bucket}}/{{vars.moved_prefix}}/{{taskrun.value}}')
+          WHERE price * quantity != total;
+        fetch: true
+        url: "jdbc:duckdb:md:my_db?motherduck_token={{ secret('MOTHERDUCK_TOKEN') }}"
+
+      - id: if-anomalies-detected
+        type: io.kestra.core.tasks.flows.If
+        condition: "{{outputs.query['{{taskrun.value}}'].size}}"
+        then:
+        - id: slack-anomaly-alert
+          type: io.kestra.plugin.notifications.slack.SlackIncomingWebhook
+          url: "{{ secret('SLACK_WEBHOOK') }}"
+          payload: |
+            {"channel":"#reporting","text":"Anomaly detected: `{{outputs.query['{{taskrun.value}}'].rows}}`"}
+
+triggers:
+  - id: waitForS3object
+    type: io.kestra.plugin.aws.s3.Trigger
+    bucket: "{{vars.bucket}}"
+    prefix: "{{vars.prefix}}"
+    interval: PT1S
+    filter: FILES
+    action: MOVE
+    moveTo:
+      key: "{{vars.moved_prefix}}/{{vars.prefix}}"
+    region: "{{ secret('AWS_DEFAULT_REGION') }}"
+    accessKeyId: "{{ secret('AWS_ACCESS_KEY_ID') }}"
+    secretKeyId: "{{ secret('AWS_SECRET_ACCESS_KEY') }}"

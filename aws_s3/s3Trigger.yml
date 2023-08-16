@@ -25,6 +25,6 @@ triggers:
     action: MOVE
     moveTo:
       key: archive/demo/
-    region: eu-central-1
-    accessKeyId: "{{secret('AWS_ACCESS_KEY_ID')}}"
-    secretKeyId: "{{secret('AWS_SECRET_ACCESS_KEY')}}"
+    region: "{{ secret('AWS_DEFAULT_REGION') }}"
+    accessKeyId: "{{ secret('AWS_ACCESS_KEY_ID') }}"
+    secretKeyId: "{{ secret('AWS_SECRET_ACCESS_KEY') }}"

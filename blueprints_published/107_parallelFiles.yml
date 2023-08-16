@@ -1,0 +1,44 @@
+# id: 107
+# https://demo.kestra.io/ui/blueprints/community/107
+# http://localhost:8080/ui/blueprints/107
+# Title Process files in parallel
+# Tags: Local Files, Parallel, Outputs
+description: |
+  This example demonstrates how to process files in parallel.
+  
+  Instead of the `bash` script, you may have a Python/R/Node.js script that generates such files.
+
+id: 107_parallelFiles
+namespace: blueprint
+
+tasks:
+  - id: workingDir
+    type: io.kestra.core.tasks.flows.WorkingDirectory
+    tasks:
+    - id: bash
+      type: io.kestra.plugin.scripts.shell.Commands
+      runner: PROCESS
+      commands:
+        - mkdir -p out
+        - echo "Hello from 1" >> out/output1.txt
+        - echo "Hello from 2" >> out/output2.txt
+        - echo "Hello from 3" >> out/output3.txt
+        - echo "Hello from 4" >> out/output4.txt
+
+    - id: out
+      type: io.kestra.core.tasks.storages.LocalFiles
+      outputs:
+        - out/**
+
+  - id: each
+    type: io.kestra.core.tasks.flows.EachParallel
+    value: "{{outputs.out.uris | jq('.[]')}}"
+    tasks:
+      - id: path
+        type: io.kestra.core.tasks.debugs.Return
+        format: "{{taskrun.value}}"
+      - id: contents
+        type: io.kestra.plugin.scripts.shell.Commands
+        runner: PROCESS
+        commands:
+          - cat "{{taskrun.value}}"

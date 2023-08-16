@@ -1,6 +1,5 @@
 id: s3MapOverObjects
 namespace: prod
-description: |
 
 inputs:
   - name: bucket
@@ -28,6 +27,6 @@ tasks:
 taskDefaults:
   - type: io.kestra.plugin.aws.s3.List
     values:
-      accessKeyId: "{{secret('AWS_ACCESS_KEY_ID')}}"
-      secretKeyId: "{{secret('AWS_SECRET_ACCESS_KEY')}}"
-      region: eu-central-1
+      accessKeyId: "{{ secret('AWS_ACCESS_KEY_ID') }}"
+      secretKeyId: "{{ secret('AWS_SECRET_ACCESS_KEY') }}"
+      region: "{{ secret('AWS_DEFAULT_REGION') }}"

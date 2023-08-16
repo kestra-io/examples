@@ -1,0 +1,76 @@
+id: s3
+namespace: tmp
+tasks:
+  - id: wdir
+    type: io.kestra.core.tasks.flows.WorkingDirectory
+    tasks:
+      - id: html
+        type: io.kestra.core.tasks.storages.LocalFiles
+        inputs:
+          index.html: |
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Kestra flow page</title>
+            </head>
+            <body>
+                <header>
+                    <h1>Hello world</h1>
+                </header>
+            </body>
+            </html>
+
+      - id: cli
+        type: io.kestra.plugin.aws.cli.AwsCLI
+        region: "{{ secret('AWS_DEFAULT_REGION') }}"
+        accessKeyId: "{{ secret('AWS_ACCESS_KEY_ID') }}"
+        secretKeyId: "{{ secret('AWS_SECRET_ACCESS_KEY') }}"
+        commands:
+          - aws s3 cp {{workingDir}}/index.html s3://kestraio/index3.html --content-type text/html
+
+      - id: htmlOut
+        type: io.kestra.core.tasks.storages.LocalFiles
+        outputs:
+          - "*.html"
+
+      - id: upload
+        type: io.kestra.plugin.aws.s3.Upload
+        bucket: kestraio
+        from: "{{outputs.htmlOut.uris['index.html']}}"
+        key: index2.html
+        metadata:
+          Content-Type: text/html
+        region: "{{ secret('AWS_DEFAULT_REGION') }}"
+        accessKeyId: "{{ secret('AWS_ACCESS_KEY_ID') }}"
+        secretKeyId: "{{ secret('AWS_SECRET_ACCESS_KEY') }}"
+
+      - id: upload
+        type: io.kestra.plugin.aws.s3.Upload
+        bucket: kestraio
+        from: "{{outputs.html.uris['index.html']}}"
+        key: index.html
+        metadata:
+          Content-Type: text/html
+        region: "{{ secret('AWS_DEFAULT_REGION') }}"
+        accessKeyId: "{{ secret('AWS_ACCESS_KEY_ID') }}"
+        secretKeyId: "{{ secret('AWS_SECRET_ACCESS_KEY') }}"
+
+      - id: uploadToS3
+        type: io.kestra.plugin.scripts.python.Script
+        disabled: true
+        env:
+          AWS_ACCESS_KEY_ID: "{{ secret('AWS_ACCESS_KEY_ID') }}"
+          AWS_SECRET_ACCESS_KEY: "{{ secret('AWS_SECRET_ACCESS_KEY') }}"
+          AWS_DEFAULT_REGION: "{{ secret('AWS_DEFAULT_REGION') }}"
+        docker:
+          image: ghcr.io/kestra-io/aws:latest
+        script: |
+          import boto3
+          file = "index.html"
+          with open(file, "r") as file:
+            html_content = file.read()
+          
+          s3 = boto3.resource("s3")
+          s3.Bucket("kestraio").put_object(Key="index2.html", ContentType="text/html", Body=html_content)

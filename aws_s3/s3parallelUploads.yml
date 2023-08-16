@@ -23,11 +23,11 @@ tasks:
     tasks:
       - id: csv
         type: io.kestra.plugin.aws.s3.Upload
-        accessKeyId: "{{secret('AWS_ACCESS_KEY_ID')}}"
+        accessKeyId: "{{ secret('AWS_ACCESS_KEY_ID') }}"
         from: "{{outputs.unzip.files['global_power_plant_database.csv']}}"
         key: powerplant/global_power_plant_database.csv
-        region: eu-central-1
-        secretKeyId: "{{secret('AWS_SECRET_ACCESS_KEY')}}"
+        region: "{{ secret('AWS_DEFAULT_REGION') }}"
+        secretKeyId: "{{ secret('AWS_SECRET_ACCESS_KEY') }}"
       - id: pdf
         type: io.kestra.plugin.aws.s3.Upload
         from: "{{outputs.unzip.files['Estimating_Power_Plant_Generation_in_the_Global_Power_Plant_Database.pdf']}}"
@@ -57,12 +57,12 @@ tasks:
 taskDefaults:
   - type: io.kestra.plugin.aws.s3.Upload
     values:
-      accessKeyId: "{{secret('AWS_ACCESS_KEY_ID')}}"
-      secretKeyId: "{{secret('AWS_SECRET_ACCESS_KEY')}}"
-      region: eu-central-1
+      accessKeyId: "{{ secret('AWS_ACCESS_KEY_ID') }}"
+      secretKeyId: "{{ secret('AWS_SECRET_ACCESS_KEY') }}"
+      region: "{{ secret('AWS_DEFAULT_REGION') }}"
       bucket: "{{inputs.bucket}}"
   - type: io.kestra.plugin.aws.s3.List
     values:
-      accessKeyId: "{{secret('AWS_ACCESS_KEY_ID')}}"
-      secretKeyId: "{{secret('AWS_SECRET_ACCESS_KEY')}}"
-      region: eu-central-1
+      accessKeyId: "{{ secret('AWS_ACCESS_KEY_ID') }}"
+      secretKeyId: "{{ secret('AWS_SECRET_ACCESS_KEY') }}"
+      region: "{{ secret('AWS_DEFAULT_REGION') }}"

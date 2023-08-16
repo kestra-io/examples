@@ -1,0 +1,62 @@
+id: s3TriggerDuckDB
+namespace: dev
+
+variables:
+  bucket: kestraio
+  source_prefix: monthly_orders
+  destination_prefix: stage_orders
+
+tasks:
+  - id: query
+    type: io.kestra.plugin.jdbc.duckdb.Query
+    description: Validate new file for anomalies
+    sql: |
+      SELECT *
+      FROM read_csv_auto('s3://{{vars.bucket}}/{{vars.destination_prefix}}/{{ trigger.objects | jq('.[].key') | first }}')
+      WHERE price * quantity != total;
+    store: true
+    url: "jdbc:duckdb:md:my_db?motherduck_token={{ secret('MOTHERDUCK_TOKEN') }}"
+
+  - id: csv
+    type: io.kestra.plugin.serdes.csv.CsvWriter
+    description: Create CSV file from query results
+    from: "{{ outputs.query.uri }}"
+
+  - id: if-anomalies-detected
+    type: io.kestra.core.tasks.flows.If
+    condition: "{{outputs.query.size}}"
+    description: send email if outliers detected
+    then:
+      - id: sendEmailAlert
+        type: io.kestra.plugin.notifications.mail.MailSend
+        subject: Anomalies in data detected
+        from: contact@annageller.com
+        to: anna.m.geller@gmail.com
+        username: contact@annageller.com
+        host: mail.privateemail.com
+        port: 465 # 587
+        password: "{{envs.email_password}}"
+        sessionTimeout: 6000
+        attachments:
+          - name: anomalies_in_orders.csv
+            uri: "{{ outputs.csv.uri }}"
+        htmlTextContent: |
+          Detected anomalies in sales data in file s3://{{vars.bucket}}/{{vars.destination_prefix}}/{{ trigger.objects | jq('.[].key') | first }}'. <br />
+          Anomalous rows are attached in a CSV file.<br /><br />
+          Best regards,<br />
+          Data Team
+
+triggers:
+  - id: pollForNewS3files
+    type: io.kestra.plugin.aws.s3.Trigger
+    bucket: "{{vars.bucket}}"
+    prefix: "{{vars.source_prefix}}"
+    maxKeys: 1 # 1 file = 1 execution
+    interval: PT1S # every second
+    filter: FILES
+    action: MOVE
+    moveTo:
+      key: "{{vars.destination_prefix}}/{{vars.source_prefix}}"
+    region: "{{ secret('AWS_DEFAULT_REGION') }}"
+    accessKeyId: "{{ secret('AWS_ACCESS_KEY_ID') }}"
+    secretKeyId: "{{ secret('AWS_SECRET_ACCESS_KEY') }}"
