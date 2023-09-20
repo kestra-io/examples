@@ -26,7 +26,7 @@ tasks:
 
   - id: extract
     type: io.kestra.plugin.fs.http.Download
-    uri: https://raw.githubusercontent.com/kestra-io/examples/main/datasets/employees00.csv
+    uri: https://raw.githubusercontent.com/kestra-io/datasets/main/employees/employees00.csv
 
   - id: loadToInternalStage
     type: io.kestra.plugin.jdbc.snowflake.Upload
