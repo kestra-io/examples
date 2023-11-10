@@ -32,7 +32,7 @@ tasks:
 
   - id: each
     type: io.kestra.core.tasks.flows.EachParallel
-    value: "{{outputs.out.uris | jq('.[]')}}"
+    value: "{{outputs.out.uris | jq('.[]') }}"
     tasks:
       - id: path
         type: io.kestra.core.tasks.debugs.Return

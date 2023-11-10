@@ -1,0 +1,62 @@
+id: dlt
+namespace: dev
+
+tasks:
+  - id: warningState
+    type: io.kestra.plugin.scripts.python.Script
+    script: |
+      import logging
+      import sys
+
+      # Configure the logging module
+      logging.basicConfig(
+          level=logging.INFO,
+          format='%(asctime)s - %(levelname)s - %(message)s',
+          handlers=[
+              logging.StreamHandler()
+          ]
+      )
+
+      logging.info('This is an info message.')
+      logging.warning('This is a warning message.')
+      sys.exit(0)
+  
+  - id: successState
+    type: io.kestra.plugin.scripts.python.Script
+    warningOnStdErr: false
+    script: |
+      import logging
+      import sys
+
+      # Configure the logging module
+      logging.basicConfig(
+          level=logging.INFO,
+          format='%(asctime)s - %(levelname)s - %(message)s',
+          handlers=[
+              logging.StreamHandler()
+          ]
+      )
+
+      logging.info('This is an info message.')
+      logging.warning('This is a warning message.')
+      sys.exit(0)
+
+  - id: failedStateDespiteIgnoringWarnings
+    type: io.kestra.plugin.scripts.python.Script
+    warningOnStdErr: false
+    script: |
+      import logging
+      import sys
+
+      # Configure the logging module
+      logging.basicConfig(
+          level=logging.INFO,
+          format='%(asctime)s - %(levelname)s - %(message)s',
+          handlers=[
+              logging.StreamHandler()
+          ]
+      )
+
+      logging.info('This is an info message.')
+      logging.warning('The flow is about to fail...')
+      sys.exit(1)

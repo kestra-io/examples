@@ -1,0 +1,22 @@
+id: hello-var
+namespace: dev
+
+inputs:
+  - name: myinput
+    type: STRING
+    defaults: hello
+
+variables:
+  myvar: myvalue
+
+tasks:
+  - id: hello
+    type: io.kestra.core.tasks.log.Log
+    message: hey "{{ inputs.myinput }}"
+
+triggers:
+  - id: minutely
+    type: io.kestra.core.models.triggers.types.Schedule
+    cron: "*/1 * * * *"
+    inputs:
+      myinput: "{{ vars.myvar }}"

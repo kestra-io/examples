@@ -2,7 +2,7 @@ terraform {
   required_providers {
     kestra = {
       source  = "kestra-io/kestra"
-      version = "~> 0.7.0"
+      version = "~> 0.11.1"
     }
   }
 }

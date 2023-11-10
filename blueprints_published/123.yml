@@ -1,0 +1,46 @@
+# id: 123
+# https://demo.kestra.io/ui/blueprints/community/123
+# http://localhost:8080/ui/blueprints/123
+# Title Parametrized flow with custom validators to ensure correct integer value range and Regex-based string pattern validation
+# Tags: Inputs
+description: |
+  This flow uses several input validators.
+  
+  The `age` property must be within a valid range between `min` and `max` integer value.
+  
+  The Regex expression `^student(\d+)?$` is used to validate that the input argument `user` is of type STRING and that it follows a given pattern:
+  - `^`: Asserts the start of the string.
+  - `student`: Matches the word "student".
+  - `\d`: Matches any digit (0-9).
+  - `+`: Asserts that there is one or more of the preceding token (i.e., one or more digits).
+  - `()?`: The parentheses group the digits together, and the question mark makes the entire group optional.
+  - `$`: Asserts the end of the string. This ensures that the string doesn't contain any characters after the optional digits.
+  
+  With this pattern:
+  - "student" would be a match.
+  - "student123" would be a match.
+  - "studentabc" would not be a match because "abc" isn't a sequence of digits.
+  
+  Try running this flow with various inputs or adjust the Regex pattern to see how the input validation works.
+
+id: 123-regex-input
+namespace: blueprint
+
+inputs:
+  - name: age
+    type: INT
+    defaults: 42
+    required: false
+    min: 18
+    max: 64
+
+  - name: user
+    type: STRING
+    defaults: student
+    required: false
+    validator: ^student(\d+)?$
+
+tasks:
+  - id: validator
+    type: io.kestra.core.tasks.log.Log
+    message: User {{ inputs.user }}, age {{ inputs.age }}

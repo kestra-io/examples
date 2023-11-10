@@ -1,0 +1,60 @@
+id: flows-to-bigquery
+namespace: prod
+
+tasks:
+  - id: consume
+    type: io.kestra.plugin.kafka.Consume
+    properties:
+      auto.offset.reset: earliest
+      bootstrap.servers: prd-kafka.database.svc.cluster.local:9092
+    topic: kestra_flow
+    valueDeserializer: JSON
+
+  - id: transform
+    type: io.kestra.plugin.scripts.nashorn.FileTransform
+    from: "{{ outputs.consume.uri }}"
+    script: |
+      var jacksonMapper = Java.type('io.kestra.core.serializers.JacksonMapper');
+      delete row['headers'];
+
+      var value = row['value']
+
+      row['id'] = value['id']
+      row['namespace'] = value['namespace']
+      row['revision'] = value['revision']
+      row['deleted'] = value['deleted']
+      row['value'] = jacksonMapper.ofJson().writeValueAsString(value)
+
+  - id: avroWriter
+    type: io.kestra.plugin.serdes.avro.AvroWriter
+    from: "{{ outputs.transform.uri }}"
+    description: convert the file from Kestra internal storage to avro.
+    schema: |
+      {
+        "type": "record",
+        "name": "Root",
+        "fields":
+          [
+            { "name": "id", "type": ["null", "string"] },
+            { "name": "namespace", "type": ["null", "string"] },
+            { "name": "revision", "type": ["null", "string"] },
+            { "name": "deleted", "type": ["null", "string"] },
+            { "name": "value", "type": ["null", "string"] }
+          ]
+      }
+
+  - id: load
+    type: io.kestra.plugin.gcp.bigquery.Load
+    avroOptions:
+      useAvroLogicalTypes: true
+    destinationTable: geller.dwh.flows
+    format: AVRO
+    from: "{{outputs.avroWriter.uri }}"
+    writeDisposition: WRITE_TRUNCATE
+    serviceAccount: "{{ secret('GCP_CREDS') }}"
+    projectId: geller
+
+triggers:
+  - id: schedule
+    type: io.kestra.core.models.triggers.types.Schedule
+    cron: "0 10 * * *"
