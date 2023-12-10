@@ -36,16 +36,10 @@ terraform.rc
 # IDE
 .idea/
 .vscode/
-.tmp/
 .archive/
-local/
 .wip/
-ai/
-cli/
-blueprints/
 .DS_Store
 .env
 credentials.json
-sql/
 *.hcl
 .env_encoded
