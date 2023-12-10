@@ -1,0 +1,17 @@
+id: scanDynamoDBTable
+namespace: blueprint
+
+tasks:
+  - id: extractData
+    type: io.kestra.plugin.aws.dynamodb.Scan
+    tableName: demo
+    fetchType: FETCH
+    region: "{{ secret('AWS_DEFAULT_REGION') }}"
+    accessKeyId: "{{ secret('AWS_ACCESS_KEY_ID') }}"
+    secretKeyId: "{{ secret('AWS_SECRET_ACCESS_KEY') }}"
+
+  - id: processData
+    type: io.kestra.plugin.scripts.shell.Commands
+    runner: PROCESS
+    commands:
+      - echo {{outputs.extractData.rows}}

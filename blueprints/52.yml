@@ -1,0 +1,36 @@
+id: dbtGitDockerSnowflake
+namespace: blueprint
+
+tasks:
+  - id: dbt
+    type: io.kestra.core.tasks.flows.WorkingDirectory
+    tasks:
+      - id: cloneRepository
+        type: io.kestra.plugin.git.Clone
+        url: https://github.com/kestra-io/dbt-demo
+        branch: main
+
+      - id: dbtCore
+        type: io.kestra.plugin.dbt.cli.DbtCLI
+        docker:
+          image: ghcr.io/kestra-io/dbt-snowflake:latest
+        profiles: |
+          jaffle_shop:
+            outputs:
+              dev:
+                type: snowflake
+                account: "{{ secret('SNOWFLAKE_ACCOUNT') }}"
+                user: "{{ secret('SNOWFLAKE_USER') }}"
+                password: "{{ secret('SNOWFLAKE_PASSWORD') }}"
+                role: "{{ secret('SNOWFLAKE_ROLE') }}"
+                database: "{{ secret('SNOWFLAKE_DATABASE') }}"
+                warehouse: COMPUTE_WH
+                schema: public
+                threads: 4
+                query_tag: dbt
+                client_session_keep_alive: False
+                connect_timeout: 10
+            target: dev
+        commands:
+          - dbt deps
+          - dbt build

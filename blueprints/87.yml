@@ -1,0 +1,36 @@
+id: jsonFromAPItoMongoDB
+namespace: blueprint
+
+tasks:
+  - id: wdir
+    type: io.kestra.core.tasks.flows.WorkingDirectory
+    tasks:
+      - id: generateJSON
+        type: io.kestra.plugin.scripts.python.Script
+        runner: DOCKER
+        docker:
+          image: ghcr.io/kestra-io/pydata:latest
+        script: |
+          import requests
+          import json
+          from kestra import Kestra
+
+          response = requests.get("https://api.github.com")
+          data = response.json()
+
+          with open("output.json", "w") as output_file:
+              json.dump(data, output_file)
+
+          Kestra.outputs({'data': data, 'status': response.status_code})
+
+      - id: jsonFiles
+        type: io.kestra.core.tasks.storages.LocalFiles
+        outputs:
+          - output.json
+  - id: loadToMongoDB
+    type: io.kestra.plugin.mongodb.Load
+    connection:
+      uri: mongodb://host.docker.internal:27017/
+    database: local
+    collection: github
+    from: "{{outputs.jsonFiles.uris['output.json']}}"

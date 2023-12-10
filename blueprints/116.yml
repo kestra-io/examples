@@ -1,0 +1,80 @@
+id: ingestToDataLakeGit
+namespace: blueprint
+
+variables:
+  bucket: kestraio
+  prefix: inbox
+  database: default
+
+tasks:
+  - id: listObjects
+    type: io.kestra.plugin.aws.s3.List
+    prefix: "{{vars.prefix}}"
+    accessKeyId: "{{ secret('AWS_ACCESS_KEY_ID') }}"
+    secretKeyId: "{{ secret('AWS_SECRET_ACCESS_KEY') }}"
+    region: "{{ secret('AWS_DEFAULT_REGION') }}"
+    bucket: "{{vars.bucket}}"
+
+  - id: check
+    type: io.kestra.core.tasks.flows.If
+    condition: "{{outputs.listObjects.objects}}"
+    then:
+      - id: processNewObjects
+        type: io.kestra.core.tasks.flows.WorkingDirectory
+        tasks:
+          - id: git
+            type: io.kestra.plugin.git.Clone
+            url: https://github.com/kestra-io/scripts
+            branch: main
+
+          - id: ingestToDataLake
+            type: io.kestra.plugin.scripts.python.Commands
+            warningOnStdErr: false
+            env:
+              AWS_ACCESS_KEY_ID: "{{ secret('AWS_ACCESS_KEY_ID') }}"
+              AWS_SECRET_ACCESS_KEY: "{{ secret('AWS_SECRET_ACCESS_KEY') }}"
+              AWS_DEFAULT_REGION: "{{ secret('AWS_DEFAULT_REGION') }}"
+            docker:
+              image: ghcr.io/kestra-io/aws:latest
+            commands:
+              - python etl/aws_iceberg_fruit.py
+      - id: mergeQuery
+        type: io.kestra.plugin.aws.athena.Query
+        accessKeyId: "{{ secret('AWS_ACCESS_KEY_ID') }}"
+        secretKeyId: "{{ secret('AWS_SECRET_ACCESS_KEY') }}"
+        region: "{{ secret('AWS_DEFAULT_REGION') }}"
+        database: "{{vars.database}}"
+        outputLocation: "s3://{{vars.bucket}}/query_results/"
+        query: |
+          MERGE INTO fruits f USING raw_fruits r
+              ON f.fruit = r.fruit
+              WHEN MATCHED
+                  THEN UPDATE
+                      SET id = r.id, berry = r.berry, update_timestamp = current_timestamp
+              WHEN NOT MATCHED
+                  THEN INSERT (id, fruit, berry, update_timestamp)
+                        VALUES(r.id, r.fruit, r.berry, current_timestamp);
+
+      - id: optimize
+        type: io.kestra.plugin.aws.athena.Query
+        accessKeyId: "{{ secret('AWS_ACCESS_KEY_ID') }}"
+        secretKeyId: "{{ secret('AWS_SECRET_ACCESS_KEY') }}"
+        region: "{{ secret('AWS_DEFAULT_REGION') }}"
+        database: "{{vars.database}}"
+        outputLocation: "s3://{{vars.bucket}}/query_results/"
+        query: |
+          OPTIMIZE fruits REWRITE DATA USING BIN_PACK;
+
+      - id: moveToArchive
+        type: io.kestra.plugin.aws.cli.AwsCLI
+        accessKeyId: "{{ secret('AWS_ACCESS_KEY_ID') }}"
+        secretKeyId: "{{ secret('AWS_SECRET_ACCESS_KEY') }}"
+        region: "{{ secret('AWS_DEFAULT_REGION') }}"
+        commands:
+          - aws s3 mv s3://{{vars.bucket}}/{{vars.prefix}}/ s3://{{vars.bucket}}/archive/{{vars.prefix}}/
+            --recursive
+triggers:
+  - id: hourlySchedule
+    type: io.kestra.core.models.triggers.types.Schedule
+    disabled: true
+    cron: "@hourly"

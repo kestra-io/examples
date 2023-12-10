@@ -1,0 +1,13 @@
+id: OpenAI
+namespace: blueprint
+
+tasks:
+  - id: prompt
+    type: io.kestra.plugin.openai.ChatCompletion
+    apiKey: "{{ secret('OPENAI_API_KEY') }}"
+    model: gpt-4
+    prompt: Explain in one sentence why data engineers build data pipelines
+
+  - id: useOutput
+    type: io.kestra.core.tasks.log.Log
+    message: "{{outputs.prompt.choices | jq('.[].message.content') | first }}"

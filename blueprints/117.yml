@@ -1,0 +1,57 @@
+id: cloudQueryAWS
+namespace: blueprint
+
+tasks:
+  - id: wdir
+    type: io.kestra.core.tasks.flows.WorkingDirectory
+    tasks:
+      - id: config
+        type: io.kestra.core.tasks.storages.LocalFiles
+        inputs:
+          config.yml: |
+            kind: source
+            spec:
+              name: aws
+              path: cloudquery/aws
+              version: "v22.4.0"
+              tables: ["aws_s3*"]
+              destinations: ["postgresql"]
+              spec:
+            ---
+            kind: destination
+            spec:
+              name: "postgresql"
+              version: "v5.0.3"
+              path: "cloudquery/postgresql"
+              write_mode: "overwrite-delete-stale"
+              spec:
+                connection_string: ${PG_CONNECTION_STRING}
+
+      - id: cloudQuery
+        type: io.kestra.plugin.scripts.shell.Commands
+        runner: DOCKER
+        env:
+          AWS_ACCESS_KEY_ID: "{{ secret('AWS_ACCESS_KEY_ID') }}"
+          AWS_SECRET_ACCESS_KEY: "{{ secret('AWS_SECRET_ACCESS_KEY') }}"
+          AWS_DEFAULT_REGION: "{{ secret('AWS_DEFAULT_REGION') }}"
+          PG_CONNECTION_STRING: "postgresql://postgres:{{secret('DB_PASSWORD')}}@host.docker.internal:5432/postgres?sslmode=disable"
+        docker:
+          image: ghcr.io/cloudquery/cloudquery:latest
+          entryPoint:
+            - ""
+        warningOnStdErr: false
+        commands:
+          - /app/cloudquery sync config.yml --log-console
+  - id: query-s3-metadata-in-postgres
+    type: io.kestra.plugin.jdbc.postgresql.Query
+    url: jdbc:postgresql://host.docker.internal:5432/postgres
+    username: postgres
+    password: "{{ secret('DB_PASSWORD') }}"
+    fetch: true
+    sql: |
+      SELECT arn, region
+      FROM public.aws_s3_buckets
+      WHERE block_public_acls IS NOT TRUE
+          OR block_public_policy IS NOT TRUE
+          OR ignore_public_acls IS NOT TRUE
+          OR restrict_public_buckets IS NOT TRUE;

@@ -1,0 +1,44 @@
+id: cicd
+namespace: blueprints
+
+inputs:
+  - name: payload
+    type: JSON
+
+tasks:
+  - id: return
+    type: io.kestra.core.tasks.debugs.Return
+    format: '{{ trigger.body.pull_request.comments_url ?? inputs.payload.pull_request.comments_url
+      }}'
+
+  - id: python_action
+    type: io.kestra.plugin.scripts.python.Script
+    docker:
+      image: ghcr.io/kestra-io/pydata:latest
+    script: |
+      import requests
+      import json
+
+      url = "{{ outputs.return.value }}"
+
+      headers = {
+          'Authorization': 'token {{ secret('GITHUB_ACCESS_TOKEN') }}',
+          'Accept': 'application/vnd.github.v3+json'
+      }
+      payload = {'body': 'hello from `{{execution.id}}` in `{{flow.id}}`'}
+
+      response = requests.post(url, headers=headers, json=payload)
+
+      if response.status_code == 201:
+          print("Comment successfully created.")
+      else:
+          print(f"Failed to create comment: {response.text}")
+
+triggers:
+  - id: github
+    type: io.kestra.core.models.triggers.types.Webhook
+    key: "{{ secret('WEBHOOK_KEY') }}"
+    conditions:
+      - type: io.kestra.core.models.conditions.types.VariableCondition
+        expression: "{{ trigger.body.pull_request.state == 'open' and trigger.body.pull_request.comments_url
+          }}"

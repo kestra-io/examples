@@ -1,0 +1,21 @@
+id: airbyteCloudDbtCloud
+namespace: blueprint
+
+tasks:
+  - id: data-ingestion
+    type: io.kestra.core.tasks.flows.Parallel
+    tasks:
+      - id: salesforce
+        type: io.kestra.plugin.airbyte.cloud.jobs.Sync
+        connectionId: e3b1ce92-547c-436f-b1e8-23b6936c12ab
+      - id: google-analytics
+        type: io.kestra.plugin.airbyte.cloud.jobs.Sync
+        connectionId: e3b1ce92-547c-436f-b1e8-23b6936c12cd
+      - id: facebook-ads
+        type: io.kestra.plugin.airbyte.cloud.jobs.Sync
+        connectionId: e3b1ce92-547c-436f-b1e8-23b6936c12ef
+
+taskDefaults:
+  - type: io.kestra.plugin.airbyte.cloud.jobs.Sync
+    values:
+      token: "{{ secret('AIRBYTE_CLOUD_API_TOKEN') }}"

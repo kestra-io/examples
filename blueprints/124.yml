@@ -1,0 +1,16 @@
+id: gitSpark
+namespace: blueprint
+
+tasks:
+  - id: working_directory
+    type: io.kestra.core.tasks.flows.WorkingDirectory
+    tasks:
+      - id: git
+        type: io.kestra.plugin.git.Clone
+        url: https://github.com/kestra-io/scripts
+        branch: main
+
+      - id: spark_job
+        type: io.kestra.plugin.spark.SparkCLI
+        commands:
+          - spark-submit --name Pi --master spark://localhost:7077 etl/spark_pi.py

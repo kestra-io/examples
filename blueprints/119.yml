@@ -1,0 +1,8 @@
+id: hightouch-sync
+namespace: blueprint
+
+tasks:
+  - id: reverseETL
+    type: io.kestra.plugin.hightouch.Sync
+    token: "{{ secret('HIGHTOUCH_API_TOKEN') }}"
+    syncId: 1716609

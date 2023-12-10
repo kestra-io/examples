@@ -1,0 +1,24 @@
+id: zenduty_failure_alert
+namespace: prod.monitoring
+
+tasks:
+  - id: send_alert
+    type: io.kestra.plugin.notifications.zenduty.ZendutyExecution
+    url: "https://www.zenduty.com/api/events/{{ secret('ZENDUTY_INTEGRATION_KEY')
+      }}/"
+    executionId: "{{ trigger.executionId }}"
+    message: Kestra workflow execution {{ trigger.executionId }} of a flow {{ trigger.flowId
+      }} in the namespace {{ trigger.namespace }} changed status to {{ trigger.state
+      }}
+
+triggers:
+  - id: failed_prod_workflows
+    type: io.kestra.core.models.triggers.types.Flow
+    conditions:
+      - type: io.kestra.core.models.conditions.types.ExecutionStatusCondition
+        in:
+          - FAILED
+          - WARNING
+      - type: io.kestra.core.models.conditions.types.ExecutionNamespaceCondition
+        namespace: prod
+        prefix: true

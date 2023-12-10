@@ -1,0 +1,24 @@
+id: gsheet_to_bigquery
+namespace: blueprint
+
+tasks:
+  - id: read_gsheet
+    type: io.kestra.plugin.googleworkspace.sheets.Read
+    description: Read data from Google Spreadsheet
+    spreadsheetId: 1ybRy9G-sGznXI9GM6FEb0duQyByJbgq4LoYd7oYFr5c
+    store: true
+    valueRender: FORMATTED_VALUE
+
+  - id: write_csv
+    type: io.kestra.plugin.serdes.csv.CsvWriter
+    description: Write CSV into Kestra internal storage
+    from: "{{ outputs.read_gsheet.uris.Sheet }}"
+  - id: load_biqquery
+    type: io.kestra.plugin.gcp.bigquery.Load
+    description: Load data into BigQuery
+    autodetect: true
+    csvOptions:
+      fieldDelimiter: ","
+    destinationTable: kestra-dev.demo.spotify_song_feature
+    format: CSV
+    from: "{{ outputs.write_csv.uri }}"

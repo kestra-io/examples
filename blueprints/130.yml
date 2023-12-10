@@ -1,0 +1,15 @@
+id: generate_pdf_with_gotenberg
+namespace: blueprint
+
+variables:
+  server: https://demo.gotenberg.dev # http://localhost:3000
+  template: https://sparksuite.github.io/simple-html-invoice-template/
+
+tasks:
+  - id: pdf
+    type: io.kestra.plugin.scripts.shell.Commands
+    runner: PROCESS
+    warningOnStdErr: false
+    commands:
+      - curl --request POST '{{vars.server}}/forms/chromium/convert/url' --form 'url="{{vars.template}}"'
+        -o {{ outputDir }}/myfile.pdf

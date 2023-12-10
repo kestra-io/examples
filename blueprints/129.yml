@@ -1,0 +1,17 @@
+id: parse_pdf
+namespace: blueprint
+
+tasks:
+  - id: download_pdf
+    type: io.kestra.plugin.fs.http.Download
+    uri: https://huggingface.co/datasets/kestra/datasets/resolve/main/pdf/app_store.pdf
+
+  - id: parse_text
+    type: io.kestra.plugin.tika.Parse
+    from: '{{ outputs.download_pdf.uri }}'
+    contentType: TEXT
+    store: false
+
+  - id: log_extracted_text
+    type: io.kestra.core.tasks.log.Log
+    message: "{{ outputs.parse_text.result.content }}"

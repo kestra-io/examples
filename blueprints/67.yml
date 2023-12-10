@@ -1,0 +1,15 @@
+id: tika
+namespace: blueprint
+
+tasks:
+  - id: getImage
+    type: io.kestra.plugin.fs.http.Download
+    uri: https://kestra.io/blogs/2023-05-31-beginner-guide-kestra.jpg
+
+  - id: tika
+    type: io.kestra.plugin.tika.Parse
+    from: '{{ outputs.getImage.uri }}'
+    store: false
+    contentType: TEXT
+    ocrOptions:
+      strategy: OCR_AND_TEXT_EXTRACTION

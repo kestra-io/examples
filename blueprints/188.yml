@@ -1,0 +1,25 @@
+id: sentry_alert
+namespace: blueprint
+
+tasks:
+  - id: fail
+    type: io.kestra.core.tasks.executions.Fail
+
+errors:
+  - id: alert_on_failure
+    type: io.kestra.plugin.notifications.sentry.SentryAlert
+    dsn: "{{ secret('SENTRY_DSN') }}"
+    payload: |
+      {
+          "timestamp": "{{ execution.startDate }}",
+          "platform": "java",
+          "level": "error",
+          "transaction": "/execution/id/{{ execution.id }}",
+          "server_name": "localhost:8080",
+          "extra": {
+            "Namespace": "{{ flow.namespace }}",
+            "Flow ID": "{{ flow.id }}",
+            "Execution ID": "{{ execution.id }}",
+            "Link": "http://localhost:8080/ui/executions/{{flow.namespace}}/{{flow.id}}/{{execution.id}}"
+          }      
+      }

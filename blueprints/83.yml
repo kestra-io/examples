@@ -1,0 +1,29 @@
+id: shellScripts
+namespace: blueprint
+
+tasks:
+  - id: workingDirectory
+    type: io.kestra.core.tasks.flows.WorkingDirectory
+    tasks:
+      - id: createCsvFile
+        type: io.kestra.plugin.scripts.shell.Script
+        runner: PROCESS
+        script: |
+          #!/bin/bash
+          echo "Column1,Column2,Column3" > file.csv
+          for i in {1..10}
+          do
+            echo "$i,$RANDOM,$RANDOM" >> file.csv
+          done
+
+      - id: inspectFile
+        type: io.kestra.plugin.scripts.shell.Commands
+        runner: PROCESS
+        commands:
+          - cat file.csv
+      - id: filterFile
+        type: io.kestra.plugin.scripts.shell.Commands
+        runner: PROCESS
+        description: select only the first five rows of the second column
+        commands:
+          - cut -d ',' -f 2 file.csv | head -n 6

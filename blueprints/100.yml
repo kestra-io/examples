@@ -1,0 +1,31 @@
+id: postgresS3PythonGit
+namespace: blueprint
+
+tasks:
+  - id: wdir
+    type: io.kestra.core.tasks.flows.WorkingDirectory
+    tasks:
+      - id: cloneRepository
+        type: io.kestra.plugin.git.Clone
+        url: https://github.com/kestra-io/scripts
+        branch: main
+
+      - id: getUsers
+        type: io.kestra.plugin.scripts.python.Commands
+        docker:
+          image: ghcr.io/kestra-io/pydata:latest
+        warningOnStdErr: false
+        commands:
+          - python etl/get_users_from_api.py
+      - id: saveUsersPg
+        type: io.kestra.plugin.scripts.python.Commands
+        beforeCommands:
+          - pip install pandas psycopg2 sqlalchemy > /dev/null
+        warningOnStdErr: false
+        commands:
+          - python etl/save_users_pg.py
+        env:
+          DB_USERNAME: "postgres"
+          DB_PASSWORD: "{{ secret('DB_PASSWORD') }}"
+          DB_HOST: "host.docker.internal"
+          DB_PORT: "5432"

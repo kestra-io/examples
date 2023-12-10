@@ -1,0 +1,17 @@
+id: export_from_postgres
+namespace: blueprint
+
+tasks:
+  - id: export
+    type: io.kestra.plugin.jdbc.postgresql.CopyOut
+    url: jdbc:postgresql://sample_postgres:5433/world
+    username: postgres
+    password: postgres
+    format: CSV
+    header: true
+    sql: SELECT * FROM country LIMIT 10
+    delimiter: ","
+
+  - id: log
+    type: io.kestra.core.tasks.log.Log
+    message: '{{ outputs.export.rowCount }}'

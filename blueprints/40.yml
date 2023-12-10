@@ -1,0 +1,19 @@
+id: gitPython
+namespace: blueprint
+
+tasks:
+  - id: pythonScripts
+    type: io.kestra.core.tasks.flows.WorkingDirectory
+    tasks:
+      - id: cloneRepository
+        type: io.kestra.plugin.git.Clone
+        url: https://github.com/kestra-io/scripts
+        branch: main
+
+      - id: python
+        type: io.kestra.plugin.scripts.python.Commands
+        warningOnStdErr: false
+        docker:
+          image: ghcr.io/kestra-io/pydata:latest
+        commands:
+          - python etl/global_power_plant.py

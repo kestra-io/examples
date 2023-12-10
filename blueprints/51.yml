@@ -1,0 +1,33 @@
+id: dbtGitDockerPostgres
+namespace: blueprint
+
+tasks:
+  - id: dbt
+    type: io.kestra.core.tasks.flows.WorkingDirectory
+    tasks:
+      - id: cloneRepository
+        type: io.kestra.plugin.git.Clone
+        url: https://github.com/kestra-io/dbt-demo
+        branch: main
+
+      - id: dbtCore
+        type: io.kestra.plugin.dbt.cli.DbtCLI
+        docker:
+          image: ghcr.io/kestra-io/dbt-postgres:latest
+        profiles: |
+          jaffle_shop:
+            outputs:
+              dev:
+                type: postgres
+                host: myhostname.us-east-1.rds.amazonaws.com
+                user: "{{secret('POSTGRES_USER')}}"
+                password: "{{secret('POSTGRES_PASSWORD')}}"
+                port: 5432
+                dbname: postgres
+                schema: public
+                threads: 8
+                connect_timeout: 10
+            target: dev
+        commands:
+          - dbt deps
+          - dbt build

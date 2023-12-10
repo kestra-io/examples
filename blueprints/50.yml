@@ -1,0 +1,20 @@
+id: dbtGitDockerDuckDB
+namespace: blueprint
+
+tasks:
+  - id: dbt
+    type: io.kestra.core.tasks.flows.WorkingDirectory
+    tasks:
+      - id: cloneRepository
+        type: io.kestra.plugin.git.Clone
+        url: https://github.com/kestra-io/dbt-demo
+        branch: main
+
+      - id: dbt-build
+        type: io.kestra.plugin.dbt.cli.DbtCLI
+        runner: DOCKER
+        docker:
+          image: ghcr.io/kestra-io/dbt-duckdb:latest
+        commands:
+          - dbt deps
+          - dbt build

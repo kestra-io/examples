@@ -1,0 +1,8 @@
+id: metricsFromShellCommands
+namespace: blueprint
+
+tasks:
+  - id: process
+    type: io.kestra.plugin.scripts.shell.Commands
+    commands:
+      - echo '::{"metrics":[{"name":"count","type":"counter","value":1}]}::'

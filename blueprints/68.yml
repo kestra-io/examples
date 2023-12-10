@@ -1,0 +1,22 @@
+id: loadPokemon
+namespace: blueprint
+
+inputs:
+  - name: pokemon
+    type: STRING
+    defaults: psyduck
+
+
+tasks:
+  - id: pokemon
+    type: io.kestra.plugin.fs.http.Request
+    uri: https://pokeapi.co/api/v2/pokemon/{{inputs.pokemon}}
+    method: GET
+
+  - id: load
+    type: io.kestra.plugin.mongodb.InsertOne
+    connection:
+      uri: "mongodb://host.docker.internal:27017/"
+    database: "local"
+    collection: "pokemon"
+    document: "{{outputs.pokemon.body}}"

@@ -1,0 +1,11 @@
+id: outputsFromShellCommands
+namespace: demo
+
+tasks:
+  - id: process
+    type: io.kestra.plugin.scripts.shell.Commands
+    commands:
+      - echo '::{"outputs":{"test":"value","int":2,"bool":true,"float":3.65}}::'
+  - id: return
+    type: io.kestra.core.tasks.debugs.Return
+    format: '{{ outputs.process.vars.test }}'

@@ -1,0 +1,27 @@
+id: dlt_json_to_duckdb
+namespace: blueprint
+
+tasks:
+  - id: dlt_pipeline
+    type: io.kestra.plugin.scripts.python.Script
+    docker:
+      image: python:3.11-slim
+    beforeCommands:
+      - pip install dlt[duckdb]
+    warningOnStdErr: false
+    script: |-
+      import dlt
+      import requests
+
+      response = requests.get('https://dummyjson.com/products')
+      response.raise_for_status()
+      data = response.json()['products']
+
+      pipeline = dlt.pipeline(
+          pipeline_name='dummyjson_products_pipeline',
+          destination='duckdb',
+          dataset_name='products',
+          credentials="{{outputDir}}/dummy_products.duckdb"
+      )
+
+      pipeline.run(data, table_name='product')

@@ -1,0 +1,17 @@
+id: upload_google_drive
+namespace: blueprint
+
+tasks:
+
+  - id: download
+    type: io.kestra.plugin.fs.http.Download
+    uri: https://raw.githubusercontent.com/kestra-io/datasets/main/csv/orders.csv
+
+  - id: upload
+    type: io.kestra.plugin.googleworkspace.drive.Upload
+    from: "{{ outputs.download.uri }}"
+    parents:
+      - "15OENbAxvonlASDkYyfGBftV2c0fDTmnB"
+    name: "Orders"
+    contentType: "text/csv"
+    mimeType: "application/vnd.google-apps.spreadsheet"

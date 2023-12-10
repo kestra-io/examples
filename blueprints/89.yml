@@ -1,0 +1,42 @@
+id: snowflakeQueryTrigger
+namespace: blueprint
+
+tasks:
+  - id: each
+    type: io.kestra.core.tasks.flows.EachSequential
+    value: "{{ trigger.rows }}"
+    tasks:
+      - id: automatedProcess
+        type: io.kestra.plugin.scripts.shell.Commands
+        runner: PROCESS
+        commands:
+          - echo "{{json(taskrun.value)}}"
+          - echo "Welcome to Kestra {{json(taskrun.value).FIRST_NAME }} {{json(taskrun.value).LAST_NAME
+            }}"
+  - id: update
+    type: io.kestra.plugin.jdbc.snowflake.Query
+    description: Update rows to avoid double trigger
+    sql: |
+      UPDATE KESTRA.PUBLIC.EMPLOYEES
+      SET UPDATE_TIMESTAMP = SYSDATE()
+      WHERE START_DATE = CURRENT_DATE();
+
+taskDefaults:
+  - type: io.kestra.plugin.jdbc.snowflake.Trigger
+    values:
+      url: jdbc:snowflake://your_account_id.snowflakecomputing.com?warehouse=DEMO
+      username: your_username
+      password: "{{ secret('SNOWFLAKE_PASSWORD') }}"
+  - type: io.kestra.plugin.jdbc.snowflake.Query
+    values:
+      url: jdbc:snowflake://your_account_id.snowflakecomputing.com?warehouse=DEMO
+      username: your_username
+      password: "{{ secret('SNOWFLAKE_PASSWORD') }}"
+
+triggers:
+  - id: wait
+    type: io.kestra.plugin.jdbc.snowflake.Trigger
+    sql: "SELECT * FROM KESTRA.PUBLIC.EMPLOYEES WHERE START_DATE = CURRENT_DATE()
+      and UPDATE_TIMESTAMP IS NULL;"
+    interval: "PT1M" # check every 1 minute for the query condition
+    fetch: true

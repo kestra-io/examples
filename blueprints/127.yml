@@ -1,0 +1,25 @@
+id: backfill_until_specific_date
+namespace: blueprint
+
+tasks:
+  - id: log
+    type: io.kestra.core.tasks.log.Log
+    message: starting the flow
+
+  - id: after_cutoff_date
+    type: io.kestra.core.tasks.flows.If
+    condition: "{{ trigger.date | timestamp > '2023-09-13T13:37:00+02:00' | date |
+      timestamp }}"
+    then:
+      - id: fail_execution
+        type: io.kestra.core.tasks.executions.Fail
+
+    else:
+      - id: continue
+        type: io.kestra.core.tasks.log.Log
+        message: Continue my job
+
+triggers:
+  - id: every_minute
+    type: io.kestra.core.models.triggers.types.Schedule
+    cron: "*/1 * * * *"

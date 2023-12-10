@@ -1,0 +1,7 @@
+id: log
+namespace: blueprint
+
+tasks:
+  - id: log
+    type: io.kestra.core.tasks.log.Log
+    message: Hello world!

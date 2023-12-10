@@ -1,0 +1,12 @@
+id: awsCLIlistECSclusters
+namespace: dev
+
+tasks:
+  - id: aws
+    type: io.kestra.plugin.aws.cli.AwsCLI
+    accessKeyId: "{{ secret('AWS_ACCESS_KEY_ID') }}"
+    secretKeyId: "{{ secret('AWS_SECRET_ACCESS_KEY') }}"
+    region: "us-east-1"
+    commands:
+      - aws ecs list-clusters --query 'clusterArns[*]'
+      - aws ecs list-clusters > {{outputDir}}/output.json

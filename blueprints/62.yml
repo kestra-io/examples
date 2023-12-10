@@ -1,0 +1,12 @@
+id: airbyteCloudSync
+namespace: blueprint
+tasks:
+  - id: data-ingestion
+    type: io.kestra.plugin.airbyte.cloud.jobs.Sync
+    connectionId: ac127cf2-9ae3-4f9b-9dd0-e3a0944d1447
+    token: "{{ secret('AIRBYTE_CLOUD_API_TOKEN') }}"
+
+triggers:
+  - id: everyMinute
+    type: io.kestra.core.models.triggers.types.Schedule
+    cron: "*/1 * * * *"

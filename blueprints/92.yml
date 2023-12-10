@@ -1,0 +1,26 @@
+id: databricksSql
+namespace: blueprint
+description: |
+  This flow demonstrates how to run a SQL query on a Databricks lakehouse.
+
+tasks:
+  - id: sqlQuery
+    type: io.kestra.plugin.databricks.sql.Query
+    accessToken: "{{ secret('DATABRICKS_TOKEN') }}"
+    host: "{{ secret('DATABRICKS_HOST') }}"
+    httpPath: sql/protocolv1/o/3497567377305430/0713-130754-9oa8zceh
+    sql: SELECT * FROM samples.nyctaxi.trips LIMIT 100;
+
+  - id: csv
+    type: io.kestra.plugin.serdes.csv.CsvWriter
+    from: "{{ outputs.sqlQuery.uri }}"
+
+  - id: pandas
+    type: io.kestra.plugin.scripts.python.Script
+    beforeCommands:
+      - pip install kestra pandas > /dev/null
+    script: |-
+      import pandas as pd
+
+      df = pd.read_csv("{{outputs.csv.uri}}")
+      df.head()

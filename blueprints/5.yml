@@ -1,0 +1,13 @@
+id: input_file
+namespace: blueprint
+
+inputs:
+  - name: text_file
+    type: FILE
+
+tasks:
+  - id: read_file
+    type: io.kestra.plugin.scripts.shell.Commands
+    runner: PROCESS
+    commands:
+      - cat "{{ inputs.text_file }}"

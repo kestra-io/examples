@@ -1,0 +1,28 @@
+id: aws_lambda
+namespace: blueprint
+
+tasks:
+  - id: parallel
+    type: io.kestra.core.tasks.flows.Parallel
+    tasks:
+      - id: lambda
+        type: io.kestra.plugin.aws.lambda.Invoke
+        functionArn: arn:aws:lambda:eu-central-1:123456789:function:demo
+
+      - id: lambdaVersion
+        type: io.kestra.plugin.aws.lambda.Invoke
+        functionArn: arn:aws:lambda:eu-central-1:123456789:function:ResultHandler:1
+        functionPayload:
+          your_event_input: hello
+
+      - id: lambdaAlias
+        type: io.kestra.plugin.aws.lambda.Invoke
+        functionArn: arn:aws:lambda:eu-central-1:123456789:function:ResultHandler:kestra
+        functionPayload:
+          your_event_input: hey there
+
+  - id: lambdaResult
+    type: io.kestra.plugin.scripts.shell.Commands
+    runner: PROCESS
+    commands:
+      - cat {{outputs.lambda.uri}} | jq -r '.body'
