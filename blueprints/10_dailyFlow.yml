@@ -1,0 +1,12 @@
+id: dailyFlow
+namespace: blueprint
+
+tasks:
+  - id: log
+    type: io.kestra.core.tasks.log.Log
+    message: It's {{ trigger.date ?? taskrun.startDate | date("HH:mm") }}
+
+triggers:
+  - id: schedule
+    type: io.kestra.core.models.triggers.types.Schedule
+    cron: "30 6 * * *"

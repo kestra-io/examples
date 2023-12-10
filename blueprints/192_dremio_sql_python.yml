@@ -1,0 +1,48 @@
+id: dremio_sql_python
+namespace: blueprint
+
+variables:
+  project_id: ead79cc0-9e93-4d50-b364-77639a56d4a6
+
+tasks:
+  - id: query
+    type: io.kestra.plugin.jdbc.dremio.Query
+    disabled: false
+    url: "jdbc:dremio:direct=sql.dremio.cloud:443;ssl=true;PROJECT_ID={{vars.project_id}};schema=postgres.public"
+    username: $token
+    password: "{{ secret('DREMIO_TOKEN') }}"
+    sql: SELECT first_name, last_name, hire_date, salary FROM postgres.public.employees
+      LIMIT 100;
+    store: true
+
+  - id: python
+    type: io.kestra.plugin.scripts.python.Script
+    warningOnStdErr: false
+    docker:
+      image: ghcr.io/kestra-io/polars:latest
+    script: |
+      import polars as pl
+      import amazon.ion.simpleion as ion
+      from amazon.ion.simple_types import IonPyDecimal, IonPyNull
+
+
+      def convert_ion_types(value):
+        if isinstance(value, IonPyNull):
+            return None
+        elif isinstance(value, IonPyDecimal):
+            return float(value)
+        else:
+            return value
+
+      uri = "{{outputs.query.uri}}"
+      with open(uri, 'rb') as f:
+          ion_content = f.read()
+
+      ion_data = ion.loads(ion_content, single_value=False)
+      list_of_dicts = [dict(record) for record in ion_data]
+      list_of_dicts = [
+        {k: convert_ion_types(v) for k, v in record.items()} for record in list_of_dicts
+      ]
+
+      polars_df = pl.DataFrame(list_of_dicts)
+      print(polars_df.glimpse())

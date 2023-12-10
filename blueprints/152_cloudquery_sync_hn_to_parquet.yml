@@ -1,0 +1,36 @@
+id: cloudquery_sync_hn_to_parquet
+namespace: blueprint
+
+tasks:
+  - id: wdir
+    type: io.kestra.core.tasks.flows.WorkingDirectory
+    tasks:
+      - id: config
+        type: io.kestra.core.tasks.storages.LocalFiles
+        inputs:
+          config.yml: |
+            kind: source
+            spec:
+              name: hackernews
+              path: cloudquery/hackernews
+              version: v3.0.13
+              tables: ["*"]
+              destinations:
+                - file
+              spec:
+                item_concurrency: 100
+                start_time: "{{ execution.startDate | dateAdd(-1, 'DAYS') }}"
+            ---
+            kind: destination
+            spec:
+              name: file
+              path: cloudquery/file
+              version: v3.4.8
+              spec:
+                path: "{% raw %}{{TABLE}}/{{UUID}}.{{FORMAT}}{% endraw %}"
+                format: parquet
+
+      - id: hn_to_parquet
+        type: io.kestra.plugin.cloudquery.CloudQueryCLI
+        commands:
+          - sync config.yml --log-console --log-level=warn

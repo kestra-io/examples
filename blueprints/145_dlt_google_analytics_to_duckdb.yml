@@ -1,0 +1,45 @@
+id: dlt_google_analytics_to_duckdb
+namespace: blueprint
+
+tasks:
+  - id: dlt_pipeline
+    type: io.kestra.plugin.scripts.python.Script
+    docker:
+      image: python:3.11
+    beforeCommands:
+      - pip install dlt[duckdb]
+      - dlt --non-interactive init google_analytics duckdb
+    warningOnStdErr: false
+    env:
+      SOURCES__GOOGLE_ANALYTICS__CREDENTIALS__PROJECT_ID: "{{ secret('GOOGLE_ANALYTICS_PROJECT_ID')
+        }}"
+      SOURCES__GOOGLE_ANALYTICS__CREDENTIALS__CLIENT_EMAIL: "{{ secret('GOOGLE_ANALYTICS_CLIENT_EMAIL')
+        }}"
+      SOURCES__GOOGLE_ANALYTICS__CREDENTIALS__PRIVATE_KEY: "{{ secret('GOOGLE_ANALYTICS_PRIVATE_KEY')
+        }}"
+      SOURCES__GOOGLE_ANALYTICS__PROPERTY_ID: "{{ secret('GOOGLE_ANALYTICS_PROPERTY_ID')
+        }}"
+    script: |
+      import dlt
+      from google_analytics import google_analytics
+
+      QUERIES = [
+          {
+              "resource_name": "sample_analytics_data1",
+              "dimensions": ["browser", "city"],
+              "metrics": ["totalUsers", "transactions"],
+          },
+          {
+              "resource_name": "sample_analytics_data2",
+              "dimensions": ["browser", "city", "dateHour"],
+              "metrics": ["totalUsers"],
+          },
+      ]
+
+      pipeline = dlt.pipeline(
+          pipeline_name="google_analytics_pipeline",
+          destination="duckdb",
+          dataset_name="google_analytics",
+      )
+
+      load_info = pipeline.run(google_analytics(queries=QUERIES))

@@ -1,0 +1,23 @@
+id: csvDuckDBSlack
+namespace: blueprint
+
+tasks:
+  - id: analyzeSales
+    type: io.kestra.plugin.jdbc.duckdb.Query
+    sql: |
+      INSTALL httpfs;
+      LOAD httpfs;
+      SELECT sum(total) as total, avg(quantity) as avg_quantity
+      FROM read_csv_auto('https://raw.githubusercontent.com/kestra-io/datasets/main/csv/orders.csv', header=True);
+    fetch: true
+
+  - id: slack
+    type: io.kestra.plugin.notifications.slack.SlackIncomingWebhook
+    url: "{{ secret('SLACK_WEBHOOK') }}"
+    payload: |
+      {"channel":"#reporting","text":"Current Sales numbers: total sales is `${{outputs.analyzeSales.rows[0].total}}` and average sales quantity is `{{outputs.analyzeSales.rows[0].avg_quantity}}`"}
+
+triggers:
+  - id: everyMonday
+    type: io.kestra.core.models.triggers.types.Schedule
+    cron: 0 9 * * MON

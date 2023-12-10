@@ -1,0 +1,21 @@
+id: regex-input
+namespace: blueprint
+
+inputs:
+  - name: age
+    type: INT
+    defaults: 42
+    required: false
+    min: 18
+    max: 64
+
+  - name: user
+    type: STRING
+    defaults: student
+    required: false
+    validator: ^student(\d+)?$
+
+tasks:
+  - id: validator
+    type: io.kestra.core.tasks.log.Log
+    message: User {{ inputs.user }}, age {{ inputs.age }}

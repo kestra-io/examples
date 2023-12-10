@@ -1,0 +1,35 @@
+id: python_subflow_component
+namespace: dev
+
+inputs:
+  - name: arg1
+    type: INT
+
+  - name: arg2
+    type: INT
+
+tasks:
+
+  - id: python
+    type: io.kestra.plugin.scripts.python.Commands
+    docker:
+      image: ghcr.io/kestra-io/pydata:latest
+    inputFiles:
+      main.py: |
+        import argparse
+        from kestra import Kestra
+
+        def multiply_arguments(arg1, arg2):
+            return arg1 * arg2
+
+        if __name__ == "__main__":
+            parser = argparse.ArgumentParser(description='Multiply two integers.')
+            parser.add_argument('--arg1', type=int, help='First integer argument')
+            parser.add_argument('--arg2', type=int, help='Second integer argument')
+            args = parser.parse_args()
+
+            result = multiply_arguments(args.arg1, args.arg2)
+            print(f"The product of {args.arg1} and {args.arg2} is: {result}")
+            Kestra.outputs({'result': result})
+    commands:
+      - python main.py --arg1 {{ inputs.arg1 }} --arg2 {{ inputs.arg2 }}

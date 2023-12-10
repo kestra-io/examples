@@ -1,0 +1,17 @@
+id: trigger_subflow
+namespace: blueprint
+
+tasks:
+
+  - id: taskA
+    type: io.kestra.core.tasks.debugs.Return
+    format: "{{task.id}} - Flow A"
+
+  - id: flowB
+    type: io.kestra.core.tasks.flows.Flow
+    description: This Task trigger the Flow `subflow` with corresponding inputs.
+    namespace: demo
+    flowId: subflow
+    inputs:
+      data: "{{ outputs.taskA.value }}"
+

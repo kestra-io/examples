@@ -1,0 +1,20 @@
+id: startJobOnExistingCluster
+namespace: blueprint
+
+tasks:
+  - id: createJob
+    type: io.kestra.plugin.databricks.job.CreateJob
+    authentication:
+      token: "{{ secret('DATABRICKS_TOKEN') }}"
+    host: "{{ secret('DATABRICKS_HOST') }}"
+    jobTasks:
+      - existingClusterId: abcdefg12345678
+        taskKey: yourArbitraryTaskKey
+        sparkPythonTask:
+          pythonFile: /Shared/hello.py
+          sparkPythonTaskSource: WORKSPACE
+    waitForCompletion: PT5H
+
+  - id: logStatus
+    type: io.kestra.core.tasks.log.Log
+    message: The job finished, all done!

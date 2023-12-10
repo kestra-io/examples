@@ -1,0 +1,27 @@
+id: aws_kinesis_json
+namespace: blueprints
+
+tasks:
+  - id: put_records_simple_map
+    type: io.kestra.plugin.aws.kinesis.PutRecords
+    streamName: kestra
+    records:
+      - data: sign-in
+        partitionKey: user1
+      - data: sign-out
+        partitionKey: user1
+
+  - id: extract
+    type: io.kestra.plugin.fs.http.Download
+    uri: 
+      https://huggingface.co/datasets/kestra/datasets/resolve/main/json/user_events.json
+
+  - id: json_to_ion
+    type: io.kestra.plugin.serdes.json.JsonReader
+    from: "{{ outputs.extract.uri }}"
+    newLine: false
+
+  - id: put_records
+    type: io.kestra.plugin.aws.kinesis.PutRecords
+    streamName: kestra
+    records: "{{ outputs.json_to_ion.uri }}"

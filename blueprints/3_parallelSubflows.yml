@@ -1,0 +1,23 @@
+id: parallelSubflows
+namespace: blueprint
+
+tasks:
+  - id: parallel
+    type: io.kestra.core.tasks.flows.Parallel
+    tasks:
+      - id: flow1
+        type: io.kestra.core.tasks.flows.Flow
+        flowId: flow1
+      - id: flow2
+        type: io.kestra.core.tasks.flows.Flow
+        flowId: flow2
+      - id: flow3
+        type: io.kestra.core.tasks.flows.Flow
+        flowId: flow3
+
+taskDefaults:
+  - type: io.kestra.core.tasks.flows.Flow
+    values:
+      namespace: blueprint
+      wait: true
+      transmitFailed: true

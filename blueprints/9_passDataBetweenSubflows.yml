@@ -1,0 +1,14 @@
+id: passDataBetweenSubflows
+namespace: blueprint
+
+tasks:
+  - id: flow1
+    type: io.kestra.core.tasks.flows.Flow
+    namespace: blueprint
+    flowId: flow1
+    wait: true
+    outputs:
+      dataFromChildFlow: "{{outputs.returnData.value}}"
+  - id: log
+    type: io.kestra.core.tasks.log.Log
+    message: "{{outputs.flow1.outputs.dataFromChildFlow}}"

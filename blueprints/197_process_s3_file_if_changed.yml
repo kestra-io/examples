@@ -1,0 +1,26 @@
+id: process_s3_file_if_changed
+namespace: dev
+
+variables:
+  bucket: kestraio
+  object: hello.txt
+
+tasks:
+  - id: process_file_if_changed
+    type: io.kestra.plugin.scripts.python.Commands
+    commands:
+      - python s3_modified.py {{ vars.bucket }} {{ vars.object }} {{ trigger.date
+        ?? execution.startDate }}
+    docker:
+      image: ghcr.io/kestra-io/aws:latest
+    namespaceFiles:
+      enabled: true
+    env:
+      AWS_ACCESS_KEY_ID: "{{ secret('AWS_ACCESS_KEY_ID') }}"
+      AWS_SECRET_ACCESS_KEY: "{{ secret('AWS_SECRET_ACCESS_KEY') }}"
+      AWS_DEFAULT_REGION: "{{ secret('AWS_DEFAULT_REGION') }}"
+
+triggers:
+  - id: schedule
+    type: io.kestra.core.models.triggers.types.Schedule
+    cron: "*/5 * * * *"

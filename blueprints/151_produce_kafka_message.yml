@@ -1,0 +1,21 @@
+id: produce_kafka_message
+namespace: blueprint
+
+tasks:
+  - id: api
+    type: io.kestra.plugin.fs.http.Request
+    uri: https://dummyjson.com/products
+
+  - id: produce
+    type: io.kestra.plugin.kafka.Produce
+    from:
+      key: mykey
+      value: "{{ outputs.api.body }}"
+      timestamp: "{{ execution.startDate }}"
+      headers:
+        x-header: some value
+    keySerializer: STRING
+    valueSerializer: JSON
+    topic: mytopic
+    properties:
+      bootstrap.servers: my.kafka.k8s.com:9094

@@ -1,0 +1,35 @@
+id: autoscraper
+namespace: blueprint
+
+tasks:
+  - id: scrape
+    type: io.kestra.plugin.scripts.python.Script
+    beforeCommands:
+      - pip install autoscraper kestra
+    warningOnStdErr: false
+    script: |
+      from autoscraper import AutoScraper
+      from kestra import Kestra
+
+      url = "https://stackoverflow.com/questions/2081586/web-scraping-with-python"
+
+      # You can also put urls here to retrieve urls.
+      wanted_list = ["What are metaclasses in Python?"]
+
+      scraper = AutoScraper()
+      result = scraper.build(url, wanted_list)
+
+      # get related topics of any stackoverflow page:
+      related = scraper.get_result_similar(
+          "https://stackoverflow.com/questions/606191/convert-bytes-to-a-string"
+      )
+      Kestra.outputs({"data": result, "related": related})
+
+
+  - id: use_output_data
+    type: io.kestra.core.tasks.debugs.Return
+    format: "{{ outputs.scrape.vars.data }}"
+
+  - id: use_output_related
+    type: io.kestra.core.tasks.debugs.Return
+    format: "{{ outputs.scrape.vars.related }}"

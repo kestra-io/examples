@@ -1,0 +1,22 @@
+id: redis_list
+namespace: blueprint
+
+variables:
+  key: favorite_plugins
+
+tasks:
+  - id: clear_list
+    type: io.kestra.plugin.redis.ListPop
+    url: redis://host.docker.internal:6379/0
+    key: "{{vars.key}}"
+    maxRecords: 1
+
+  - id: publish_list
+    type: io.kestra.plugin.redis.ListPush
+    url: redis://host.docker.internal:6379/0
+    key: "{{vars.key}}"
+    from:
+      - redis
+      - duckdb
+      - gcp
+      - aws

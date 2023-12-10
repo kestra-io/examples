@@ -1,0 +1,16 @@
+id: taxi_trip_data
+namespace: blueprint
+
+tasks:
+  - id: log
+    type: io.kestra.core.tasks.log.Log
+    message: running backfill for file https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_{{
+      trigger.date ?? execution.startDate | date("yyyy-MM") }}.parquet
+
+triggers:
+  - id: schedule
+    type: io.kestra.core.models.triggers.types.Schedule
+    cron: "0 8 1 * *" # at 8 AM on every first day of the month
+    timezone: US/Eastern
+    backfill:
+      start: 2023-01-01T00:00:00Z

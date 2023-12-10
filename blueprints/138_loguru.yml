@@ -1,0 +1,38 @@
+id: loguru
+namespace: blueprints
+
+inputs:
+  - name: nr_logs
+    type: INT
+    defaults: 100
+
+tasks:
+  - id: reproducer
+    type: io.kestra.plugin.scripts.python.Script
+    warningOnStdErr: false
+    docker:
+      image: ghcr.io/kestra-io/pydata:latest
+    script: |
+      from loguru import logger
+      from faker import Faker
+      import time
+      import sys
+
+      logger.remove()
+      logger.add(sys.stdout, level="INFO")
+      logger.add(sys.stderr, level="WARNING")
+
+
+      def generate_logs(fake, num_logs):
+          logger.debug("This message will not show up as the log level is set to INFO")
+          logger.warning("Starting to generate log messages")
+          for _ in range(num_logs):
+              log_message = fake.sentence()
+              logger.info(log_message)
+              time.sleep(0.01)
+          logger.warning("Finished generating log messages")
+
+
+      if __name__ == "__main__":
+          faker_ = Faker()
+          generate_logs(faker_, int("{{ inputs.nr_logs }}"))

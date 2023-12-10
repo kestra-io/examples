@@ -1,0 +1,34 @@
+id: wdirPandasPythonOutputs
+namespace: blueprint
+
+tasks:
+  - id: ETL
+    type: io.kestra.core.tasks.flows.WorkingDirectory
+    tasks:
+      - id: extractCsv
+        type: io.kestra.plugin.scripts.python.Script
+        warningOnStdErr: false
+        docker:
+          image: ghcr.io/kestra-io/pydata:latest
+        script: |
+          import pandas as pd
+          data = {
+              'Column1': ['A', 'B', 'C', 'D'],
+              'Column2': [1, 2, 3, 4],
+              'Column3': [5, 6, 7, 8]
+          }
+          df = pd.DataFrame(data)
+          print(df.head())
+          df.to_csv("raw_data.csv", index=False)
+
+      - id: transformAndLoadCsv
+        type: io.kestra.plugin.scripts.python.Script
+        warningOnStdErr: false
+        docker:
+          image: ghcr.io/kestra-io/pydata:latest
+        script: |
+          import pandas as pd
+          df = pd.read_csv("raw_data.csv")
+          df['Column4'] = df['Column2'] + df['Column3']
+          print(df.head())
+          df.to_csv("{{outputDir}}/final.csv", index=False)

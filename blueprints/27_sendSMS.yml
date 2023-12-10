@@ -1,0 +1,18 @@
+id: sendSMS
+namespace: blueprint
+
+inputs:
+  - name: smsText
+    type: STRING
+    defaults: "Hello from Kestra and AWS SNS!"
+
+tasks:
+  - id: sendSMS
+    type: io.kestra.plugin.aws.sns.Publish
+    region: "{{ secret('AWS_DEFAULT_REGION') }}"
+    accessKeyId: "{{ secret('AWS_ACCESS_KEY_ID') }}"
+    secretKeyId: "{{ secret('AWS_SECRET_ACCESS_KEY') }}"
+    topicArn: arn:aws:sns:eu-central-1:338306982838:kestra
+    from:
+      data: |-
+        {{inputs.smsText}}

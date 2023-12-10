@@ -1,0 +1,13 @@
+id: limit_memory
+namespace: blueprint
+
+tasks:
+  - id: docker_memory
+    type: io.kestra.plugin.scripts.python.Script
+    docker:
+      image: python:3.11-slim
+      memory:
+        memory: 500MB
+    script: |-
+      import time
+      time.sleep(2)

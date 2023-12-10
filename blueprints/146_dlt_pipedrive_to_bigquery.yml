@@ -1,0 +1,37 @@
+id: dlt_pipedrive_to_bigquery
+namespace: blueprint
+
+tasks:
+  - id: dlt_pipeline
+    type: io.kestra.plugin.scripts.python.Script
+    docker:
+      image: python:3.11
+    beforeCommands:
+      - pip install dlt[bigquery]
+      - dlt --non-interactive init pipedrive bigquery
+    warningOnStdErr: false
+    env:
+      DESTINATION__BIGQUERY__CREDENTIALS__PROJECT_ID: "{{ secret('BIGQUERY_PROJECT_ID')
+        }}"
+      DESTINATION__BIGQUERY__CREDENTIALS__PRIVATE_KEY: "{{ secret('BIGQUERY_PRIVATE_KEY')
+        }}"
+      DESTINATION__BIGQUERY__CREDENTIALS__CLIENT_EMAIL: "{{ secret('BIGQUERY_CLIENT_EMAIL')
+        }}"
+      SOURCES__PIPEDRIVE__CREDENTIALS__PIPEDRIVE_API_KEY: "{{ secret('PIPEDRIVE_API_KEY')
+        }}"
+    script: |
+      import dlt
+      from pipedrive import pipedrive_source
+
+      pipeline = dlt.pipeline(
+          pipeline_name="pipedrive_pipeline",
+          destination="biquery",
+          dataset_name="pipedrive",
+      )
+
+      load_info = pipeline.run(pipedrive_source())
+
+triggers:
+  - id: hourly
+    type: io.kestra.core.models.triggers.types.Schedule
+    cron: "@hourly"

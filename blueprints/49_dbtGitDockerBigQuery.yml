@@ -1,0 +1,39 @@
+id: dbtGitDockerBigQuery
+namespace: blueprint
+
+tasks:
+  - id: dbt
+    type: io.kestra.core.tasks.flows.WorkingDirectory
+    tasks:
+      - id: cloneRepository
+        type: io.kestra.plugin.git.Clone
+        url: https://github.com/kestra-io/dbt-demo
+        branch: main
+
+      - id: serviceAccount
+        type: io.kestra.core.tasks.storages.LocalFiles
+        inputs:
+          sa.json: "{{ secret('GCP_CREDS') }}"
+
+      - id: dbtCore
+        type: io.kestra.plugin.dbt.cli.DbtCLI
+        docker:
+          image: ghcr.io/kestra-io/dbt-bigquery:latest
+        profiles: |
+          jaffle_shop:
+            outputs:
+              dev:
+                type: bigquery
+                dataset: your_big_query_dataset_name
+                project: your_big_query_project
+                keyfile: sa.json
+                location: EU
+                method: service-account
+                priority: interactive
+                threads: 16
+                timeout_seconds: 300
+                fixed_retries: 1
+            target: dev
+        commands:
+          - dbt deps
+          - dbt build

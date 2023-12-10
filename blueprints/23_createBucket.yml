@@ -1,0 +1,16 @@
+id: createBucket
+namespace: blueprint
+
+inputs:
+  - name: bucket
+    type: STRING
+    defaults: declarative-orchestration-with-kestra
+    required: true
+
+tasks:
+  - id: createBucket
+    type: io.kestra.plugin.aws.s3.CreateBucket
+    accessKeyId: "{{ secret('AWS_ACCESS_KEY_ID') }}"
+    secretKeyId: "{{ secret('AWS_SECRET_ACCESS_KEY') }}"
+    region: "{{ secret('AWS_DEFAULT_REGION') }}"
+    bucket: "{{inputs.bucket}}"

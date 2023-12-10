@@ -1,0 +1,12 @@
+id: snowflakeQuery
+namespace: blueprint
+
+tasks:
+  - id: query
+    type: io.kestra.plugin.jdbc.snowflake.Query
+    url: jdbc:snowflake://accountID.snowflakecomputing.com?warehouse=COMPUTE_WH
+    username: yourSnowflakeUser
+    password: "{{ secret('SNOWFLAKE_PASSWORD') }}"
+    fetchOne: true
+    sql: |
+      SELECT * FROM SNOWFLAKE_SAMPLE_DATA.TPCH_SF1.CUSTOMER

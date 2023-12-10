@@ -1,0 +1,77 @@
+id: auditlogs_to_bigquery
+namespace: blueprint
+
+tasks:
+  - id: consume
+    type: io.kestra.plugin.kafka.Consume
+    properties:
+      auto.offset.reset: earliest
+      bootstrap.servers: local:9092
+    topic: kestra_auditlogs
+    valueDeserializer: JSON
+    maxRecords: 500
+
+  - id: transform
+    type: io.kestra.plugin.scripts.nashorn.FileTransform
+    from: "{{ outputs.consume.uri }}"
+    script: |
+      var jacksonMapper = Java.type('io.kestra.core.serializers.JacksonMapper');
+      delete row['headers'];
+
+      var value = row['value']
+
+      row['id'] = value['id']
+      row['type'] = value['type']
+      row['detail'] = value['detail']
+      row['date'] = value['date']
+      row['deleted'] = value['deleted']
+      row['value'] = jacksonMapper.ofJson().writeValueAsString(value)
+      row['detail_type'] = value['detail']['type']
+      row['detail_cls'] = value['detail']['cls']
+      row['detail_permission'] = value['detail']['permission']
+      row['detail_id'] = value['detail']['id']
+      row['detail_namespace'] = value['detail']['namespace']
+      row['detail_flowId'] = value['detail']['flowId']
+      row['detail_executionId'] = value['detail']['executionId']
+
+  - id: avroWriter
+    type: io.kestra.plugin.serdes.avro.AvroWriter
+    from: "{{ outputs.transform.uri }}"
+    description: convert the file from Kestra internal storage to avro.
+    schema: |
+      {
+        "type": "record",
+        "name": "Root",
+        "fields":
+          [
+            { "name": "id", "type": ["null", "string"] },
+            { "name": "type", "type": ["null", "string"] },
+            { "name": "detail", "type": ["null", "string"] },
+            { "name": "date", "type": ["null", "string"] },
+            { "name": "deleted", "type": ["null", "string"] },
+            { "name": "value", "type": ["null", "string"] },
+            { "name": "detail_type", "type": ["null", "string"] },
+            { "name": "detail_cls", "type": ["null", "string"] },
+            { "name": "detail_permission", "type": ["null", "string"] },
+            { "name": "detail_id", "type": ["null", "string"] },
+            { "name": "detail_namespace", "type": ["null", "string"] },
+            { "name": "detail_flowId", "type": ["null", "string"] },
+            { "name": "detail_executionId", "type": ["null", "string"] }
+          ]
+      }
+
+  - id: load
+    type: io.kestra.plugin.gcp.bigquery.Load
+    avroOptions:
+      useAvroLogicalTypes: true
+    destinationTable: your_gcp_project.dwh.autditlogs
+    format: AVRO
+    from: "{{outputs.avroWriter.uri }}"
+    writeDisposition: WRITE_TRUNCATE
+    serviceAccount: "{{ secret('GCP_CREDS') }}"
+    projectId: your_gcp_project
+
+triggers:
+  - id: schedule
+    type: io.kestra.core.models.triggers.types.Schedule
+    cron: "0 10 * * *"

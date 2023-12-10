@@ -1,0 +1,12 @@
+id: task_outputs
+namespace: blueprint
+
+tasks:
+
+  - id: task1
+    type: io.kestra.core.tasks.debugs.Return
+    format: "Hello"
+
+  - id: task2
+    type: io.kestra.core.tasks.log.Log
+    message: "{{outputs.task1.value}} World!"

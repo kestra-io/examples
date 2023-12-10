@@ -1,0 +1,39 @@
+id: listen-debezium
+namespace: blueprint
+tasks:
+
+  - id: slack_notificaiton
+    type: io.kestra.plugin.notifications.slack.SlackIncomingWebhook
+    url: "{{ secret('SLACK_WEBHOOK') }}"
+    payload: |
+      {
+        "channel": "U052JMPLBM3",
+        "text": "{{ trigger.size }} new rows have been added to the database"
+      }
+
+  - id: json
+    type: io.kestra.plugin.serdes.json.JsonWriter
+    from: "{{ trigger.uris['postgres.order'] }}"
+
+  - id: python
+    type: io.kestra.plugin.scripts.python.Script
+    script: |
+      import json
+
+      with open("{{ outputs.json.uri }}", "r") as fopen:
+        data = json.load(fopen)
+
+      print(data)
+
+triggers:
+  - id: listen-debezium
+    type: io.kestra.plugin.debezium.postgres.Trigger
+    hostname: host.docker.internal
+    port: "5433"
+    username: postgres
+    password: example
+    database: postgres
+    pluginName: PGOUTPUT
+    snapshotMode: INITIAL
+    format: INLINE
+    interval: PT3S

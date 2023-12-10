@@ -1,0 +1,64 @@
+id: surreal_db
+namespace: blueprints
+
+tasks:
+  - id: company
+    type: io.kestra.plugin.surrealdb.Query
+    query: |
+      CREATE company SET
+      name = 'Kestra',
+      created_at = time::now()
+
+  - id: delete_anna
+    type: io.kestra.plugin.surrealdb.Query
+    query: DELETE author:anna;
+
+  - id: add_author_tbl
+    type: io.kestra.plugin.surrealdb.Query
+    disabled: true
+    query: |
+      CREATE author:anna SET
+      name.first = 'Anna',
+      name.last = 'Geller',
+      name.full = string::join(' ', name.first, name.last),
+      admin = true
+
+  - id: fix_admin_permission
+    type: io.kestra.plugin.surrealdb.Query
+    query: UPDATE author:anna SET admin = false WHERE name.last = 'Geller';
+
+  - id: create_article_tbl
+    type: io.kestra.plugin.surrealdb.Query
+    query: |
+      CREATE article SET
+      created_at = time::now(),
+      author = author:anna,
+      title = 'Kestra 0.12 simplifies building modular, event-driven and containerized workflows',
+      company = (SELECT VALUE id FROM company WHERE name = 'Kestra' LIMIT 1)[0]
+
+  - id: query
+    type: io.kestra.plugin.surrealdb.Query
+    query: SELECT title FROM article;
+    fetchType: FETCH_ONE
+
+  - id: log_query_results
+    type: io.kestra.core.tasks.log.Log
+    message: "{{ outputs.query.row }}"
+
+  - id: slack
+    type: io.kestra.plugin.notifications.slack.SlackIncomingWebhook
+    url: "{{ secret('SLACK_WEBHOOK') }}"
+    payload: |
+      {
+        "channel": "#general",
+        "text": "{{ outputs.query.row.title }}"
+      }
+
+taskDefaults:
+  - type: io.kestra.plugin.surrealdb.Query
+    values:
+      host: localhost
+      database: test
+      namespace: test
+      username: root
+      password: root

@@ -1,0 +1,17 @@
+id: purge_storage
+namespace: system
+
+tasks:
+  - id: clean_up_storage
+    type: io.kestra.core.tasks.storages.Purge
+    endDate: "{{ trigger.date | dateAdd(-1, 'MONTHS') }}"
+    purgeExecution: true
+    purgeLog: true
+    purgeMetric: true
+    purgeStorage: true
+    states:
+      - SUCCESS
+triggers:
+  - id: monthly
+    type: io.kestra.core.models.triggers.types.Schedule
+    cron: "0 9 1 * *" # every month at 9am on the 1st day of the month

@@ -1,0 +1,12 @@
+id: gcloudCLI
+namespace: blueprint
+
+tasks:
+  - id: hello
+    type: io.kestra.plugin.gcp.cli.GCloudCLI
+    serviceAccount: "{{ secret('GCP_CREDS') }}"
+    projectId: yourProject
+    commands:
+      - gcloud storage ls
+      - gcloud storage ls --json > {{outputDir}}/storage.json
+      - gcloud storage ls --json | tr -d '\n ' | xargs -0 -I {} echo '::{"outputs":{"gcloud":{}}}::'

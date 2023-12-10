@@ -1,0 +1,15 @@
+id: azureBlobUpload
+namespace: blueprint
+
+tasks:
+  - id: extract
+    type: io.kestra.plugin.fs.http.Download
+    uri: https://raw.githubusercontent.com/kestra-io/datasets/main/csv/salaries.csv
+
+  - id: load
+    type: io.kestra.plugin.azure.storage.blob.Upload
+    endpoint: "https://kestra.blob.core.windows.net"
+    connectionString: "{{ secret('AZURE_CONNECTION_STRING') }}"
+    container: kestra
+    from: "{{ outputs.download_data.uri }}"
+    name: data.csv

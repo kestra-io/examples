@@ -1,0 +1,41 @@
+id: surreal_db
+namespace: blueprints
+
+tasks:
+  - id: article
+    type: io.kestra.plugin.surrealdb.Query
+    query: |
+      CREATE article SET
+        created_at = time::now(),
+        author = author:john,
+        title = 'Lorem ipsum dolor',
+        text = 'Donec eleifend, nunc vitae commodo accumsan, mauris est fringilla.',
+        account = (SELECT VALUE id FROM account WHERE name = 'ACME Inc' LIMIT 1)[0]
+      ;
+
+  - id: account
+    type: io.kestra.plugin.surrealdb.Query
+    query: |
+      CREATE account SET
+      name = 'ACME Inc',
+      created_at = time::now()
+      ;
+
+  - id: query
+    type: io.kestra.plugin.surrealdb.Query
+    query: SELECT * FROM article, account;
+    fetchType: STORE
+
+  - id: query_condition
+    type: io.kestra.plugin.surrealdb.Query
+    query: SELECT * FROM article WHERE author.age < 30 FETCH author, account;
+    fetchType: STORE
+
+taskDefaults:
+  - type: io.kestra.plugin.surrealdb.Query
+    values:
+      host: localhost
+      database: test
+      namespace: test
+      username: root
+      password: root

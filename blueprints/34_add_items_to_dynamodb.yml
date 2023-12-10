@@ -1,0 +1,27 @@
+id: add_items_to_dynamodb
+namespace: blueprint
+
+tasks:
+  - id: firstItemAsMap
+    type: io.kestra.plugin.aws.dynamodb.PutItem
+    item:
+      id: 1
+      flow: "{{ flow.id }}"
+      task: "{{ task.id }}"
+
+  - id: secondItemAsJSON
+    type: io.kestra.plugin.aws.dynamodb.PutItem
+    item: |
+      {
+          "id": 2,
+          "flow": "{{ flow.id }}",
+          "task": "{{ task.id }}"
+      }
+
+taskDefaults:
+  - type: io.kestra.plugin.aws.dynamodb.PutItem
+    values:
+      tableName: demo
+      region: "{{ secret('AWS_DEFAULT_REGION') }}"
+      accessKeyId: "{{ secret('AWS_ACCESS_KEY_ID') }}"
+      secretKeyId: "{{ secret('AWS_SECRET_ACCESS_KEY') }}"

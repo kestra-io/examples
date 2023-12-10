@@ -1,0 +1,36 @@
+id: onDemandClusterJob
+namespace: blueprint
+
+tasks:
+  - id: create_cluster
+    type: io.kestra.plugin.databricks.cluster.CreateCluster
+    authentication:
+      token: "{{ secret('DATABRICKS_TOKEN') }}"
+    host: "{{ secret('DATABRICKS_HOST') }}"
+    clusterName: kestra-demo
+    nodeTypeId: n2-highmem-4
+    numWorkers: 1
+    sparkVersion: 13.0.x-scala2.12
+
+  - id: allow_failure
+    type: io.kestra.core.tasks.flows.AllowFailure
+    tasks:
+      - id: run_job
+        type: io.kestra.plugin.databricks.job.CreateJob
+        authentication:
+          token: "{{ secret('DATABRICKS_TOKEN') }}"
+        host: "{{ secret('DATABRICKS_HOST') }}"
+        jobTasks:
+          - existingClusterId: "{{outputs.createCluster.clusterId}}"
+            taskKey: yourArbitraryTaskKey
+            sparkPythonTask:
+              pythonFile: /Shared/hello.py
+              sparkPythonTaskSource: WORKSPACE
+        waitForCompletion: PT5M
+
+  - id: delete_cluster
+    type: io.kestra.plugin.databricks.cluster.DeleteCluster
+    authentication:
+      token: "{{ secret('DATABRICKS_TOKEN') }}"
+    host: "{{ secret('DATABRICKS_HOST') }}"
+    clusterId: "{{outputs.createCluster.clusterId}}"

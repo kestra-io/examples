@@ -1,0 +1,16 @@
+id: build_github_container_image
+namespace: blueprint
+
+tasks:
+  - id: build
+    type: io.kestra.plugin.docker.Build
+    dockerfile: |
+      FROM python:3.10
+      RUN pip install --upgrade pip
+      RUN pip install --no-cache-dir kestra requests "polars[all]"
+    tags:
+      - ghcr.io/kestra/polars:latest
+    push: true
+    credentials:
+      username: kestra
+      password: "{{ secret('GITHUB_ACCESS_TOKEN') }}"

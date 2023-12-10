@@ -1,0 +1,13 @@
+id: slack_incoming_webhook
+namespace: blueprint
+
+tasks:
+
+  - id: slack
+    type: io.kestra.plugin.notifications.slack.SlackIncomingWebhook
+    url: "{{ secret('SLACK_WEBHOOK') }}"
+    payload: |-
+      {
+        "channel": "#alerts",
+        "text": "Flow {{ flow.namespace }}.{{ flow.id }} started with execution {{ execution.id }}"
+      }
