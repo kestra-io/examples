@@ -1,4 +1,4 @@
-id: allowFailureDemo
+id: allow_failure_demo
 namespace: blueprint
 
 tasks:
@@ -19,9 +19,9 @@ tasks:
     type: io.kestra.plugin.scripts.shell.Commands
     runner: PROCESS
     commands:
-      - echo "failing and blocking downstream tasks" && exit 1
+      - echo "failing and blocking downstream tasks ❌" && exit 1
   - id: willNeverRun
     type: io.kestra.plugin.scripts.shell.Commands
     runner: PROCESS
     commands:
-      - echo "this will never run ❌"
+      - echo "this will never run ⛔️"
