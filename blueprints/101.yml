@@ -1,4 +1,4 @@
-id: pythonAwsECR
+id: python_aws_ecr
 namespace: blueprint
 
 tasks:
@@ -12,14 +12,8 @@ tasks:
     type: io.kestra.plugin.scripts.python.Commands
     docker:
       image: 338306982838.dkr.ecr.eu-central-1.amazonaws.com/data-infastructure:latest
-      config: |
-        {
-          "auths": {
-            "338306982838.dkr.ecr.eu-central-1.amazonaws.com": {
-                "username": "AWS",
-                "password": "{ {outputs.ecr.token }}"
-              }
-          }
-        }
+      credentials:
+        username: AWS
+        password: "{{ outputs.ecr.token }}"
     commands:
       - python --version

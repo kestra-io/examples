@@ -1,0 +1,27 @@
+id: druid_to_pandas
+namespace: blueprint
+
+tasks:
+  - id: query_druid
+    type: io.kestra.plugin.jdbc.druid.Query
+    url: 
+      jdbc:avatica:remote:url=http://localhost:8888/druid/v2/sql/avatica/;transparent_reconnection=true
+    sql: |
+      SELECT __time as edit_time, channel, page, user, delta, added, deleted
+      FROM wikipedia
+    fetch: true
+    store: true
+
+  - id: write_to_csv
+    type: io.kestra.plugin.serdes.csv.CsvWriter
+    from: "{{ outputs.query_druid.uri }}"
+
+  - id: process_using_pandas
+    type: io.kestra.plugin.scripts.python.Script
+    beforeCommands:
+      - pip install pandas > /dev/null
+    script: |-
+      import pandas as pd
+
+      df = pd.read_csv("{{ outputs.write_to_csv.uri }}")
+      df.head()

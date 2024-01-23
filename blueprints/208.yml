@@ -1,0 +1,36 @@
+id: zip_to_python
+namespace: blueprint
+
+variables:
+  file_id: "{{ execution.startDate | dateAdd(-3, 'MONTHS') | date('yyyyMM') }}"
+
+tasks:
+  - id: get_zipfile
+    type: io.kestra.plugin.fs.http.Download
+    uri: "https://divvy-tripdata.s3.amazonaws.com/{{ vars.file_id }}-divvy-tripdata.zip"
+
+  - id: unzip
+    type: io.kestra.plugin.compress.ArchiveDecompress
+    algorithm: ZIP
+    from: "{{outputs.get_zipfile.uri}}"
+
+  - id: parquet_output
+    type: io.kestra.plugin.scripts.python.Script
+    warningOnStdErr: false
+    runner: DOCKER
+    docker:
+      image: ghcr.io/kestra-io/pydata:latest
+    env:
+      FILE_ID: "{{ vars.file_id }}"
+    inputFiles: "{{ outputs.unzip.files }}"
+    script: |
+      import os
+      import pandas as pd
+
+      file_id = os.environ["FILE_ID"]
+      file = f"{file_id}-divvy-tripdata.csv"
+
+      df = pd.read_csv(file)
+      df.to_parquet(f"{file_id}.parquet")
+    outputFiles:
+      - "*.parquet"
