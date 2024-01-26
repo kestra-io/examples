@@ -7,12 +7,12 @@ variables:
 tasks:
   - id: get_zipfile
     type: io.kestra.plugin.fs.http.Download
-    uri: "https://divvy-tripdata.s3.amazonaws.com/{{ vars.file_id }}-divvy-tripdata.zip"
+    uri: "https://divvy-tripdata.s3.amazonaws.com/{{ render(vars.file_id) }}-divvy-tripdata.zip"
 
   - id: unzip
     type: io.kestra.plugin.compress.ArchiveDecompress
     algorithm: ZIP
-    from: "{{outputs.get_zipfile.uri}}"
+    from: "{{ outputs.get_zipfile.uri }}"
 
   - id: parquet_output
     type: io.kestra.plugin.scripts.python.Script
@@ -21,7 +21,7 @@ tasks:
     docker:
       image: ghcr.io/kestra-io/pydata:latest
     env:
-      FILE_ID: "{{ vars.file_id }}"
+      FILE_ID: "{{ render(vars.file_id) }}"
     inputFiles: "{{ outputs.unzip.files }}"
     script: |
       import os
