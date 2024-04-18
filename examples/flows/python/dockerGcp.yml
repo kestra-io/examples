@@ -7,7 +7,7 @@ tasks:
     tasks:
       - id: downloadCSV
         type: io.kestra.plugin.fs.http.Download
-        uri: https://raw.githubusercontent.com/kestra-io/examples/main/datasets/orders.csv
+        uri: https://raw.githubusercontent.com/kestra-io/datasets/main/csv/orders.csv
 
       - id: fetchAuthToken
         type: io.kestra.plugin.gcp.auth.OauthAccessToken
