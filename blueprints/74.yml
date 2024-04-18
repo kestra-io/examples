@@ -2,7 +2,7 @@ id: redis_set_parallel
 namespace: blueprint
 
 inputs:
-  - name: values
+  - id: values
     type: JSON
     description: Enter your favorite plugins and tasks
     defaults: |

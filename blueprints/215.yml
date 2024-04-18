@@ -1,0 +1,37 @@
+id: orchestrate_everything
+namespace: blueprints
+
+inputs:
+  - id: use_case
+    description: What do you want to orchestrate?
+    type: ENUM
+    defaults: Data pipelines
+    values:
+      - Data pipelines
+      - Microservices
+      - Business processes
+      - Marketing automation
+tasks:
+  - id: conditional_branching
+    type: io.kestra.core.tasks.flows.Switch
+    value: "{{ inputs.use_case }}"
+    cases:
+      Data pipelines:
+        - id: data_pipelines
+          type: io.kestra.core.tasks.log.Log
+          message: Managing important data products
+
+      Microservices:
+        - id: microservices
+          type: io.kestra.core.tasks.log.Log
+          message: Orchestrating critical applications
+
+      Business processes:
+        - id: business_processes
+          type: io.kestra.core.tasks.log.Log
+          message: Orchestrating critical applications
+
+      Marketing automation:
+        - id: marketing_automation
+          type: io.kestra.core.tasks.log.Log
+          message: Orchestrating critical applications

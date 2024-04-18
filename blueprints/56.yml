@@ -10,11 +10,10 @@ tasks:
         branch: main
         url: https://github.com/kestra-io/scripts
 
-      - id: runModal
-        type: io.kestra.plugin.scripts.shell.Commands
+      - id: modal
+        type: io.kestra.plugin.modal.cli.ModalCLI
         commands:
           - modal run modal/gpu.py
-        runner: DOCKER
         docker:
           image: ghcr.io/kestra-io/modal:latest
         env:

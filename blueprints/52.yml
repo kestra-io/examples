@@ -1,21 +1,21 @@
-id: dbtGitDockerSnowflake
+id: dbt_snowflake
 namespace: blueprint
 
 tasks:
-  - id: dbt
+  - id: git
     type: io.kestra.core.tasks.flows.WorkingDirectory
     tasks:
-      - id: cloneRepository
+      - id: clone_repository
         type: io.kestra.plugin.git.Clone
-        url: https://github.com/kestra-io/dbt-demo
+        url: https://github.com/kestra-io/dbt-example
         branch: main
 
-      - id: dbtCore
+      - id: dbt
         type: io.kestra.plugin.dbt.cli.DbtCLI
         docker:
           image: ghcr.io/kestra-io/dbt-snowflake:latest
         profiles: |
-          jaffle_shop:
+          my_dbt_project:
             outputs:
               dev:
                 type: snowflake

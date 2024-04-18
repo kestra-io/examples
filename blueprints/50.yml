@@ -1,4 +1,4 @@
-id: dbtGitDockerDuckDB
+id: dbt_duckdb
 namespace: blueprint
 
 tasks:
@@ -7,7 +7,7 @@ tasks:
     tasks:
       - id: cloneRepository
         type: io.kestra.plugin.git.Clone
-        url: https://github.com/kestra-io/dbt-demo
+        url: https://github.com/kestra-io/dbt-example
         branch: main
 
       - id: dbt-build
@@ -18,3 +18,13 @@ tasks:
         commands:
           - dbt deps
           - dbt build
+        profiles: |
+          my_dbt_project:
+            outputs:
+              dev:
+                type: duckdb
+                path: ":memory:"
+                fixed_retries: 1
+                threads: 16
+                timeout_seconds: 300
+            target: dev

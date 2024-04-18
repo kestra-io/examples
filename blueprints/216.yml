@@ -1,0 +1,37 @@
+id: http_check
+namespace: dev
+
+inputs:
+  - id: uri
+    type: URI
+    defaults: https://kestra.io
+
+tasks:
+  - id: api
+    type: io.kestra.plugin.fs.http.Request
+    uri: "{{ inputs.uri }}"
+
+  - id: check_status
+    type: io.kestra.core.tasks.flows.If
+    condition: "{{ outputs.api.code != 200 }}"
+    then:
+      - id: unhealthy
+        type: io.kestra.core.tasks.log.Log
+        message: Server unhealthy!!! Response {{ outputs.api.body }}
+      - id: send_slack_alert
+        type: io.kestra.plugin.notifications.slack.SlackIncomingWebhook
+        url: "{{ secret('SLACK_WEBHOOK') }}"
+        payload: |
+          {
+            "channel": "#alerts",
+            "text": "The server {{ inputs.uri }} is down!"
+          }
+    else:
+      - id: healthy
+        type: io.kestra.core.tasks.log.Log
+        message: Everything is fine!
+
+triggers:
+  - id: daily
+    type: io.kestra.core.models.triggers.types.Schedule
+    cron: "0 9 * * *"

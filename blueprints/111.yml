@@ -1,13 +1,13 @@
-id: dbtGitDockerDuckDB
+id: dbt_motherduck
 namespace: blueprint
 
 tasks:
-  - id: dbt
+  - id: git
     type: io.kestra.core.tasks.flows.WorkingDirectory
     tasks:
-      - id: cloneRepository
+      - id: clone_repository
         type: io.kestra.plugin.git.Clone
-        url: https://github.com/kestra-io/dbt-demo
+        url: https://github.com/kestra-io/dbt-example
         branch: main
 
       - id: dbt-build
@@ -16,12 +16,12 @@ tasks:
         docker:
           image: ghcr.io/kestra-io/dbt-duckdb:latest
         profiles: |
-          jaffle_shop:
+          my_dbt_project:
             outputs:
               dev:
                 type: duckdb
                 disable_transactions: true
-                path: md:jaffle_shop?motherduck_token={{secret('MOTHERDUCK_TOKEN')}}
+                path: md:my_dbt_project?motherduck_token={{secret('MOTHERDUCK_TOKEN')}}
                 fixed_retries: 1
                 threads: 16
                 timeout_seconds: 300

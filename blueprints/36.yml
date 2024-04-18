@@ -7,20 +7,17 @@ tasks:
     tasks:
       - id: downloadCSV
         type: io.kestra.plugin.fs.http.Download
-        uri: https://raw.githubusercontent.com/kestra-io/examples/main/datasets/orders.csv
+        uri: https://huggingface.co/datasets/kestra/datasets/raw/main/csv/orders.csv
 
       - id: fetchAuthToken
         type: io.kestra.plugin.gcp.auth.OauthAccessToken
         projectId: YOUR_GCP_PROJECT_NAME
         serviceAccount: "{{ secret('GCP_CREDS') }}"
 
-      - id: local
-        type: io.kestra.core.tasks.storages.LocalFiles
-        inputs:
-          data.csv: "{{outputs.downloadCSV.uri}}"
-
       - id: analyzeSales
         type: io.kestra.plugin.scripts.python.Script
+        inputFiles:
+          data.csv: "{{outputs.downloadCSV.uri}}"
         script: |
           import pandas as pd
           from kestra import Kestra
