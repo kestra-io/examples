@@ -4,7 +4,7 @@ namespace: blueprint
 tasks:
   - id: extract
     type: io.kestra.plugin.fs.http.Download
-    uri: https://raw.githubusercontent.com/kestra-io/examples/main/datasets/orders.csv
+    uri: https://raw.githubusercontent.com/kestra-io/datasets/main/csv/orders.csv
 
   - id: transform
     type: io.kestra.plugin.jdbc.duckdb.Query

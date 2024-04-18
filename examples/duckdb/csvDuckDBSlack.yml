@@ -7,7 +7,7 @@ description: |
 inputs:
   - name: file
     type: STRING
-    defaults: https://raw.githubusercontent.com/kestra-io/examples/main/datasets/orders.csv
+    defaults: https://raw.githubusercontent.com/kestra-io/datasets/main/csv/orders.csv
 
 tasks:
   - id: downloadCsv
