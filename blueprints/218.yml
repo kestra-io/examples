@@ -1,0 +1,27 @@
+id: business_automation
+namespace: tutorial
+
+tasks:
+  - id: query
+    type: io.kestra.plugin.jdbc.postgresql.Query
+    url: jdbc:postgresql://hh-pgsql-public.ebi.ac.uk:5432/pfmegrnargs
+    username: reader
+    password: NWDMCE5xdipIjRrp
+    store: true
+    sql: |
+      SELECT
+        id,
+        timestamp,
+        upi,     -- RNAcentral URS identifier
+        taxid,   -- NCBI taxid
+        ac       -- external accession
+      FROM xref
+      LIMIT 20;
+
+  - id: to_csv
+    type: io.kestra.plugin.serdes.csv.CsvWriter
+    from: "{{ outputs.query.uri }}"
+
+  - id: to_excel
+    type: io.kestra.plugin.serdes.excel.IonToExcel
+    from: "{{ outputs.query.uri }}"

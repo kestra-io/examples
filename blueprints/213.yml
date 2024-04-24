@@ -7,8 +7,9 @@ tasks:
     inputFiles:
       sa.json: "{{ secret('GCP_SERVICE_ACCOUNT') }}"
     env:
-      HUBSPOT_APP_TOKEN: "{{ secret('HUBSPOT_API_TOKEN') }}"
       GOOGLE_APPLICATION_CREDENTIALS: sa.json
+      HUBSPOT_APP_TOKEN: "{{ secret('HUBSPOT_API_TOKEN') }}"
+      CLOUDQUERY_API_KEY: "{{ secret('CLOUDQUERY_API_KEY') }}"
     configs:
       - kind: destination
         spec:

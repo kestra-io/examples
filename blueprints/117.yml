@@ -28,20 +28,15 @@ tasks:
                 connection_string: ${PG_CONNECTION_STRING}
 
       - id: cloudQuery
-        type: io.kestra.plugin.scripts.shell.Commands
-        runner: DOCKER
+        type: io.kestra.plugin.cloudquery.CloudQueryCLI
+        commands:
+          - cloudquery sync config.yml --log-console
         env:
           AWS_ACCESS_KEY_ID: "{{ secret('AWS_ACCESS_KEY_ID') }}"
           AWS_SECRET_ACCESS_KEY: "{{ secret('AWS_SECRET_ACCESS_KEY') }}"
           AWS_DEFAULT_REGION: "{{ secret('AWS_DEFAULT_REGION') }}"
+          CLOUDQUERY_API_KEY: "{{ secret('CLOUDQUERY_API_KEY') }}"
           PG_CONNECTION_STRING: "postgresql://postgres:{{secret('DB_PASSWORD')}}@host.docker.internal:5432/postgres?sslmode=disable"
-        docker:
-          image: ghcr.io/cloudquery/cloudquery:latest
-          entryPoint:
-            - ""
-        warningOnStdErr: false
-        commands:
-          - /app/cloudquery sync config.yml --log-console
   - id: query-s3-metadata-in-postgres
     type: io.kestra.plugin.jdbc.postgresql.Query
     url: jdbc:postgresql://host.docker.internal:5432/postgres

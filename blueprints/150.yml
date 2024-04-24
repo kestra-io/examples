@@ -4,6 +4,8 @@ namespace: dev
 tasks:
   - id: hn_to_duckdb
     type: io.kestra.plugin.cloudquery.Sync
+    env:
+      CLOUDQUERY_API_KEY: "{{ secret('CLOUDQUERY_API_KEY') }}"
     incremental: false
     configs:
       - kind: source

@@ -13,7 +13,7 @@ tasks:
             spec:
               name: hackernews
               path: cloudquery/hackernews
-              version: v3.0.13
+              version: v3.1.5
               tables: ["*"]
               destinations:
                 - file
@@ -25,12 +25,16 @@ tasks:
             spec:
               name: file
               path: cloudquery/file
-              version: v3.4.8
+              version: v4.1.1
               spec:
                 path: "{% raw %}{{TABLE}}/{{UUID}}.{{FORMAT}}{% endraw %}"
-                format: parquet
+                format: csv
 
       - id: hn_to_parquet
         type: io.kestra.plugin.cloudquery.CloudQueryCLI
+        outputFiles:
+          - "**/*.csv"
+        env:
+          CLOUDQUERY_API_KEY: 9ITIyNYb8s3Cr8nSiV4KcKVPGJNSd6u8
         commands:
-          - sync config.yml --log-console --log-level=warn
+          - cloudquery sync config.yml --log-console --log-level=warn
