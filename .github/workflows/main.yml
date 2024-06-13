@@ -16,8 +16,8 @@ jobs:
       dockerfiles_changed: ${{ steps.filter.outputs.dockerfiles }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
-      - uses: dorny/paths-filter@v2
+        uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
         id: filter
         with:
           list-files: json
@@ -40,7 +40,7 @@ jobs:
         image: ${{ fromJson(needs.changes.outputs.dockerfiles) }}
     steps:
       - name: checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: GHCR Login
         uses: docker/login-action@v2

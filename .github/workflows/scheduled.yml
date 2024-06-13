@@ -11,7 +11,7 @@ jobs:
     outputs:
       matrix: ${{ steps.dockerfiles.outputs.matrix }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - id: dockerfiles
         run: echo "matrix=$(ls dockerfiles/ | jq -R -s -c 'split("\n")[:-1]')" >> $GITHUB_OUTPUT
 
@@ -26,7 +26,7 @@ jobs:
         image: ${{ fromJson(needs.list-dockerfiles.outputs.matrix) }}
     steps:
       - name: checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: GHCR Login
         uses: docker/login-action@v2
