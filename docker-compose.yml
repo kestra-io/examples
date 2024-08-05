@@ -23,7 +23,7 @@ services:
       - "5432:5432"
 
   kestra:
-    image: kestra/kestra:develop-full # use only during development; otherwise use kestra/kestra:latest-full
+    image: kestra/kestra:latest # during development, you can use kestra/kestra:develop
     pull_policy: always # missing
     entrypoint: /bin/bash
     user: "root"
