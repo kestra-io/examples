@@ -1,0 +1,70 @@
+id: string_output_parent
+namespace: company.team
+description: |
+  id: string_output_child
+  namespace: company.team
+
+  inputs:
+    - id: json_file
+      type: FILE
+      
+  variables:
+    result: "{{ json(read(inputs.json_file)).name }}"
+    
+  tasks:
+    - id: log_product
+      type: io.kestra.plugin.core.log.Log
+      message: "{{ render(vars.result) }}"
+
+  outputs:
+    - id: myoutput
+      type: STRING
+      value: "{{ render(vars.result) }}"
+
+tasks:
+  - id: download
+    type: io.kestra.plugin.core.http.Download
+    uri: https://api.restful-api.dev/objects
+    contentType: application/json
+    method: GET
+    failOnEmptyResponse: true
+    timeout: PT15S
+
+  - id: json_to_ion
+    type: io.kestra.plugin.serdes.json.JsonToIon
+    from: "{{ outputs.download.uri }}"
+    newLine: false # regular json
+
+  - id: ion_to_jsonl
+    type: io.kestra.plugin.serdes.json.IonToJson
+    from: "{{ outputs.json_to_ion.uri }}"
+    newLine: true # JSON-L
+
+  - id: for_each_item
+    type: io.kestra.plugin.core.flow.ForEachItem
+    items: "{{ outputs.ion_to_jsonl.uri }}"
+    batch:
+      rows: 1
+    namespace: company.team
+    flowId: string_output_child
+    wait: true
+    transmitFailed: true
+    inputs:
+      json_file: "{{ taskrun.items }}"
+
+  - id: ion_to_json
+    type: io.kestra.plugin.serdes.json.IonToJson
+    from: "{{ outputs.for_each_item_merge.subflowOutputs }}"
+    newLine: false
+
+  - id: merge
+    type: io.kestra.plugin.core.debug.Return
+    format: "{{ read(outputs.ion_to_json.uri) | jq('map(.myoutput)') | flatten }}"
+
+  - id: for_each
+    type: io.kestra.plugin.core.flow.ForEach
+    values: "{{ outputs.merge.value }}"
+    tasks:
+      - id: log
+        type: io.kestra.plugin.core.log.Log
+        message: "{{ taskrun.value }}"

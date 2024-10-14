@@ -1,0 +1,96 @@
+id: orders_parallel
+namespace: company.team
+
+description: |
+  Child flow:
+  ```yaml
+  id: orders
+  description: works also with batch size > 1
+  namespace: company.team
+
+  inputs:
+    - id: order
+      type: STRING
+      description: internal storage URL
+
+    - id: order2
+      type: FILE
+      description: internal storage file
+
+    - id: order3
+      type: STRING
+      description: internal storage file's content
+
+  tasks:
+    - id: read_file_content
+      type: io.kestra.plugin.core.log.Log
+      message: "{{ read(inputs.order) }}"
+
+    - id: read_file_content2
+      type: io.kestra.plugin.core.log.Log
+      message: "{{ read(inputs.order2) }}"
+
+    - id: read_file_content3
+      type: io.kestra.plugin.core.log.Log
+      message: "{{ inputs.order3 }}"
+    
+    - id: transform
+      type: io.kestra.plugin.transform.jsonata.TransformItems
+      from: "{{ inputs.order2 }}"
+      expression: |
+        {
+          "customer_email": customer_email,
+          "total": total
+        }
+
+  outputs:
+    - id: myoutput
+      type: FILE
+      value: "{{ outputs.transform.uri }}"
+  ```
+
+tasks:
+  - id: extract
+    type: io.kestra.plugin.jdbc.duckdb.Query
+    sql: |
+      INSTALL httpfs;
+      LOAD httpfs;
+      SELECT *
+      FROM read_csv_auto('https://huggingface.co/datasets/kestra/datasets/raw/main/csv/orders.csv', header=True);
+    store: true
+
+  - id: for_each_item
+    type: io.kestra.plugin.core.flow.ForEachItem
+    items: "{{ outputs.extract.uri }}"
+    batch:
+      rows: 1
+    namespace: company.team
+    flowId: orders
+    wait: true # wait for the subflow execution
+    transmitFailed: true # fail the task run if the subflow execution fails
+    inputs:
+      order: "{{ taskrun.items }}"
+      order2: "{{ taskrun.items }}"
+      order3: "{{ read(taskrun.items) }}"
+
+  - id: ion_to_json
+    type: io.kestra.plugin.serdes.json.IonToJson
+    from: "{{ outputs.for_each_item_merge.subflowOutputs }}"
+    newLine: false
+
+  - id: merge
+    type: io.kestra.plugin.core.storage.Concat
+    files: "{{ read(outputs.ion_to_json.uri) | jq('map(.myoutput)') | flatten }}"
+    separator: "\n"
+    extension: .ion
+
+  - id: for_each
+    type: io.kestra.plugin.core.flow.ForEach
+    allowFailure: true
+    description: this will fail with Unable to read the file 'kestra:///company/team/orders/executions/vBBGnSRLntC6xhA1IjFYc/tasks/transform/541J75lWtI0WQUvxz4v0qH/8580806061061976640.ion' as it didn't belong to the current execution
+    values: "{{ read(outputs.ion_to_json.uri) }}"
+    tasks:
+      - id: log
+        type: io.kestra.plugin.core.log.Log
+        allowFailure: true
+        message: "{{ read(json(taskrun.value).myoutput) }}"

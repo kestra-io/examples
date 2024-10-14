@@ -1,0 +1,61 @@
+id: json_output_parent_batch_1
+namespace: company.team
+description: |
+  id: json_output
+  namespace: company.team
+
+  inputs:
+    - id: json_file
+      type: FILE
+  vars:
+    result: "{{ json(read(inputs.json_file)) | jq('{id, name}') }}"
+    
+  tasks:
+    - id: debug
+      type: io.kestra.plugin.core.log.Log
+      message: "{{ render(vars.result) }}"
+
+  outputs:
+    - id: myoutput
+      type: JSON
+      value: "{{ render(vars.result) }}"
+
+tasks:
+  - id: download
+    type: io.kestra.plugin.core.http.Download
+    uri: https://api.restful-api.dev/objects
+    contentType: application/json
+    method: GET
+    failOnEmptyResponse: true
+    timeout: PT15S
+
+  - id: json_to_ion
+    type: io.kestra.plugin.serdes.json.JsonToIon
+    from: "{{ outputs.download.uri }}"
+    newLine: false # regular json
+
+  - id: ion_to_jsonl
+    type: io.kestra.plugin.serdes.json.IonToJson
+    from: "{{ outputs.json_to_ion.uri }}"
+    newLine: true # JSON-L
+
+  - id: for_each_item
+    type: io.kestra.plugin.core.flow.ForEachItem
+    items: "{{ outputs.ion_to_jsonl.uri }}"
+    batch:
+      rows: 1
+    namespace: company.team
+    flowId: json_output
+    wait: true
+    transmitFailed: true
+    inputs:
+      json_file: "{{ taskrun.items }}"
+
+  - id: ion_to_json
+    type: io.kestra.plugin.serdes.json.IonToJson
+    from: "{{ outputs.for_each_item_merge.subflowOutputs }}"
+    newLine: false
+
+  - id: concat # cannot use Concat task as the output is a list of JSON strings, not files
+    type: io.kestra.plugin.core.debug.Return
+    format: "{{ read(outputs.ion_to_json.uri) | jq('map(.myoutput)') | flatten }}"

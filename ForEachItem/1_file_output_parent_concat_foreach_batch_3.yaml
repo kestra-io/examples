@@ -1,0 +1,76 @@
+id: file_output_parent_concat_foreach_batch_3
+namespace: company.team
+
+description: |
+  Child flow:
+  ```yaml
+  id: file_output_child
+  namespace: company.team
+
+  inputs:
+    - id: ion_file
+      type: FILE
+
+  tasks:
+    - id: read_raw_ion_file
+      type: io.kestra.plugin.core.log.Log
+      message: "{{ read(inputs.ion_file) }}"
+
+    - id: transform
+      type: io.kestra.plugin.transform.jsonata.TransformItems
+      from: "{{ inputs.ion_file }}"
+      expression: |
+        {
+          "customer_email": customer_email,
+          "total": total
+        }
+
+  outputs:
+    - id: myoutput
+      type: FILE
+      value: "{{ outputs.transform.uri }}"
+  ```
+tasks:
+  - id: extract
+    type: io.kestra.plugin.jdbc.duckdb.Query
+    sql: |
+      INSTALL httpfs;
+      LOAD httpfs;
+      SELECT *
+      FROM read_csv_auto('https://huggingface.co/datasets/kestra/datasets/raw/main/csv/orders.csv', header=True);
+    store: true
+
+  - id: for_each_item
+    type: io.kestra.plugin.core.flow.ForEachItem
+    items: "{{ outputs.extract.uri }}"
+    batch:
+      rows: 3 # TBD annoying that it cannot be passed from inputs
+      # https://github.com/kestra-io/kestra/issues/5442
+    namespace: company.team
+    flowId: file_output_child
+    wait: true
+    transmitFailed: true
+    inputs:
+      ion_file: "{{ taskrun.items }}"
+
+  - id: ion_to_json
+    type: io.kestra.plugin.serdes.json.IonToJson
+    from: "{{ outputs.for_each_item_merge.subflowOutputs }}"
+    newLine: false
+
+  - id: merge
+    type: io.kestra.plugin.core.storage.Concat
+    files: "{{ read(outputs.ion_to_json.uri) | jq('map(.myoutput)') | flatten }}"
+    separator: "\n"
+    extension: .ion
+
+  - id: for_each
+    type: io.kestra.plugin.core.flow.ForEach
+    allowFailure: true
+    description: this will fail with Unable to read the file 'kestra:///....ion' as it didn't belong to the current execution
+    values: "{{ read(outputs.ion_to_json.uri) }}"
+    tasks:
+      - id: log
+        type: io.kestra.plugin.core.log.Log
+        allowFailure: true
+        message: "{{ read(json(taskrun.value).myoutput) }}"
