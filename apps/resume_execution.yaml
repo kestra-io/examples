@@ -1,0 +1,38 @@
+id: compute_resources_form
+namespace: company.team
+displayName: App to Approve or Reject Compute Resources Request
+disabled: false
+type: io.kestra.plugin.ee.apps.forms.ResumeExecution
+title: Validate Compute Resources Request
+description: Approve or reject a request for resources
+flowId: request_resources
+flowRevision: latest # optional property
+layout: # optional property
+  beforeSubmit:
+    approveButton: # Resume the execution
+      text: Approve
+      color: green
+    rejectButton: # Cancel the execution
+      text: Reject
+      color: red
+  afterSubmit:
+    displayText: "Thank you for validating the request. Your response is now being processed."
+    displayOutputs:
+      title: Your request is now being processed.
+      description: "Please don't close this window. The results will be displayed as soon as the processing is complete."
+expiration:
+  type: TTL # enum: TTL | DATE | LIMIT -- can be extended in the future if needed
+  ttl: PT30D
+  date: "2024-12-24"
+  limit: 100
+onSubmitAction:
+  type: DISPLAY_TEXT # enum: DISPLAY_TEXT | DISPLAY_OUTPUTS | REDIRECT_TO
+  redirectTo:
+    url: "https://example.com/thank-you"  # Redirect URL after submission
+access:
+  type: PRIVATE
+  groups: ["DevOps"] # future scope
+tags:
+  - DevOps
+  - myteam
+  - myproject
