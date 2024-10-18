@@ -8,7 +8,16 @@ description: Approve or reject a request for resources
 flowId: request_resources
 flowRevision: latest # optional property
 layout: # optional property
+  template: SYSTEM # LIGHT_MODE, DARK_MODE, in the future perhaps more with custom colors e.g. PURPLE, etc
   beforeSubmit:
+    displayInputs: # by default, all inputs are displayed. Set to an empty array to hide all inputs.
+      - resource_type
+      - access_permissions
+      - saas_applications
+      - development_tools
+    displayOutputs: # by default, all outputs are displayed. Set to an empty array to hide all inputs.
+      - task1
+      - task4
     approveButton: # Resume the execution
       text: Approve
       color: green

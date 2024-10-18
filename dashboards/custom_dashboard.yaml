@@ -1,0 +1,168 @@
+id: countries
+namespace: company.team
+title: Executions per country
+description: Count executions per country label and execution state
+defaultTimeWindow: PT30D
+
+charts:
+  - id: time_series
+    type: io.kestra.plugin.core.dashboards.TimeSeries
+    timeseries:
+      column: executionDate
+      timezone:
+        type: UTC # BROWSER_TIME, CUSTOM
+        value: Europe/Paris # only if CUSTOM
+    panelOptions:
+      title: Executions per country over time
+      description: Count executions per country label and execution state # optional icon on hover
+      tooltip: ALL # ALL, NONE, SINGLE
+      showLegend: true
+      showGridLines: true
+      colorScheme: CLASSIC # PURPLE - TBD - we may sync with Settings color scheme as in the main dashboard
+    data:
+      type: io.kestra.plugin.core.dashboards.data.Executions
+      columns:
+        executionDate:
+          field: execution.startDate
+          displayName: Execution Date
+        country:
+          field: label.country
+          displayName: Country
+        state:
+          field: execution.state
+          displayName: Execution State
+        duration: # right vertical axis
+          field: execution.duration
+          displayName: Execution Duration
+          agg: SUM
+          graphStyle: LINES # LINES, BARS, POINTS
+        total: # left vertical axis
+          field: execution
+          displayName: Total Executions
+          agg: COUNT
+          graphStyle: BARS # LINES, BARS, POINTS
+      where:
+        - field: namespace
+          type: IN
+          value:
+            - aimtec.production
+            - aimtec.partners
+      orderBy:
+        total: DESC
+        duration: ASC
+
+  - id: table
+    type: io.kestra.plugin.core.dashboards.charts.Markdown
+    markdownContent: |
+      ## This is a markdown panel
+
+  - id: executions_per_country
+    type: io.kestra.plugin.core.dashboards.BarChart
+    panelOptions:
+      title: Executions per country
+      description: Count executions per country label and execution state # optional icon on hover
+      tooltip: ALL # ALL, NONE, SINGLE
+      showLegend: true
+      showGridLines: false
+      colorScheme: CLASSIC # PURPLE - TBD - we may sync with Settings color scheme as in the main dashboard
+      horizontalAxis:
+        column: country
+        placement: BOTTOM # TOP
+        displayName: Country
+      verticalAxis:
+        column: total
+        placement: LEFT # RIGHT
+        displayName: Total Executions
+    data:
+      type: io.kestra.plugin.core.dashboards.data.Executions
+      columns:
+        country:
+          field: label.country
+          displayName: Country
+        state:
+          field: execution.state
+          displayName: Execution State
+        total: # left vertical axis
+          field: execution
+          displayName: Total Executions
+          agg: COUNT
+      orderBy:
+        total: DESC
+
+  - id: total_executions_per_country
+    type: io.kestra.plugin.core.dashboards.charts.PieChart
+    panelOptions:
+      title: Executions per country
+      description: Count executions per country label and execution state
+      graphStyle: PIE # PIE, DONUT
+      showLegend: true
+      colorScheme: CLASSIC # PURPLE - TBD - we may sync with Settings color scheme as in the main dashboard
+    data:
+      type: io.kestra.plugin.core.dashboards.data.Executions
+      columns:
+        country:
+          field: label.country
+          displayName: Country
+        total:
+          field: execution
+          agg: COUNT # we group by all columns that don't have aggregation
+          displayName: Total Executions
+
+  - id: table
+    type: io.kestra.plugin.core.dashboards.charts.Table
+    panelOptions:
+      title: Executions per country
+      description: Count executions per country label and execution state
+      showHeader: true # header = column names
+      showFooter: false # footer = total count
+      enablePagination: true
+      columnAlignment: left #  right, center
+      columnFilters: false
+    data:
+      type: io.kestra.plugin.core.dashboards.data.Executions
+      columns:
+        country:
+          field: label.country
+          displayName: Country
+        project:
+          field: label.project
+        env:
+          field: label.env
+        state:
+          field: execution.state
+          displayName: Execution State
+        total: # left vertical axis
+          field: execution
+          agg: COUNT # we group by all columns that don't have aggregation
+          displayName: Total Executions
+        duration:
+          field: execution.duration
+          agg: SUM
+      where:
+        - field: namespace
+          type: IN
+          value:
+            - aimtec.production
+            - aimtec.partners
+        - field: duration
+          type: GREATER_THAN_OR_EQUAL_TO
+          value: 30
+        - type: OR
+          value:
+            - field: execution.state
+              type: EQUAL_TO
+              value: CREATED
+            - field: label.country
+              type: EQUAL_TO
+              value: Italy
+      orderBy:
+        total: DESC
+        duration: ASC
+# possible WHERE filters are EQUAL_TO, NOT_EQUAL_TO, GREATER_THAN, LESS_THAN, BETWEEN, GREATER_THAN_OR_EQUAL_TO, LESS_THAN_OR_EQUAL_TO, IS_EMPTY, NOT_EMPTY
+    layout:
+      width: 24 # int nr max 24
+      height: 8 # int nr max 24
+      # TBD top/bottom and left/right
+
+# TODO:
+# display all columns available per datasource (from)
