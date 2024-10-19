@@ -1,5 +1,4 @@
 id: countries
-namespace: company.team
 title: Executions per country
 description: Count executions per country label and execution state
 defaultTimeWindow: PT30D
@@ -17,10 +16,9 @@ charts:
       description: Count executions per country label and execution state # optional icon on hover
       tooltip: ALL # ALL, NONE, SINGLE
       showLegend: true
-      showGridLines: true
-      colorScheme: CLASSIC # PURPLE - TBD - we may sync with Settings color scheme as in the main dashboard
+      colorScheme: CLASSIC # PURPLE - TBD - we may sync with the Settings color scheme as in the main dashboard
     data:
-      type: io.kestra.plugin.core.dashboards.data.Executions
+      type: io.kestra.plugin.core.dashboards.data.Executions # also: Logs and Metrics available
       columns:
         executionDate:
           field: execution.startDate
@@ -51,7 +49,7 @@ charts:
         total: DESC
         duration: ASC
 
-  - id: table
+  - id: markdown_section
     type: io.kestra.plugin.core.dashboards.charts.Markdown
     markdownContent: |
       ## This is a markdown panel
@@ -63,16 +61,13 @@ charts:
       description: Count executions per country label and execution state # optional icon on hover
       tooltip: ALL # ALL, NONE, SINGLE
       showLegend: true
-      showGridLines: false
-      colorScheme: CLASSIC # PURPLE - TBD - we may sync with Settings color scheme as in the main dashboard
+      colorScheme: CLASSIC # PURPLE - TBD - we may sync with the Settings color scheme as in the main dashboard
       horizontalAxis:
         column: country
         placement: BOTTOM # TOP
-        displayName: Country
       verticalAxis:
         column: total
         placement: LEFT # RIGHT
-        displayName: Total Executions
     data:
       type: io.kestra.plugin.core.dashboards.data.Executions
       columns:
@@ -105,7 +100,7 @@ charts:
           displayName: Country
         total:
           field: execution
-          agg: COUNT # we group by all columns that don't have aggregation
+          agg: COUNT
           displayName: Total Executions
 
   - id: table
@@ -114,7 +109,7 @@ charts:
       title: Executions per country
       description: Count executions per country label and execution state
       showHeader: true # header = column names
-      showFooter: false # footer = total count
+      showFooter: false # footer = total count - TBD, not sure if this is needed
       enablePagination: true
       columnAlignment: left #  right, center
       columnFilters: false
@@ -162,7 +157,3 @@ charts:
     layout:
       width: 24 # int nr max 24
       height: 8 # int nr max 24
-      # TBD top/bottom and left/right
-
-# TODO:
-# display all columns available per datasource (from)

@@ -1,0 +1,46 @@
+id: git_sync_ee
+namespace: system
+description: |
+  Given it's EE functionality, we can be opinionated and assume dev/prod is separated via instance or tenant, not via namespace. 
+  No need to make Git Sync tied to a namespace in EE plugins.
+
+tasks:
+  - id: sync_apps
+    type: io.kestra.plugin.ee.gitsync.apps.SyncApps
+    gitDirectory: apps
+    url: https://github.com/kestra-io/examples
+    branch: main
+    username: git_username
+    password: "{{ secret('GITHUB_ACCESS_TOKEN') }}"
+    delete: false # optional; by default, it's set to false to avoid destructive behavior
+    dryRun: true
+
+  - id: push_apps
+    type: io.kestra.plugin.ee.gitsync.apps.PushApps
+    gitDirectory: apps
+    url: https://github.com/kestra-io/examples
+    branch: main
+    username: git_username
+    password: "{{ secret('GITHUB_ACCESS_TOKEN') }}"
+    commitMessage: "Add apps {{ now() }}"
+    dryRun: true
+
+  - id: sync_dashboards
+    type: io.kestra.plugin.ee.gitsync.dashboards.SyncDashboards
+    gitDirectory: dashboards
+    url: https://github.com/kestra-io/examples
+    branch: main
+    username: git_username
+    password: "{{ secret('GITHUB_ACCESS_TOKEN') }}"
+    delete: false # optional; by default, it's set to false to avoid destructive behavior
+    dryRun: true
+
+  - id: push_dashboards
+    type: io.kestra.plugin.ee.gitsync.dashboards.PushDashboards
+    gitDirectory: dashboards
+    url: https://github.com/kestra-io/examples
+    branch: main
+    username: git_username
+    password: "{{ secret('GITHUB_ACCESS_TOKEN') }}"
+    commitMessage: "Add dashboards {{ now() }}"
+    dryRun: true
