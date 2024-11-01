@@ -78,7 +78,7 @@ layout:
           No request to approve or reject.
 
 description: |
-  This app allows you to submit a form and forward the data to a flow.
+  This app allows you to submit a form to request compute resources and get it approved by the DevOps team.
   Example flow:
     ```yaml
     id: request_resources
