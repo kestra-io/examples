@@ -28,7 +28,13 @@ description: |
     tasks:
       - id: extract
         type: io.kestra.plugin.core.http.Download
-        uri: https://huggingface.co/datasets/kestra/datasets/resolve/main/ion/products.ion  
+        uri: https://huggingface.co/datasets/kestra/datasets/resolve/main/ion/products.ion
+    
+    outputs:
+      - id: data
+        type: FILE
+        description: Data to Download
+        value: "{{ outputs.extract.uri }}"  
     ```
 
 template:
