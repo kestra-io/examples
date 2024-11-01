@@ -41,7 +41,7 @@ layout:
         type: io.kestra.plugin.ee.apps.blocks.ExecutionOutputs
 
 description: |
-  This app allows you to submit a form and forward the data to a flow.
+  This app is intended to request data and download it.
   Example flow:
     ```yaml
     id: get_data

@@ -19,7 +19,7 @@ layout:
         type: io.kestra.plugin.ee.apps.blocks.ExecutionOutputs
 
 description: |
-  This app allows you to present the outputs from a past execution.
+  This app displays the outputs from a past execution. It's useful to provide a simple way to share the results of a flow with non-technical business users.
   Example flow:
     ```yaml
     id: extract_data
