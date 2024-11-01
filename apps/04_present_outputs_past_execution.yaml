@@ -1,0 +1,39 @@
+id: past_execution
+type: io.kestra.plugin.ee.apps.Execution
+displayName: Display Outputs from a Past Execution
+namespace: company.team
+flowId: extract_data
+executionId: 7GKBuetEEPRDgpKUDSNyTm
+access: PUBLIC
+
+layout:
+  - on: SUCCESS
+    blocks:
+      - id: download_data_text
+        type: io.kestra.ee.apps.blocks.Markdown
+        content: |
+          ## Download the report
+          The data you requested is ready for download.
+
+      - id: outputs
+        type: io.kestra.plugin.ee.apps.blocks.ExecutionOutputs
+
+description: |
+  This app allows you to present the outputs from a past execution.
+  Example flow:
+    ```yaml
+    id: extract_data
+    namespace: company.team
+    
+    tasks:
+      - id: extract
+        type: io.kestra.plugin.core.http.Download
+        uri: https://huggingface.co/datasets/kestra/datasets/resolve/main/ion/products.ion  
+    ```
+
+template:
+  theme: DARK # AUTO, LIGHT, future: YOUR_CUSTOM_THEME
+  header:
+    image: "kestra://" # TBD how to manage this
+  footer:
+    enabled: false

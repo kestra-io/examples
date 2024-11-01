@@ -1,22 +1,22 @@
 id: countries
-title: Executions per country
+displayName: Executions per country
 description: Count executions per country label and execution state
-defaultTimeWindow: PT30D
+timeWindow:
+  default: P30D # P30DT30H
+  max: P365D
 
 charts:
   - id: time_series
     type: io.kestra.plugin.core.dashboards.TimeSeries
     timeseries:
       column: executionDate
-      timezone:
-        type: UTC # BROWSER_TIME, CUSTOM
-        value: Europe/Paris # only if CUSTOM
     panelOptions:
-      title: Executions per country over time
+      displayName: Executions per country over time
       description: Count executions per country label and execution state # optional icon on hover
       tooltip: ALL # ALL, NONE, SINGLE
-      showLegend: true
-      colorScheme: CLASSIC # PURPLE - TBD - we may sync with the Settings color scheme as in the main dashboard
+      legend:
+        enabled: true # later on possible to extend it e.g. position AUTO, LEFT, RIGHT, TOP, BOTTOM
+      # colorScheme: CLASSIC # PURPLE - TBD - we may sync with the Settings color scheme as in the main dashboard
     data:
       type: io.kestra.plugin.core.dashboards.data.Executions # also: Logs and Metrics available
       columns:
@@ -26,6 +26,7 @@ charts:
         country:
           field: label.country
           displayName: Country
+          # alternative definition timeseries: true
         state:
           field: execution.state
           displayName: Execution State
@@ -51,29 +52,33 @@ charts:
 
   - id: markdown_section
     type: io.kestra.plugin.core.dashboards.charts.Markdown
+    panelOptions:
+      displayName: Executions per country over time
+      description: Count executions per country label and execution state # optional icon on hover
     markdownContent: |
       ## This is a markdown panel
 
   - id: executions_per_country
     type: io.kestra.plugin.core.dashboards.BarChart
     panelOptions:
-      title: Executions per country
+      displayName: Executions per country
       description: Count executions per country label and execution state # optional icon on hover
       tooltip: ALL # ALL, NONE, SINGLE
-      showLegend: true
-      colorScheme: CLASSIC # PURPLE - TBD - we may sync with the Settings color scheme as in the main dashboard
-      horizontalAxis:
-        column: country
-        placement: BOTTOM # TOP
-      verticalAxis:
-        column: total
-        placement: LEFT # RIGHT
+      legend:
+        enabled: true # later on possible to extend it e.g. position AUTO, LEFT, RIGHT, TOP, BOTTOM
+      # colorScheme: CLASSIC # PURPLE - TBD - we may sync with the Settings color scheme as in the main dashboard
+    axes:
+      horizontal:
+        - column: namespace
+          limit: 100
+        - column: state
+          limit: 10
     data:
       type: io.kestra.plugin.core.dashboards.data.Executions
       columns:
-        country:
-          field: label.country
-          displayName: Country
+        namespace:
+          field: namespace
+          displayName: Namespace
         state:
           field: execution.state
           displayName: Execution State
@@ -87,11 +92,12 @@ charts:
   - id: total_executions_per_country
     type: io.kestra.plugin.core.dashboards.charts.PieChart
     panelOptions:
-      title: Executions per country
+      displayName: Executions per country
       description: Count executions per country label and execution state
-      graphStyle: PIE # PIE, DONUT
-      showLegend: true
-      colorScheme: CLASSIC # PURPLE - TBD - we may sync with Settings color scheme as in the main dashboard
+      graphStyle: PIE # PIE, DONUT - donutdefault
+      legend:
+        enabled: true # later on possible to extend it e.g. position AUTO, LEFT, RIGHT, TOP, BOTTOM
+      # colorScheme: CLASSIC # PURPLE - TBD - we may sync with the Settings color scheme as in the main dashboard
     data:
       type: io.kestra.plugin.core.dashboards.data.Executions
       columns:
@@ -106,19 +112,19 @@ charts:
   - id: table
     type: io.kestra.plugin.core.dashboards.charts.Table
     panelOptions:
-      title: Executions per country
+      displayName: Executions per country
       description: Count executions per country label and execution state
-      showHeader: true # header = column names
-      showFooter: false # footer = total count - TBD, not sure if this is needed
-      enablePagination: true
-      columnAlignment: left #  right, center
-      columnFilters: false
+      header:
+        enabled: true # header = column names; in the future can add customization
+      pagination:
+        enabled: true # in the future: possible to add page size
     data:
       type: io.kestra.plugin.core.dashboards.data.Executions
       columns:
         country:
           field: label.country
           displayName: Country
+          columnAlignment: LEFT #  RIGHT, CENTER
         project:
           field: label.project
         env:
@@ -153,7 +159,3 @@ charts:
       orderBy:
         total: DESC
         duration: ASC
-# possible WHERE filters are EQUAL_TO, NOT_EQUAL_TO, GREATER_THAN, LESS_THAN, BETWEEN, GREATER_THAN_OR_EQUAL_TO, LESS_THAN_OR_EQUAL_TO, IS_EMPTY, NOT_EMPTY
-    layout:
-      width: 24 # int nr max 24
-      height: 8 # int nr max 24

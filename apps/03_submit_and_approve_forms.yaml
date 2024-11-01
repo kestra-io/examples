@@ -1,0 +1,172 @@
+id: request_resources_form
+type: io.kestra.plugin.ee.apps.Execution
+displayName: Submit Compute Resources Request and Get it Approved
+namespace: company.team
+flowId: request_resources
+access: PRIVATE
+
+layout:
+  - on: OPEN
+    blocks:
+      - id: page_header
+        type: io.kestra.ee.apps.blocks.Markdown
+        content: |
+          # Request Compute Resources
+          Fill out the form below to request compute resources.
+
+      - id: submission_form
+        type: io.kestra.plugin.ee.apps.blocks.CreateExecutionForm
+
+      - id: submit_button
+        type: io.kestra.plugin.ee.apps.blocks.CreateExecutionButton
+        text: Submit
+
+  - on: CREATED
+    blocks:
+      - id: fetching_data
+        type: io.kestra.ee.apps.blocks.Markdown
+        content: |
+          ## Thank you for your submission!
+          Your request is now forwarded to the DevOps team for approval.
+
+  - on: PAUSE
+    blocks:
+      - id: request_approval
+        type: io.kestra.ee.apps.blocks.Markdown
+        content: |
+          ## Validate the request
+          Below are the details of the request. 
+
+      - id: inputs
+        type: io.kestra.plugin.ee.apps.blocks.ExecutionInputs
+
+      - id: outputs
+        type: io.kestra.plugin.ee.apps.blocks.ExecutionOutputs
+
+      - id: approval_decision
+        type: io.kestra.ee.apps.blocks.Markdown
+        content: |
+          ## Approve or Reject?
+          Please approve or reject the request.
+
+      - id: resume_execution_form
+        type: io.kestra.plugin.ee.apps.blocks.ResumeExecutionForm
+
+      - id: approve_button
+        type: io.kestra.plugin.ee.apps.blocks.ResumeExecutionButton
+        text: Approve
+        style: INFO
+
+      - id: reject_button
+        type: io.kestra.plugin.ee.apps.blocks.CancelExecutionButton
+        text: Reject
+        style: DANGER
+
+  - on: SUCCESS
+    blocks:
+      - id: request_validated
+        type: io.kestra.ee.apps.blocks.Markdown
+        content: |
+          ## Thank you for validating the request!
+
+  - on: FALLBACK
+    blocks:
+      - id: no_execution_to_resume
+        type: io.kestra.ee.apps.blocks.Markdown
+        content: |
+          ## No execution to resume
+          No request to approve or reject.
+
+description: |
+  This app allows you to submit a form and forward the data to a flow.
+  Example flow:
+    ```yaml
+    id: request_resources
+    namespace: company.team
+    
+    variables:
+      slack_message: >
+        New form submission! Click on the Resume button here to approve or reject the request: {{ appLink('request_resources_form') }}
+    
+    inputs:
+      - id: resource_type
+        displayName: Resource Type
+        type: SELECT
+        required: true
+        values: ["Access permissions", "SaaS application", "Development tool", "Cloud VM"]
+    
+      - id: access_permissions
+        displayName: Access Permissions
+        type: SELECT
+        values: ["Admin", "Developer", "Editor", "Launcher", "Viewer"]
+        allowCustomValue: true
+        dependsOn:
+          inputs:
+            - resource_type
+          condition: "{{ inputs.resource_type equals 'Access permissions' }}"
+    
+      - id: saas_applications
+        displayName: SaaS Application
+        type: MULTISELECT
+        values: ["Slack", "Notion", "HubSpot", "GitHub", "Jira"]
+        allowCustomValue: true
+        dependsOn:
+          inputs:
+            - resource_type
+          condition: "{{ inputs.resource_type equals 'SaaS application' }}"
+    
+      - id: development_tools
+        displayName: Development Tool
+        type: SELECT
+        values: ["Cursor", "IntelliJ IDEA", "PyCharm Professional", "Datagrip"]
+        allowCustomValue: true
+        dependsOn:
+          inputs:
+            - resource_type
+          condition: "{{ inputs.resource_type equals 'Development tool' }}"
+    
+      - id: cloud_provider
+        displayName: Cloud Provider
+        type: SELECT
+        values: ["AWS", "GCP", "Azure"]
+        allowCustomValue: true
+        dependsOn:
+          inputs:
+            - resource_type
+          condition: "{{ inputs.resource_type equals 'Cloud VM' }}"
+    
+    tasks:
+      - id: send_approval_request
+        type: io.kestra.plugin.notifications.slack.SlackIncomingWebhook
+        url: https://reqres.in/api/slack
+        payload: |
+          {
+            "channel": "#devops",
+            "text": {{ render(vars.slack_message) | json }}
+          }
+          
+      - id: wait_for_approval
+        type: io.kestra.plugin.core.flow.Pause
+        onResume:
+          - id: approved
+            description: Whether to approve the request
+            type: BOOLEAN
+            defaults: true
+          - id: comment
+            description: Extra comments about the provisioned resources
+            type: STRING
+            defaults: All requested resources are approved
+    
+      - id: approve
+        type: io.kestra.plugin.core.http.Request
+        uri: https://reqres.in/api/resources
+        method: POST
+        contentType: application/json
+        body: "{{ inputs }}"
+  
+      - id: log
+        type: io.kestra.plugin.core.log.Log
+        message: |
+          Status of the request {{ outputs.wait_for_approval.onResume.comment }}.
+          Process finished with {{ outputs.approve.body }}.
+    ```

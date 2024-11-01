@@ -1,0 +1,66 @@
+id: form_to_request_and_download_data
+type: io.kestra.plugin.ee.apps.Execution
+displayName: Form to request and download data
+namespace: company.team
+flowId: get_data
+access: PRIVATE
+
+layout:
+  - on: OPEN
+    blocks:
+      - id: page_header
+        type: io.kestra.ee.apps.blocks.Markdown
+        content: |
+          # Request data
+          Select the data you want to download.
+
+      - id: submission_form
+        type: io.kestra.plugin.ee.apps.blocks.CreateExecutionForm
+
+      - id: submit_button
+        type: io.kestra.plugin.ee.apps.blocks.CreateExecutionButton
+        text: Submit
+
+  - on: CREATED
+    blocks:
+      - id: fetching_data
+        type: io.kestra.ee.apps.blocks.Markdown
+        content: |
+          ## Fetching your data...
+          Don't close this window. The results will be displayed as soon as the processing is complete.
+
+  - on: SUCCESS
+    blocks:
+      - id: download_data_text
+        type: io.kestra.ee.apps.blocks.Markdown
+        content: |
+          ## Your data is ready for download!
+          The data you requested is now available for download.
+
+      - id: outputs
+        type: io.kestra.plugin.ee.apps.blocks.ExecutionOutputs
+
+description: |
+  This app allows you to submit a form and forward the data to a flow.
+  Example flow:
+    ```yaml
+    id: get_data
+    namespace: company.team
+    
+    inputs:
+      - id: data
+        displayName: Select Data to Download
+        type: SELECT
+        values:
+          - customers
+          - employees
+          - products
+          - stores
+          - suppliers
+        defaults: customers
+    
+    tasks:
+      - id: extract
+        type: io.kestra.plugin.core.http.Download
+        uri: https://huggingface.co/datasets/kestra/datasets/resolve/main/ion/{{ inputs.data }}.ion  
+    ```
