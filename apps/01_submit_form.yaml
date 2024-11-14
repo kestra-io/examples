@@ -8,32 +8,27 @@ access: PUBLIC
 layout:
   - on: OPEN
     blocks:
-      - id: page_header
-        type: io.kestra.ee.apps.blocks.Markdown
+      - type: io.kestra.ee.apps.blocks.Markdown
         content: |
           # Sign up for a waitlist to Kestra Cloud
           Register now to be the first to know when we launch!
 
-      - id: submission_form
-        type: io.kestra.plugin.ee.apps.blocks.CreateExecutionForm
+      - type: io.kestra.plugin.ee.apps.execution.blocks.CreateExecutionForm
 
-      - id: submit_button
-        type: io.kestra.plugin.ee.apps.blocks.CreateExecutionButton
+      - type: io.kestra.plugin.ee.apps.execution.blocks.CreateExecutionButton
         text: Submit
 
   - on: CREATED
     blocks:
-      - id: thank_you_message
-        type: io.kestra.ee.apps.blocks.Markdown
+      - type: io.kestra.ee.apps.blocks.Markdown
         content: |
           ## Thanks for your interest in Kestra Cloud!
           We will notify you as soon as we launch.
-
 description: |
   This app allows you to submit a form and forward the data to a flow.
   Example flow:
     ```yaml
-    id: form
+    id: kestra_cloud_form
     namespace: company.team
     
     inputs:
