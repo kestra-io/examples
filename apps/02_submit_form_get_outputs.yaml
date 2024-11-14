@@ -43,6 +43,10 @@ layout:
         content: |
           ## Fetching your data...
           Don't close this window. The results will be displayed as soon as the processing is complete.
+      
+      - type: io.kestra.ee.apps.blocks.Loading
+
+      - type: io.kestra.ee.apps.blocks.AutoRefresh
 
   - on: SUCCESS
     blocks:
