@@ -5,7 +5,7 @@ tasks:
   - id: s3_download
     type: io.kestra.plugin.aws.s3.Download
     accessKeyId: "{{ secret('AWS_ACCESS_KEY_ID') }}"
-    secretKeyId: "{{ secret('AWS_SECRET_ACCESS_KEY') }}"
+    secretKeyId: "{{ secret('AWS_SECRET_KEY_ID') }}"
     region: "{{ secret('AWS_DEFAULT_REGION') }}"
     bucket: kestraio
     key: orders.csv
