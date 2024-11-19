@@ -35,9 +35,9 @@ description: |
         value: "{{ outputs.extract.uri }}"  
     ```
 
-template:
-  theme: DARK # AUTO, LIGHT, future: YOUR_CUSTOM_THEME
-  header:
-    image: "kestra://" # TBD how to manage this
-  footer:
-    enabled: false
+# template:
+#   theme: DARK # AUTO, LIGHT, future: YOUR_CUSTOM_THEME
+#   header:
+#     image: "kestra://" # TBD how to manage this
+#   footer:
+#     enabled: false
