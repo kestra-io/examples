@@ -8,71 +8,75 @@ access: PRIVATE
 layout:
   - on: OPEN
     blocks:
-      - id: page_header
-        type: io.kestra.ee.apps.blocks.Markdown
+      - type: io.kestra.ee.apps.blocks.Markdown
         content: |
           # Request Compute Resources
           Fill out the form below to request compute resources.
 
-      - id: submission_form
-        type: io.kestra.plugin.ee.apps.blocks.CreateExecutionForm
+      - type: io.kestra.plugin.ee.apps.execution.blocks.CreateExecutionForm
 
-      - id: submit_button
-        type: io.kestra.plugin.ee.apps.blocks.CreateExecutionButton
+      - type: io.kestra.plugin.ee.apps.execution.blocks.CreateExecutionButton
         text: Submit
 
   - on: CREATED
     blocks:
-      - id: fetching_data
-        type: io.kestra.ee.apps.blocks.Markdown
+      - type: io.kestra.ee.apps.blocks.Markdown
         content: |
           ## Thank you for your submission!
           Your request is now forwarded to the DevOps team for approval.
+      
+      - type: io.kestra.ee.apps.blocks.AutoRefresh
 
   - on: PAUSE
     blocks:
-      - id: request_approval
-        type: io.kestra.ee.apps.blocks.Markdown
+      - type: io.kestra.ee.apps.blocks.Markdown
         content: |
           ## Validate the request
           Below are the details of the request. 
 
-      - id: inputs
-        type: io.kestra.plugin.ee.apps.blocks.ExecutionInputs
+      - type: io.kestra.plugin.ee.apps.execution.blocks.Inputs
 
-      - id: outputs
-        type: io.kestra.plugin.ee.apps.blocks.ExecutionOutputs
+      - type: io.kestra.plugin.ee.apps.execution.blocks.Outputs
 
-      - id: approval_decision
-        type: io.kestra.ee.apps.blocks.Markdown
+      - type: io.kestra.ee.apps.blocks.Markdown
         content: |
           ## Approve or Reject?
           Please approve or reject the request.
 
-      - id: resume_execution_form
-        type: io.kestra.plugin.ee.apps.blocks.ResumeExecutionForm
+      - type: io.kestra.plugin.ee.apps.execution.blocks.ResumeExecutionForm
 
-      - id: approve_button
-        type: io.kestra.plugin.ee.apps.blocks.ResumeExecutionButton
+      - type: io.kestra.plugin.ee.apps.execution.blocks.ResumeExecutionButton
         text: Approve
-        style: INFO
+        style: SUCCESS
 
-      - id: reject_button
-        type: io.kestra.plugin.ee.apps.blocks.CancelExecutionButton
+      - type: io.kestra.plugin.ee.apps.execution.blocks.CancelExecutionButton
         text: Reject
         style: DANGER
 
-  - on: SUCCESS
+      - type: io.kestra.ee.apps.blocks.AutoRefresh
+
+  - on: RESUME
     blocks:
-      - id: request_validated
-        type: io.kestra.ee.apps.blocks.Markdown
+      - type: io.kestra.ee.apps.blocks.Markdown
         content: |
           ## Thank you for validating the request!
 
+      - type: io.kestra.ee.apps.blocks.AutoRefresh
+
+  - on: SUCCESS
+    blocks:
+      - type: io.kestra.ee.apps.blocks.Markdown
+        content: |
+          ## All done
+          Redirecting to the main App page in 5 seconds in case you want to submit a new request.
+      
+      # - type: io.kestra.ee.apps.blocks.RedirectTo
+      #   url: "{{ appLink('request_resources_form') }}"
+      #   delay: PT5S
+
   - on: FALLBACK
     blocks:
-      - id: no_execution_to_resume
-        type: io.kestra.ee.apps.blocks.Markdown
+      - type: io.kestra.ee.apps.blocks.Markdown
         content: |
           ## No execution to resume
           No request to approve or reject.
