@@ -1,69 +1,78 @@
-id: dataWarehouse
-namespace: prod
+id: data_warehouse
+namespace: company.team
+
 tasks:
-  - id: extractLoadToDatalake
+  - id: extract_load_to_datalake
     type: io.kestra.core.tasks.flows.Parallel
     concurrent: 8
     tasks:
-      - id: microsoftDynamicsNAV
+      - id: microsoft_dynamics_nav
         type: io.kestra.plugin.fivetran.connectors.Sync
         connectorId: dynamics-connector
-        apiKey: "{{secret('FIVETRAN_API_KEY')}}"
-        apiSecret: "{{secret('FIVETRAN_API_SECRET')}}"
+        apiKey: "{{ secret('FIVETRAN_API_KEY') }}"
+        apiSecret: "{{ secret('FIVETRAN_API_SECRET') }}"
+
       - id: stripe
         type: io.kestra.plugin.singer.taps.Stripe
         startDate: "2023-06-01"
         streamsConfigurations:
-        - replicationMethod: INCREMENTAL
-          selected: true
-        accountId: "{{envs.stripe_account_id}}"
-        clientSecret: "{{envs.stripe_client_secret}}"
-      - id: googleSearchConsole
+          - replicationMethod: INCREMENTAL
+            selected: true
+        accountId: "{{ secret('STRIPE_ACCOUNT_ID') }}"
+        clientSecret: "{{ secret('STRIPE_CLIENT_SECRET') }}"
+
+      - id: google_search_console
         type: io.kestra.plugin.singer.taps.GoogleSearchConsole
-        clientId: "{{envs.googlesearch_client_id}}"
-        clientSecret: "{{envs.googlesearch_client_secret}}"
-        refreshToken: "{{envs.googlesearch_refresh_token}}"
+        clientId: "{{ secret('GOOGLESEARCH_CLIENT_ID') }}"
+        clientSecret: "{{ secret('GOOGLESEARCH_CLIENT_SECRET') }}"
+        refreshToken: "{{ secret('GOOGLESEARCH_REFRESH_TOKEN') }}"
         siteUrls:
           - kestra.io/docs
           - kestra.io/plugins
         startDate: "2023-06-01"
         streamsConfigurations:
-        - replicationMethod: INCREMENTAL
-          selected: true
-      - id: microsoftAdvertising
+          - replicationMethod: INCREMENTAL
+            selected: true
+
+      - id: microsoft_advertising
         type: io.kestra.plugin.fivetran.connectors.Sync
         connectorId: microsoft-advertising-connector
-        apiKey: "{{secret('FIVETRAN_API_KEY')}}"
-        apiSecret: "{{secret('FIVETRAN_API_SECRET')}}"
+        apiKey: "{{ secret('FIVETRAN_API_KEY') }}"
+        apiSecret: "{{ secret('FIVETRAN_API_SECRET') }}"
+
       - id: salesforce
         type: io.kestra.plugin.singer.taps.Salesforce
-        clientId: "{{envs.salesforce_client_id}}"
-        clientSecret: "{{envs.salesforce_client_secret}}"
+        clientId: "{{ secret('SALESFORCE_CLIENT_ID') }}"
+        clientSecret: "{{ secret('SALESFORCE_CLIENT_SECRET') }}"
         startDate: "2023-06-01"
         streamsConfigurations:
-        - replicationMethod: INCREMENTAL
-          selected: true
+          - replicationMethod: INCREMENTAL
+            selected: true
+
       - id: shopify
         type: io.kestra.plugin.singer.taps.Shopify
-        apiKey: "{{envs.shopify_api_key}}"
+        apiKey: "{{ secret('SHOPIFY_API_KEY') }}"
         shop: marketplace
         startDate: "2023-06-01"
         streamsConfigurations:
-        - replicationMethod: INCREMENTAL
-          selected: true
-      - id: googleAnalytics
+          - replicationMethod: INCREMENTAL
+            selected: true
+
+      - id: google_analytics
         type: io.kestra.plugin.singer.taps.GoogleAnalytics
         startDate: "2023-06-01"
         streamsConfigurations:
-        - replicationMethod: INCREMENTAL
-          selected: true
+          - replicationMethod: INCREMENTAL
+            selected: true
+
       - id: notion
         type: io.kestra.plugin.airbyte.connections.Sync
         connectionId: e3b1ce92-547c-436f-b1e8-23b6936c12ab
         url: http://host.docker.internal:8000/
-        username: "{{secret('AIRBYTE_USERNAME')}}"
-        password: "{{secret('AIRBYTE_PASSWORD')}}"
-  - id: rawSalesToBigQueryStage
+        username: "{{ secret('AIRBYTE_USERNAME') }}"
+        password: "{{ secret('AIRBYTE_PASSWORD') }}"
+
+  - id: raw_sales_to_bigquery_stage
     type: io.kestra.core.tasks.flows.Parallel
     concurrent: 10
     tasks:
@@ -77,91 +86,97 @@ tasks:
         type: io.kestra.plugin.gcp.bigquery.LoadFromGcs
       - id: invoices
         type: io.kestra.plugin.gcp.bigquery.LoadFromGcs
+
   - id: dbt
     type: io.kestra.core.tasks.flows.Worker
     tasks:
-    - id: cloneRepository
-      type: io.kestra.plugin.git.Clone
-      url: https://github.com/anna-geller/kestra-ee
-      branch: main
-      username: anna-geller
-      password: "{{envs.github_access_token}}"
-    - id: dbt-setup
-      type: io.kestra.plugin.dbt.cli.Setup
-      profiles:
-        marketplace:
-          outputs:
-            prod:
-              type: bigquery
-              dataset: dwh
-              job_retries: 1
-              keyfile: sa.json
-              method: service-account
-              project: geller
-              threads: 8
-              timeout_seconds: 600
-          target: prod
-      requirements:
-        - dbt-bigquery
-      runner: DOCKER
-      dockerOptions:
-        image: python:3.10-slim
-      inputFiles:
-        sa.json: |
-          {{envs.gcp_creds}}
-    - id: dbt-build
-      type: io.kestra.plugin.dbt.cli.Build
-      debug: false
-      runner: DOCKER
-      dockerOptions:
-        image: python:3.10-slim
-      inputFiles:
-        sa.json: |
-          {{envs.gcp_creds}}
-  - id: consumptionLayer
+      - id: clone_repository
+        type: io.kestra.plugin.git.Clone
+        url: https://github.com/anna-geller/kestra-ee
+        branch: main
+        username: anna-geller
+        password: "{{envs.github_access_token}}"
+
+      - id: dbt_setup
+        type: io.kestra.plugin.dbt.cli.Setup
+        profiles:
+          marketplace:
+            outputs:
+              prod:
+                type: bigquery
+                dataset: dwh
+                job_retries: 1
+                keyfile: sa.json
+                method: service-account
+                project: geller
+                threads: 8
+                timeout_seconds: 600
+            target: prod
+        requirements:
+          - dbt-bigquery
+        taskRunner:
+          type: io.kestra.plugin.scripts.runner.docker.Docker
+        containerImage: python:3.10-slim
+        inputFiles:
+          sa.json: "{{ secret('GCP_SERVICE_ACCOUNT_JSON') }}"
+
+      - id: dbt-build
+        type: io.kestra.plugin.dbt.cli.Build
+        debug: false
+        taskRunner:
+          type: io.kestra.plugin.scripts.runner.docker.Docker
+        containerImage: python:3.10-slim
+        inputFiles:
+          sa.json: "{{ secret('GCP_SERVICE_ACCOUNT_JSON') }}"
+
+  - id: consumption_layer
     type: io.kestra.core.tasks.flows.Parallel
     tasks:
-    - id: refreshPowerBI
-      type: io.kestra.plugin.powerbi.RefreshGroupDataset
-      clientId: "{{envs.azure_client_id}}"
-      clientSecret: "{{envs.azure_client_secret}}"
-      tenantId: "{{envs.azure_username}}"
-      datasetId: salesDashboard
-    - id: vertexAI
-      type: io.kestra.plugin.gcp.vertexai.CustomJob
-      projectId: my-gcp-project
-      region: europe-west1
-      displayName: Start Custom Job
-      spec:
-        workerPoolSpecs:
-        - containerSpec:
-            imageUri: gcr.io/my-gcp-project/my-dir/my-image:latest
-          machineSpec:
-            machineType: n1-standard-4
-          replicaCount: 1
-    - id: customReporting
-      type: io.kestra.core.tasks.flows.EachParallel
-      value: [ "https://raw.githubusercontent.com/dbt-labs/jaffle_shop/main/seeds/raw_customers.csv", "https://raw.githubusercontent.com/dbt-labs/jaffle_shop/main/seeds/raw_orders.csv", "https://raw.githubusercontent.com/dbt-labs/jaffle_shop/main/seeds/raw_payments.csv" ]
+      - id: refresh_powerBI
+        type: io.kestra.plugin.powerbi.RefreshGroupDataset
+        clientId: "{{ secret('AZURE_CLIENT_ID') }}"
+        clientSecret: "{{ secret('AZURE_CLIENT_SECRET') }}"
+        tenantId: "{{ secret('AZURE_TENANT_ID') }}"
+        datasetId: salesDashboard
+
+      - id: vertex_ai
+        type: io.kestra.plugin.gcp.vertexai.CustomJob
+        projectId: my-gcp-project
+        region: europe-west1
+        displayName: Start Custom Job
+        spec:
+          workerPoolSpecs:
+            - containerSpec:
+                imageUri: gcr.io/my-gcp-project/my-dir/my-image:latest
+              machineSpec:
+                machineType: n1-standard-4
+              replicaCount: 1
+
+    - id: custom_reporting
+      type: io.kestra.core.tasks.flows.ForEach
+      concurrencyLimit: 0
+      values: [ "https://raw.githubusercontent.com/dbt-labs/jaffle_shop/main/seeds/raw_customers.csv", "https://raw.githubusercontent.com/dbt-labs/jaffle_shop/main/seeds/raw_orders.csv", "https://raw.githubusercontent.com/dbt-labs/jaffle_shop/main/seeds/raw_payments.csv" ]
       tasks:
-        - id: pythonAnalysis
+        - id: python_analysis
           type: io.kestra.core.tasks.scripts.Python
           inputFiles:
-            data.csv: "{{taskrun.value}}"
+            data.csv: "{{ taskrun.value }}"
             main.py: |
               import pandas as pd
               df = pd.read_csv("data.csv")
               df.info()
           requirements:
             - pandas
-taskDefaults:
+
+pluginDefaults:
   - type: io.kestra.plugin.gcp.bigquery.LoadFromGcs
     values:
-      destinationTable: "geller.dwh.{{task.id}}"
+      destinationTable: "geller.dwh.{{ task.id }}"
       from:
-        - "gs://dwh-geller/{{task.id}}.csv"
+        - "gs://dwh-geller/{{ task.id }}.csv"
       writeDisposition: "WRITE_TRUNCATE"
       projectId: geller
-      serviceAccount: "{{envs.gcp_creds}}"
+      serviceAccount: "{{ secret('GCP_SERVICE_ACCOUNT_JSON') }}"
       ignoreUnknownValues: true
       autodetect: true
       format: CSV

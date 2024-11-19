@@ -1,5 +1,5 @@
-id: s3TriggerDuckDB
-namespace: dev
+id: s3_trigger_duckdb
+namespace: company.team
 
 variables:
   bucket: kestraio
@@ -14,7 +14,7 @@ tasks:
       SELECT *
       FROM read_csv_auto('s3://{{vars.bucket}}/{{vars.destination_prefix}}/{{ trigger.objects | jq('.[].key') | first }}')
       WHERE price * quantity != total;
-    store: true
+    fetchType: STORE
     url: "jdbc:duckdb:md:my_db?motherduck_token={{ secret('MOTHERDUCK_TOKEN') }}"
 
   - id: csv
@@ -22,12 +22,12 @@ tasks:
     description: Create CSV file from query results
     from: "{{ outputs.query.uri }}"
 
-  - id: if-anomalies-detected
+  - id: if_anomalies_detected
     type: io.kestra.core.tasks.flows.If
-    condition: "{{outputs.query.size}}"
+    condition: "{{ outputs.query.size }}"
     description: send email if outliers detected
     then:
-      - id: sendEmailAlert
+      - id: send_email_alert
         type: io.kestra.plugin.notifications.mail.MailSend
         subject: Anomalies in data detected
         from: contact@annageller.com
@@ -35,28 +35,28 @@ tasks:
         username: contact@annageller.com
         host: mail.privateemail.com
         port: 465 # 587
-        password: "{{envs.email_password}}"
+        password: "{{ secret('EMAIL_PASSWORD') }}"
         sessionTimeout: 6000
         attachments:
           - name: anomalies_in_orders.csv
             uri: "{{ outputs.csv.uri }}"
         htmlTextContent: |
-          Detected anomalies in sales data in file s3://{{vars.bucket}}/{{vars.destination_prefix}}/{{ trigger.objects | jq('.[].key') | first }}'. <br />
+          Detected anomalies in sales data in file s3://{{ vars.bucket }}/{{ vars.destination_prefix }}/{{ trigger.objects | jq('.[].key') | first }}'. <br />
           Anomalous rows are attached in a CSV file.<br /><br />
           Best regards,<br />
           Data Team
 
 triggers:
-  - id: pollForNewS3files
+  - id: poll_for_new_s3_files
     type: io.kestra.plugin.aws.s3.Trigger
-    bucket: "{{vars.bucket}}"
-    prefix: "{{vars.source_prefix}}"
+    bucket: "{{ vars.bucket }}"
+    prefix: "{{ vars.source_prefix }}"
     maxKeys: 1 # 1 file = 1 execution
     interval: PT1S # every second
     filter: FILES
     action: MOVE
     moveTo:
-      key: "{{vars.destination_prefix}}/{{vars.source_prefix}}"
+      key: "{{ vars.destination_prefix }}/{{ vars.source_prefix }}"
     region: "{{ secret('AWS_DEFAULT_REGION') }}"
     accessKeyId: "{{ secret('AWS_ACCESS_KEY_ID') }}"
-    secretKeyId: "{{ secret('AWS_SECRET_ACCESS_KEY') }}"
+    secretKeyId: "{{ secret('AWS_SECRET_KEY_ID') }}"
