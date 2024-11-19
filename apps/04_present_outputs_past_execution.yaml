@@ -3,20 +3,18 @@ type: io.kestra.plugin.ee.apps.Execution
 displayName: Display Outputs from a Past Execution
 namespace: company.team
 flowId: extract_data
-executionId: 7GKBuetEEPRDgpKUDSNyTm
+executionId: 7AYb6GchogyNa3z7Ot768e
 access: PUBLIC
 
 layout:
   - on: SUCCESS
     blocks:
-      - id: present_outputs_intro
-        type: io.kestra.ee.apps.blocks.Markdown
+      - type: io.kestra.ee.apps.blocks.Markdown
         content: |
           ## Download the report
           The data you requested is ready for download.
 
-      - id: outputs
-        type: io.kestra.plugin.ee.apps.blocks.ExecutionOutputs
+      - type: io.kestra.plugin.ee.apps.execution.blocks.Outputs
 
 description: |
   This app displays the outputs from a past execution. It's useful to provide a simple way to share the results of a flow with non-technical business users.
