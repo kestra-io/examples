@@ -1,5 +1,5 @@
-id: s3MapOverObjects
-namespace: prod
+id: s3_map_over_objects
+namespace: company.team
 
 inputs:
   - name: bucket
@@ -7,24 +7,25 @@ inputs:
     defaults: declarative-data-orchestration
 
 tasks:
-  - id: listObjects
+  - id: list_objects
     type: io.kestra.plugin.aws.s3.List
     bucket: "{{inputs.bucket}}"
     prefix: powerplant/
 
-  - id: printObjects
+  - id: print_objects
     type: io.kestra.core.tasks.log.Log
-    message: "found objects {{outputs.listObjects.objects}}"
+    message: "found objects {{ outputs.list_objects.objects }}"
 
-  - id: mapOverS3Objects
-    type: io.kestra.core.tasks.flows.EachParallel
-    value: "{{outputs.listObjects.objects}}"
+  - id: map_over_s3_objects
+    type: io.kestra.core.tasks.flows.ForEach
+    concurrencyLimit: 0
+    values: "{{ outputs.list_objects.objects }}"
     tasks: # all tasks listed here will run in parallel
-    - id: filename
-      type: io.kestra.core.tasks.log.Log
-      message: "filename {{json(taskrun.value).key}} with size {{json(taskrun.value).size}}"
+      - id: filename
+        type: io.kestra.core.tasks.log.Log
+        message: "filename {{ json(taskrun.value).key }} with size {{ json(taskrun.value).size }}"
 
-taskDefaults:
+pluginDefaults:
   - type: io.kestra.plugin.aws.s3.List
     values:
       accessKeyId: "{{ secret('AWS_ACCESS_KEY_ID') }}"

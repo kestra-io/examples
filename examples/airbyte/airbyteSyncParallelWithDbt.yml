@@ -1,68 +1,70 @@
-id: airbyteSyncParallelWithDbt
-namespace: blueprint
+id: airbyte_sync_parallel_with_dbt
+namespace: company.team
 description: |
     This flow will sync data from multiple sources in parallel using Airbyte.
     The Airbyte API credentials, referenced in the `taskDefaults`, must be provided in the environment variables.
 
 tasks:
-  - id: data-ingestion
+  - id: data_ingestion
     type: io.kestra.core.tasks.flows.Parallel
     tasks:
       - id: salesforce
         type: io.kestra.plugin.airbyte.connections.Sync
         connectionId: e3b1ce92-547c-436f-b1e8-23b6936c12ab
-      - id: google-analytics
+
+      - id: google_analytics
         type: io.kestra.plugin.airbyte.connections.Sync
         connectionId: e3b1ce92-547c-436f-b1e8-23b6936c12cd
-      - id: facebook-ads
+
+      - id: facebook_ads
         type: io.kestra.plugin.airbyte.connections.Sync
         connectionId: e3b1ce92-547c-436f-b1e8-23b6936c12ef
 
   - id: dbt
     type: io.kestra.core.tasks.flows.WorkingDirectory
     tasks:
-    - id: cloneRepository
-      type: io.kestra.plugin.git.Clone
-      url: https://github.com/dbt-labs/jaffle_shop
-      branch: main
-    - id: dbt-setup
-      type: io.kestra.plugin.dbt.cli.Setup
-      profiles:
-        jaffle_shop:
-          outputs:
-            dev:
-              type: bigquery
-              dataset: dwh
-              fixed_retries: 1
-              keyfile: sa.json
-              location: EU
-              method: service-account
-              priority: interactive
-              project: geller
-              threads: 8
-              timeout_seconds: 300
-          target: dev
-      requirements:
-        - dbt-bigquery
-      runner: DOCKER
-      dockerOptions:
-        image: python:3.10-slim
-      inputFiles:
-        sa.json: |
-          {{envs.gcp_creds}}
-    - id: dbt-build
-      type: io.kestra.plugin.dbt.cli.Build
-      debug: false
-      runner: DOCKER
-      dockerOptions:
-        image: python:3.10-slim
-      inputFiles:
-        sa.json: |
-          {{envs.gcp_creds}}
+      - id: clone_repository
+        type: io.kestra.plugin.git.Clone
+        url: https://github.com/dbt-labs/jaffle_shop
+        branch: main
 
-taskDefaults:
+      - id: dbt_setup
+        type: io.kestra.plugin.dbt.cli.Setup
+        profiles:
+          jaffle_shop:
+            outputs:
+              dev:
+                type: bigquery
+                dataset: dwh
+                fixed_retries: 1
+                keyfile: sa.json
+                location: EU
+                method: service-account
+                priority: interactive
+                project: geller
+                threads: 8
+                timeout_seconds: 300
+            target: dev
+        requirements:
+          - dbt-bigquery
+        taskRunner:
+          type: io.kestra.plugin.scripts.runner.docker.Docker
+        containerImage: python:3.10-slim
+        inputFiles:
+          sa.json: "{{ secret('GCP_SERVICE_ACCOUNT_JSON') }}"
+
+      - id: dbt_build
+        type: io.kestra.plugin.dbt.cli.Build
+        debug: false
+        taskRunner:
+          type: io.kestra.plugin.scripts.runner.docker.Docker
+        containerImage: python:3.10-slim
+        inputFiles:
+          sa.json: "{{ secret('GCP_SERVICE_ACCOUNT_JSON') }}"
+
+pluginsDefaults:
   - type: io.kestra.plugin.airbyte.connections.Sync
     values:
       url: http://host.docker.internal:8000/
-      username: "{{secret('AIRBYTE_USERNAME')}}"
-      password: "{{secret('AIRBYTE_PASSWORD')}}"
+      username: "{{ secret('AIRBYTE_USERNAME') }}"
+      password: "{{ secret('AIRBYTE_PASSWORD') }}"

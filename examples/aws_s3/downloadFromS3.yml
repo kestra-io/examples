@@ -1,7 +1,8 @@
-id: downloadFromS3
-namespace: blueprint
+id: download_from_s3
+namespace: company.team
+
 tasks:
-  - id: hello
+  - id: s3_download
     type: io.kestra.plugin.aws.s3.Download
     accessKeyId: "{{ secret('AWS_ACCESS_KEY_ID') }}"
     secretKeyId: "{{ secret('AWS_SECRET_ACCESS_KEY') }}"
@@ -11,7 +12,4 @@ tasks:
 
   - id: get
     type: io.kestra.core.tasks.debugs.Return
-    format: "{{outputs.hello.uri}}"
-    # kestra:///tmp/s3/executions/6a9nbxBWAEnVpKpk6Fjiez/tasks/hello/73o9pExNRmBDO7KuzRkkcg/15375989964510722633.tmp
-    # kestra:///tmp/s3/executions/6a9nbxBWAEnVpKpk6Fjiez/tasks/hello/73o9pExNRmBDO7KuzRkkcg/15375989964510722633.csv
-# wdir: /tmp/kestra-wd/tmp/5z31BDh5pgS02GN95hGTAC
+    format: "{{ outputs.s3_download.uri }}"

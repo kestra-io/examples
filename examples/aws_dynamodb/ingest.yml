@@ -1,5 +1,5 @@
-id: ingestToDynamoDB
-namespace: dev
+id: ingest_to_dynamodb
+namespace: company.team
 
 inputs:
   - name: values
@@ -10,10 +10,11 @@ inputs:
             "city": "Berlin",
             "country": "Germany"
         }
+
 tasks:
-  - id: addItem
+  - id: add_item
     type: io.kestra.plugin.aws.dynamodb.PutItem
-    item: "{{inputs.values}}"
+    item: "{{ inputs.values }}"
     tableName: demo
     region: "{{ secret('AWS_DEFAULT_REGION') }}"
     accessKeyId: "{{ secret('AWS_ACCESS_KEY_ID') }}"
