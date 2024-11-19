@@ -13,7 +13,7 @@ tasks:
     tableName: demo
     region: "{{ secret('AWS_DEFAULT_REGION') }}"
     accessKeyId: "{{ secret('AWS_ACCESS_KEY_ID') }}"
-    secretKeyId: "{{ secret('AWS_SECRET_ACCESS_KEY') }}"
+    secretKeyId: "{{ secret('AWS_SECRET_KEY_ID') }}"
     item:
       id: 1
       flow: "{{ flow.id }}"
