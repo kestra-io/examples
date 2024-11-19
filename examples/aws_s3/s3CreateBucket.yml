@@ -11,6 +11,6 @@ tasks:
   - id: create_bucket
     type: io.kestra.plugin.aws.s3.CreateBucket
     accessKeyId: "{{ secret('AWS_ACCESS_KEY_ID') }}"
-    secretKeyId: "{{ secret('AWS_SECRET_ACCESS_KEY') }}"
+    secretKeyId: "{{ secret('AWS_SECRET_KEY_ID') }}"
     region: "eu-central-1"
     bucket: "{{ inputs.bucket }}"
