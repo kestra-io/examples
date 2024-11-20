@@ -22,14 +22,14 @@ tasks:
 
 triggers:
   - id: quarterHourly
-    type: io.kestra.core.models.triggers.types.Schedule
+    type: io.kestra.plugin.core.trigger.Schedule
     disabled: true
     cron: "*/15 * * * *"
     inputs:
      name: user
   
   - id: everyMinute
-    type: io.kestra.core.models.triggers.types.Schedule
+    type: io.kestra.plugin.core.trigger.Schedule
     disabled: true
     cron: "*/1 * * * *"
     inputs:

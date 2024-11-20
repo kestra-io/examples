@@ -1,25 +1,26 @@
 id: yellow_taxi_data_backfill
-namespace: dev
+namespace: company.team
+
 inputs:
-  - name: monthYear
+  - name: month_year
     type: STRING
     defaults: 2023-01
 
 tasks:
-  - id: downloadFromInputs
-    type: io.kestra.plugin.fs.http.Download
-    uri: https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_{{inputs.monthYear}}.parquet
+  - id: download_from_inputs
+    type: io.kestra.plugin.core.http.Download
+    uri: "https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_{{ inputs.month_year }}.parquet"
     method: GET
     disabled: true
 
-  - id: downloadBasedOnDate
-    type: io.kestra.plugin.fs.http.Download
-    uri: https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_{{schedule.date ?? execution.startDate | date("yyyy-MM")}}.parquet
+  - id: download_based_on_date
+    type: io.kestra.plugin.core.http.Download
+    uri: "https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_{{ schedule.date ?? execution.startDate | date('yyyy-MM') }}.parquet"
 
   - id: shove_it_to_s3
     type: io.kestra.plugin.aws.s3.Upload
-    from: "{{outputs.downloadFile.uri}}"
-    key: yellow_taxi/raw/{{ schedule.date ?? execution.startDate | date("yyyy-MM") }}/yellow_taxi_{{ schedule.date ?? execution.startDate | date("yyyy-MM") }}.parquet'
+    from: "{{ outputs.download_based_on_date.uri }}"
+    key: "yellow_taxi/raw/{{ schedule.date ?? execution.startDate | date('yyyy-MM') }}/yellow_taxi_{{ schedule.date ?? execution.startDate | date('yyyy-MM') }}.parquet"
     bucket: annageller
     region: eu-central-1
     accessKeyId: "{{secret('AWS_ACCESS_KEY_ID')}}"
@@ -27,7 +28,7 @@ tasks:
 
 triggers:
   - id: schedule
-    type: io.kestra.core.models.triggers.types.Schedule
+    type: io.kestra.core.trigger.Schedule
     cron: "0 8 1 * *"
     disabled: true
     backfill:

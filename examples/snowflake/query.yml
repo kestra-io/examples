@@ -1,5 +1,6 @@
-id: snowflakeQuery
-namespace: dev
+id: snowflake_query
+namespace: company.team
+
 inputs:
   - name: myfile
     type: FILE
@@ -7,20 +8,20 @@ inputs:
 tasks:
   - id: query
     type: io.kestra.plugin.jdbc.snowflake.Query
-    url: jdbc:snowflake://fauphkj-vf53516.snowflakecomputing.com?warehouse=DEMO
-    username: "{{secret('SNOWFLAKE_USERNAME')}}"
-    password: "{{secret('SNOWFLAKE_PASSWORD')}}"
-    # fetchOne: true
+    url: jdbc:snowflake://<account-identifier>.snowflakecomputing.com?warehouse=DEMO
+    username: "{{ secret('SNOWFLAKE_USERNAME') }}"
+    password: "{{ secret('SNOWFLAKE_PASSWORD') }}"
+    # fetchType: FETCH_ONE
     autoCommit: false
     sql: |
       SELECT * FROM SNOWFLAKE_SAMPLE_DATA.TPCH_SF1.CUSTOMER LIMIT 5
 
   - id: upload
     type: io.kestra.plugin.jdbc.snowflake.Upload
-    url: jdbc:snowflake://fauphkj-vf53516.snowflakecomputing.com?warehouse=DEMO
+    url: jdbc:snowflake://<account-identifier>.snowflakecomputing.com?warehouse=DEMO
     database: DEMO
-    username: "{{secret('SNOWFLAKE_USERNAME')}}"
-    password: "{{secret('SNOWFLAKE_PASSWORD')}}"
+    username: "{{ secret('SNOWFLAKE_USERNAME') }}"
+    password: "{{ secret('SNOWFLAKE_PASSWORD') }}"
     from: "{{inputs.myfile}}"
     compress: true
     fileName: orders.csv
@@ -32,7 +33,7 @@ tasks:
     compress: true
     fileName: report
     stageName: mytable
-    url: jdbc:snowflake://fauphkj-vf53516.snowflakecomputing.com?warehouse=DEMO
+    url: jdbc:snowflake://<account-identifier>.snowflakecomputing.com?warehouse=DEMO
     database: DEMO
-    username: "{{secret('SNOWFLAKE_USERNAME')}}"
-    password: "{{secret('SNOWFLAKE_PASSWORD')}}"
+    username: "{{ secret('SNOWFLAKE_USERNAME') }}"
+    password: "{{ secret('SNOWFLAKE_PASSWORD') }}"

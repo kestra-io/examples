@@ -1,12 +1,13 @@
-id: airbyteSpark
-namespace: dev
+id: airbyte_spark
+namespace: company.team
+
 tasks:
-  - id: data-ingestion
+  - id: data_ingestion
     type: io.kestra.plugin.airbyte.connections.Sync
     connectionId: e3b1ce92-547c-436f-b1e8-23b6936c12ab
     url: http://host.docker.internal:8000/
-    username: "{{secret('AIRBYTE_USERNAME')}}"
-    password: "{{secret('AIRBYTE_PASSWORD')}}"
+    username: "{{ secret('AIRBYTE_USERNAME') }}"
+    password: "{{ secret('AIRBYTE_PASSWORD') }}"
 
   - id: spark
     type: io.kestra.plugin.spark.PythonSubmit
@@ -16,6 +17,6 @@ tasks:
 
 triggers:
   - id: daily
-    type: io.kestra.core.models.triggers.types.Schedule
+    type: io.kestra.plugin.core.trigger.Schedule
     cron: "0 9 * * *"
     disabled: true

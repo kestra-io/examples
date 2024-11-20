@@ -1,12 +1,12 @@
-id: parallelLoad
-namespace: dev
+id: parallel_load
+namespace: company.team
 
 tasks:
-  - id: createDatabase
+  - id: create_database
     type: io.kestra.plugin.jdbc.snowflake.Query
     sql: CREATE OR REPLACE DATABASE kestra;
 
-  - id: createTable
+  - id: create_table
     type: io.kestra.plugin.jdbc.snowflake.Query
     sql: |
       CREATE OR REPLACE TABLE KESTRA.PUBLIC.EMPLOYEES (
@@ -18,9 +18,10 @@ tasks:
         start_date DATE
         );
 
-  - id: extractParallel
-    type: io.kestra.core.tasks.flows.EachParallel
-    value:
+  - id: extract_parallel
+    type: io.kestra.core.tasks.flows.ForEach
+    concurrencyLimit: 0
+    values:
       - employees01.csv
       - employees02.csv
       - employees03.csv
@@ -29,11 +30,12 @@ tasks:
     tasks:
       - id: extract
         type: io.kestra.plugin.fs.http.Download
-        uri: https://raw.githubusercontent.com/kestra-io/examples/main/datasets/{{taskrun.value}}
+        uri: https://raw.githubusercontent.com/kestra-io/examples/main/datasets/{{ taskrun.value }}
 
-  - id: loadParallel
-    type: io.kestra.core.tasks.flows.EachParallel
-    value:
+  - id: load_parallel
+    type: io.kestra.core.tasks.flows.ForEach
+    concurrencyLimit: 0
+    values:
       - employees01.csv
       - employees02.csv
       - employees03.csv
@@ -42,14 +44,14 @@ tasks:
     tasks:
       - id: load
         type: io.kestra.plugin.jdbc.snowflake.Upload
-        from: "{{outputs.extract.uri}}"
-        fileName: '{{outputs.extract.uri}}'
+        from: "{{ outputs.extract.uri }}"
+        fileName: "{{ outputs.extract.uri }}"
         prefix: raw
         stageName: "@kestra.public.%employees"
         compress: true
         disabled: false
 
-  - id: loadFromStage
+  - id: load_from_stage
     type: io.kestra.plugin.jdbc.snowflake.Query
     sql: |
       COPY INTO KESTRA.PUBLIC.EMPLOYEES
@@ -62,11 +64,11 @@ tasks:
 taskDefaults:
   - type: io.kestra.plugin.jdbc.snowflake.Query
     values:
-      url: jdbc:snowflake://fauphkj-vf53516.snowflakecomputing.com?warehouse=DEMO
-      username: ANNA
-      password: '{{envs.snowflake_password}}'
+      url: jdbc:snowflake://<account-identifier>.snowflakecomputing.com?warehouse=DEMO
+      username: "{{ secret('SNOWFLAKE_USERNAME') }}"
+      password: "{{ secret('SNOWFLAKE_PASSWORD') }}"
   - type: io.kestra.plugin.jdbc.snowflake.Upload
     values:
-      url: jdbc:snowflake://fauphkj-vf53516.snowflakecomputing.com?warehouse=DEMO
-      username: ANNA
-      password: '{{envs.snowflake_password}}'
+      url: jdbc:snowflake://<account-identifier>.snowflakecomputing.com?warehouse=DEMO
+      username: "{{ secret('SNOWFLAKE_USERNAME') }}"
+      password: "{{ secret('SNOWFLAKE_PASSWORD') }}"

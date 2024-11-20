@@ -1,11 +1,12 @@
-id: postgresSinger
-namespace: dev
+id: postgres_singer
+namespace: company.team
+
 tasks:
-  - id: extractTap
+  - id: extract_tap
     type: io.kestra.plugin.singer.taps.PipelinewisePostgres
-    runner: DOCKER
-    dockerOptions:
-      image: python:3.8
+    taskRunner:
+      type: io.kestra.plugin.scripts.runner.docker.Docker
+    containerImage: python:3.8
     host: host.docker.internal
     port: 5432
     dbName: postgres
@@ -15,17 +16,17 @@ tasks:
       - replicationMethod: FULL_TABLE
         selected: true
 
-  - id: loadTarget
+  - id: load_target
     type: io.kestra.plugin.singer.targets.PipelinewisePostgres
-    runner: DOCKER
-    dockerOptions:
-      image: python:3.8
+    taskRunner:
+      type: io.kestra.plugin.scripts.runner.docker.Docker
+    containerImage: python:3.8
     host: host.docker.internal
     port: 5432
     dbName: demo
     username: postgres
     password: "{{ secret('DB_PASSWORD') }}"
-    from: "{{ outputs.extractTap.raw }}"
+    from: "{{ outputs.extract_tap.raw }}"
     addMetadataColumns: true
     # primaryKeyRequired: false
     defaultTargetSchema: raw
