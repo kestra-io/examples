@@ -17,7 +17,7 @@ tasks:
 
 triggers:
   - id: everyMinute
-    type: io.kestra.core.models.triggers.types.Schedule
+    type: io.kestra.plugin.core.trigger.Schedule
     cron: "*/1 * * * *"
     inputs:
      name: user

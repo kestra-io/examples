@@ -1,5 +1,5 @@
-id: hello-var
-namespace: dev
+id: variables_in_trigger
+namespace: company.team
 
 inputs:
   - name: myinput
@@ -16,7 +16,7 @@ tasks:
 
 triggers:
   - id: minutely
-    type: io.kestra.core.models.triggers.types.Schedule
+    type: io.kestra.plugin.core.trigger.Schedule
     cron: "*/1 * * * *"
     inputs:
       myinput: "{{ vars.myvar }}"

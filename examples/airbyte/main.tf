@@ -105,8 +105,8 @@ tasks:
                         - parquet
                   target: dev
 triggers:
-  - id: every-minute
-    type: io.kestra.core.models.triggers.types.Schedule
+  - id: every_minute
+    type: io.kestra.plugin.core.trigger.Schedule
     cron: "*/1 * * * *"
     disabled: true
 EOF

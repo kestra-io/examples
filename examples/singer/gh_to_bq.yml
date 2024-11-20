@@ -1,5 +1,5 @@
 id: singer
-namespace: com.kestra.github
+namespace: company.team
 
 tasks:
   - id: list
@@ -9,6 +9,7 @@ tasks:
       Authorization: Bearer {{ namespace.github.token }}
       User-Agent: Kestra
     uri: https://api.github.com/orgs/kestra-io/repos?per_page=100
+
   - id: github
     type: io.kestra.plugin.singer.taps.GitHub
     accessToken: "{{ namespace.github.token }}"
@@ -28,7 +29,8 @@ tasks:
       - selected: false
     pipPackages:
       - tap-github==1.10.4
-  - id: bigquery-target
+
+  - id: bigquery_target
     type: io.kestra.plugin.singer.targets.AdswerveBigQuery
     addMetadataColumns: true
     datasetId: github
@@ -39,5 +41,5 @@ tasks:
 
 triggers:
   - id: schedule
-    type: io.kestra.core.models.triggers.types.Schedule
+    type: io.kestra.plugin.core.trigger.Schedule
     cron: 0 6 * * *

@@ -1,5 +1,5 @@
-id: snowflakeTutorial
-namespace: dev
+id: snowflake_tutorial
+namespace: company.team
 description: |
   This flow is an end-to-end tutorial for Snowflake.
   It creates a database and a table. 
@@ -8,11 +8,11 @@ description: |
   Finally, a Query task validates that everything works as expected by running a query on the table and fetches the results to Kestra's internal storage.
 
 tasks:
-  - id: createDatabase
+  - id: create_database
     type: io.kestra.plugin.jdbc.snowflake.Query
     sql: CREATE OR REPLACE DATABASE kestra;
 
-  - id: createTable
+  - id: create_table
     type: io.kestra.plugin.jdbc.snowflake.Query
     sql: |
       CREATE OR REPLACE TABLE KESTRA.PUBLIC.EMPLOYEES (
@@ -26,17 +26,17 @@ tasks:
 
   - id: extract
     type: io.kestra.plugin.fs.http.Download
-    uri: https://raw.githubusercontent.com/kestra-io/datasets/main/employees/employees00.csv
+    uri: https://huggingface.co/datasets/kestra/datasets/raw/main/csv/orders.csv
 
-  - id: loadToInternalStage
+  - id: load_to_internal_stage
     type: io.kestra.plugin.jdbc.snowflake.Upload
-    from: "{{outputs.extract.uri}}"
+    from: "{{ outputs.extract.uri }}"
     fileName: employees00.csv
     prefix: raw
     stageName: "@kestra.public.%employees"
     compress: true
 
-  - id: loadFromStageToTable
+  - id: load_from_stage_to_table
     type: io.kestra.plugin.jdbc.snowflake.Query
     sql: |
       COPY INTO KESTRA.PUBLIC.EMPLOYEES
@@ -45,19 +45,20 @@ tasks:
       PATTERN = '.*employees0[0-9].csv.gz'
       ON_ERROR = 'skip_file';
 
-  - id: downloadResult
+  - id: download_result
     type: io.kestra.plugin.jdbc.snowflake.Query
     sql: SELECT * FROM KESTRA.PUBLIC.EMPLOYEES;
-    store: true
+    fetchType: STORE
 
-taskDefaults:
+pluginDefaults:
   - type: io.kestra.plugin.jdbc.snowflake.Query
     values:
-      url: jdbc:snowflake://fauphkj-vf53516.snowflakecomputing.com?warehouse=DEMO
-      username: ANNA
-      password: '{{envs.snowflake_password}}'
+      url: jdbc:snowflake://<account-identifier>.snowflakecomputing.com?warehouse=DEMO
+      username: "{{ secret('SNOWFLAKE_USERNAME') }}"
+      password: "{{ secret('SNOWFLAKE_PASSWORD') }}"
+
   - type: io.kestra.plugin.jdbc.snowflake.Upload
     values:
-      url: jdbc:snowflake://fauphkj-vf53516.snowflakecomputing.com?warehouse=DEMO
-      username: ANNA
-      password: '{{envs.snowflake_password}}'
+      url: jdbc:snowflake://<account-identifier>.snowflakecomputing.com?warehouse=DEMO
+      username: "{{ secret('SNOWFLAKE_USERNAME') }}"
+      password: "{{ secret('SNOWFLAKE_PASSWORD') }}"
