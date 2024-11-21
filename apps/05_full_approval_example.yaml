@@ -94,7 +94,7 @@ layout:
       - type: io.kestra.ee.apps.blocks.Markdown
         content: |
           ## You're all set!
-          Find more App examples in our Blueprints repository
+          Find more App examples in the linked repository
 
       - type: io.kestra.ee.apps.blocks.Button
         text: App examples
