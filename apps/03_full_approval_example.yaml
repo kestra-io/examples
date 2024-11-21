@@ -147,7 +147,7 @@ description: |
     variables:
       slack_message: >
         New form submission! Click on the Resume button here to approve or reject the request
-    #      {{ appLink('request_resources_form') }}
+    #      {{ appLink('myApp') }}
 
     inputs:
       - id: resource_type
