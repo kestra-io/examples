@@ -4,6 +4,10 @@ displayName: Form to sign up for Kestra Cloud
 namespace: company.team
 flowId: kestra_cloud_form
 access: PUBLIC
+tags:
+  - Public
+  - Form
+  - Cloud
 
 layout:
   - on: OPEN
@@ -22,7 +26,7 @@ layout:
     blocks:
       - type: io.kestra.ee.apps.blocks.Markdown
         content: |
-          ## Thanks for your interest in Kestra Cloud!
+          ### Thanks for your interest in Kestra Cloud!
           We will notify you as soon as we launch.
 description: |
   This app allows you to submit a form and forward the data to a flow.
@@ -44,7 +48,7 @@ description: |
         type: BOOLEAN
         defaults: true
         displayName: I agree to receive other communications from Kestra.
-        description: By clicking the Submit button below, you consent to allow Kestra to store and process the personal information submitted above to provide you the content requested.
+        description: By clicking Submit, you agree to Kestra storing and processing the personal information provided above to deliver the requested content.
     
     tasks:
       - id: save_in_db
