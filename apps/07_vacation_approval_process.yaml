@@ -1,0 +1,136 @@
+id: myApp
+type: io.kestra.plugin.ee.apps.Execution
+displayName: Launch new Executions from a form 
+namespace: tutorial
+flowId: business-processes
+access: PRIVATE
+tags:
+  - HR
+  - Vacation Approval
+
+layout:
+  - on: OPEN
+    blocks:
+      - type: io.kestra.ee.apps.blocks.Markdown
+        content: |
+          ## Submit a vacation approval request
+          Submit your vacation request for approval, including your name, start and end dates.
+
+      - type: io.kestra.plugin.ee.apps.execution.blocks.CreateExecutionForm
+
+      - type: io.kestra.plugin.ee.apps.execution.blocks.CreateExecutionButton
+        text: Submit
+        style: DEFAULT
+
+  - on: RUNNING
+    blocks:
+      - type: io.kestra.ee.apps.blocks.Markdown
+        content: |
+          ## Execution in progress
+
+      - type: io.kestra.ee.apps.blocks.Loading
+      
+      - type: io.kestra.plugin.ee.apps.execution.blocks.Logs
+      
+      - type: io.kestra.plugin.ee.apps.execution.blocks.CancelExecutionButton
+        text: Cancel request
+        style: WARNING
+
+  - on: PAUSE
+    blocks:
+      - type: io.kestra.ee.apps.blocks.Markdown
+        content: |
+          ## Validate the request
+          Below are the details of the request. 
+
+      - type: io.kestra.plugin.ee.apps.execution.blocks.Inputs
+
+      - type: io.kestra.plugin.ee.apps.execution.blocks.Outputs
+
+      - type: io.kestra.ee.apps.blocks.Markdown
+        content: |
+          ## Approve or Reject?
+          Please approve or reject the request.
+
+      - type: io.kestra.plugin.ee.apps.execution.blocks.ResumeExecutionForm
+
+      - type: io.kestra.plugin.ee.apps.execution.blocks.ResumeExecutionButton
+        text: Approve
+        style: SUCCESS
+
+      - type: io.kestra.plugin.ee.apps.execution.blocks.CancelExecutionButton
+        text: Reject
+        style: DANGER
+
+      - type: io.kestra.ee.apps.blocks.AutoRefresh
+
+  - on: RESUME
+    blocks:
+      - type: io.kestra.ee.apps.blocks.Markdown
+        content: |
+          ## Thank you for validating the request!
+
+      - type: io.kestra.ee.apps.blocks.AutoRefresh
+
+  - on: SUCCESS
+    blocks:
+      - type: io.kestra.ee.apps.blocks.Markdown
+        content: |
+          ## Request processed successfully
+          See the logs below.
+
+      - type: io.kestra.plugin.ee.apps.execution.blocks.Logs
+
+      - type: io.kestra.ee.apps.blocks.Markdown
+        content: |
+          ## You're all set!
+          See more App examples in our GitHub repository
+
+      - type: io.kestra.ee.apps.blocks.Button
+        text: App examples
+        url: https://github.com/kestra-io/examples/tree/main/apps
+        style: INFO
+
+  - on: FALLBACK
+    blocks:
+      - type: io.kestra.ee.apps.blocks.Markdown
+        content: You're all set. Thanks for using this app!
+
+description: |
+  Launch a parametrized workflow execution.
+  Flow code:
+  ```yaml
+  id: business-processes
+  namespace: tutorial
+  description: Business Processes
+
+  inputs:
+    - id: request.name
+      type: STRING
+
+    - id: request.start_date
+      type: DATE
+
+    - id: request.end_date
+      type: DATE
+
+  tasks:
+    - id: send_approval_request
+      type: io.kestra.plugin.notifications.slack.SlackIncomingWebhook
+      url: https://reqres.in/api/slack
+      payload: >
+        {
+          "channel": "#vacation",
+          "text": "Validate holiday request for {{ inputs.request.name }}. To approve the request, click on the `Resume` button here http://localhost:8080/ui/executions/{{flow.namespace}}/{{flow.id}}/{{execution.id}}"
+        }
+
+    - id: wait_for_approval
+      type: io.kestra.plugin.core.flow.Pause
+
+    - id: process_request
+      type: io.kestra.plugin.core.http.Request
+      uri: https://reqres.in/api/products
+      method: POST
+      contentType: application/json
+      body: "{{ inputs.request }}"
+  ```
