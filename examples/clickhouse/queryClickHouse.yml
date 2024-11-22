@@ -37,7 +37,7 @@ tasks:
     sql: SELECT user_id, message FROM helloworld.my_first_table
     store: true
 
-taskDefaults:
+pluginDefaults:
   - type: io.kestra.plugin.jdbc.clickhouse.Query
     values:
       url: jdbc:clickhouse://host.docker.internal:8123/

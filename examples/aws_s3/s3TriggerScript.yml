@@ -1,21 +1,18 @@
-id: s3TriggerScript
-namespace: blueprint
-description: process CSV file from S3 trigger
+id: s3_trigger_script
+namespace: company.team
+description: Process CSV file from S3 trigger
 
 tasks:
   - id: wdir
-    type: io.kestra.core.tasks.flows.WorkingDirectory
+    type: io.kestra.plugin.core.flow.WorkingDirectory
     tasks:
-      - id: local
-        type: io.kestra.core.tasks.storages.LocalFiles
-        inputs:
-          data.csv: "{{ trigger.objects | jq('.[].uri') | first }}"
-
       - id: python
         type: io.kestra.plugin.scripts.python.Script
-        runner: DOCKER
-        docker:
-          image: ghcr.io/kestra-io/pydata:latest
+        taskRunner:
+          type: io.kestra.plugin.scripts.runner.docker.Docker
+        containerImage: ghcr.io/kestra-io/pydata:latest
+        inputFiles:
+          data.csv: "{{ trigger.objects | jq('.[].uri') | first }}"
         warningOnStdErr: false
         script: |
           import pandas as pd
@@ -30,14 +27,11 @@ tasks:
           print(f"Filling NULL values with mean: {mean_age}")
           df['Age'] = df['Age'].fillna(mean_age)
           df.to_csv("clean_dataset.csv", index=False)
-
-      - id: output
-        type: io.kestra.core.tasks.storages.LocalFiles
-        outputs:
+        outputFiles:
           - clean_dataset.csv
 
 triggers:
-  - id: waitForS3object
+  - id: wait_for_s3_object
     type: io.kestra.plugin.aws.s3.Trigger
     bucket: declarative-orchestration
     region: "{{ secret('AWS_DEFAULT_REGION') }}"

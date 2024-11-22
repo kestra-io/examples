@@ -1,26 +1,26 @@
-id: apiJsonToPostgresPythonScript
-namespace: dev
+id: api_json_to_postgres_python_script
+namespace: company.team
 
 tasks:
   - id: download
     type: io.kestra.plugin.fs.http.Download
     uri: https://gorest.co.in/public/v2/users
 
-  - id: addColumn
+  - id: add_column
     type: io.kestra.plugin.scripts.jython.FileTransform
-    from: "{{outputs.download.uri}}"
+    from: "{{ outputs.download.uri }}"
     script: |
       logger.info('row: {}', row)
       for dict_obj in row:
         dict_obj['inserted_from'] = 'kestra'
 
-  - id: toJSON
+  - id: to_json
     type: io.kestra.plugin.serdes.json.JsonWriter
-    from: "{{outputs.addColumn.uri}}"
+    from: "{{ outputs.add_column.uri }}"
 
-  - id: save-users-s3
+  - id: save_users_s3
     type: io.kestra.plugin.aws.s3.Upload
-    from: "{{outputs.toJSON.uri}}"
+    from: "{{ outputs.to_json.uri }}"
     key: users.json
     bucket: kestraio
     region: eu-central-1
@@ -28,23 +28,19 @@ tasks:
     secretKeyId: "{{ secret('AWS_SECRET_ACCESS_KEY')}}"
 
   - id: wdir
-    type: io.kestra.core.tasks.flows.WorkingDirectory
+    type: io.kestra.plugin.core.flow.WorkingDirectory
     tasks:
-      - id: input
-        type: io.kestra.core.tasks.storages.LocalFiles
-        inputs:
-          data.jsonl: "{{outputs.toJSON.uri}}"
-
       - id: save-users-postgres
         type: io.kestra.plugin.scripts.python.Script
         beforeCommands:
           - pip install pandas psycopg2 sqlalchemy > /dev/null
         warningOnStdErr: false
+        inputFiles:
+          data.jsonl: "{{ outputs.to_json.uri }}"
         script: |
           import json
           import pandas as pd
           from sqlalchemy import create_engine
-
 
           with open("data.jsonl", "r") as f:
               users = json.load(f)

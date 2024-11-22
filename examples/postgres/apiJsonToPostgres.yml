@@ -22,7 +22,7 @@ tasks:
       row['inserted_from'] = 'kestra'
 
   - id: parallel
-    type: io.kestra.core.tasks.flows.Parallel
+    type: io.kestra.plugin.core.flow.Parallel
     tasks:
       - id: postgres
         type: io.kestra.core.tasks.flows.Sequential

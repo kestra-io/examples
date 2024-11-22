@@ -8,7 +8,7 @@ variables:
 
 tasks:
   - id: each
-    type: io.kestra.core.tasks.flows.ForEach
+    type: io.kestra.plugin.core.flow.ForEach
     values: "{{ trigger.objects | jq('.[].key') }}"
     tasks:
       - id: query
@@ -21,7 +21,7 @@ tasks:
         url: "jdbc:duckdb:md:my_db?motherduck_token={{ secret('MOTHERDUCK_TOKEN') }}"
 
       - id: if_anomalies_detected
-        type: io.kestra.core.tasks.flows.If
+        type: io.kestra.plugin.core.flow.If
         condition: "{{ outputs.query['{{ taskrun.value }}'].size }}"
         then:
           - id: slack_anomaly_alert

@@ -15,5 +15,5 @@ tasks:
           Kestra.outputs({'somekey': 'some value'})
 
     - id: takeInput
-      type: io.kestra.core.tasks.log.Log
+      type: io.kestra.plugin.core.log.Log
       message: "data from previous tasks - {{outputs.passOutput.value}} and {{outputs.pythonVars.vars.somekey}}"

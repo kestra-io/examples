@@ -6,10 +6,10 @@ inputs:
     type: JSON
     defaults: |
       {
-            "id": 1,
-            "city": "Berlin",
-            "country": "Germany"
-        }
+        "id": 1,
+        "city": "Berlin",
+        "country": "Germany"
+      }
 
 tasks:
   - id: add_item

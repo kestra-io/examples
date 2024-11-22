@@ -60,7 +60,7 @@ tasks:
     from: "{{ outputs.getZipFile.uri }}"
     algorithm: ZIP
   - id: parallelUploadToS3
-    type: io.kestra.core.tasks.flows.Parallel
+    type: io.kestra.plugin.core.flow.Parallel
     tasks:
       - id: csv
         type: io.kestra.plugin.aws.s3.Upload
@@ -79,16 +79,16 @@ tasks:
     bucket: "{{inputs.bucket}}"
     prefix: powerplant/
   - id: printObjects
-    type: io.kestra.core.tasks.log.Log
+    type: io.kestra.plugin.core.log.Log
     message: "found objects {{outputs.listObjects.objects}}"
   - id: mapOverS3Objects
     type: io.kestra.core.tasks.flows.EachParallel
     value: "{{outputs.listObjects.objects}}"
     tasks: # all tasks listed here will run in parallel
       - id: validateObjectMetadata
-        type: io.kestra.core.tasks.log.Log
+        type: io.kestra.plugin.core.log.Log
         message: "filename {{json(taskrun.value).key}} with size {{json(taskrun.value).size}}"
-taskDefaults:
+pluginDefaults:
   - type: io.kestra.plugin.aws.s3.Upload
     values:
       accessKeyId: "{{secret('AWS_ACCESS_KEY_ID')}}"

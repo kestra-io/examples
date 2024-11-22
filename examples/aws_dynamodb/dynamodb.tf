@@ -96,13 +96,13 @@ EOF
 
 resource "kestra_flow" "scanDynamoDBTable" {
   keep_original_source = true
-  flow_id              = "scanDynamoDBTable"
+  flow_id              = "scan_dynamodb_table"
   namespace            = var.namespace
   content              = <<EOF
-id: scanDynamoDBTable
+id: scan_dynamodb_table
 namespace: ${var.namespace}
 tasks:
-  - id: extractData
+  - id: extract_data
     type: io.kestra.plugin.aws.dynamodb.Scan
     tableName: ${var.table_name}
     region: ${var.region}
@@ -111,9 +111,9 @@ tasks:
     secretKeyId: "{{ secret('AWS_SECRET_ACCESS_KEY') }}"
 
   - id: processData
-    type: io.kestra.core.tasks.scripts.Bash
+    type: io.kestra.plugin.scripts.shell.Commands
     commands:
-      - echo {{outputs.scanTable.rows}}
+      - echo {{ outputs.extract_data.rows }}
 
 EOF
 }

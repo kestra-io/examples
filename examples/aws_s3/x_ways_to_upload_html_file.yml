@@ -1,12 +1,16 @@
 id: s3
-namespace: tmp
+namespace: company.team
+
 tasks:
   - id: wdir
-    type: io.kestra.core.tasks.flows.WorkingDirectory
+    type: io.kestra.plugin.core.flow.WorkingDirectory
     tasks:
-      - id: html
-        type: io.kestra.core.tasks.storages.LocalFiles
-        inputs:
+      - id: cli
+        type: io.kestra.plugin.aws.cli.AwsCLI
+        region: "{{ secret('AWS_DEFAULT_REGION') }}"
+        accessKeyId: "{{ secret('AWS_ACCESS_KEY_ID') }}"
+        secretKeyId: "{{ secret('AWS_SECRET_ACCESS_KEY') }}"
+        inputFiles:
           index.html: |
             <!DOCTYPE html>
             <html lang="en">
@@ -21,24 +25,15 @@ tasks:
                 </header>
             </body>
             </html>
-
-      - id: cli
-        type: io.kestra.plugin.aws.cli.AwsCLI
-        region: "{{ secret('AWS_DEFAULT_REGION') }}"
-        accessKeyId: "{{ secret('AWS_ACCESS_KEY_ID') }}"
-        secretKeyId: "{{ secret('AWS_SECRET_ACCESS_KEY') }}"
         commands:
-          - aws s3 cp {{workingDir}}/index.html s3://kestraio/index3.html --content-type text/html
-
-      - id: htmlOut
-        type: io.kestra.core.tasks.storages.LocalFiles
-        outputs:
+          - aws s3 cp {{ workingDir }}/index.html s3://kestraio/index3.html --content-type text/html
+        outputFiles:
           - "*.html"
 
-      - id: upload
+      - id: upload_index2
         type: io.kestra.plugin.aws.s3.Upload
         bucket: kestraio
-        from: "{{outputs.htmlOut.uris['index.html']}}"
+        from: "{{ outputs.cli.uris['index.html'] }}"
         key: index2.html
         metadata:
           Content-Type: text/html
@@ -46,10 +41,10 @@ tasks:
         accessKeyId: "{{ secret('AWS_ACCESS_KEY_ID') }}"
         secretKeyId: "{{ secret('AWS_SECRET_ACCESS_KEY') }}"
 
-      - id: upload
+      - id: upload_index
         type: io.kestra.plugin.aws.s3.Upload
         bucket: kestraio
-        from: "{{outputs.html.uris['index.html']}}"
+        from: "{{ outputs.cli.uris['index.html'] }}"
         key: index.html
         metadata:
           Content-Type: text/html
@@ -57,15 +52,16 @@ tasks:
         accessKeyId: "{{ secret('AWS_ACCESS_KEY_ID') }}"
         secretKeyId: "{{ secret('AWS_SECRET_ACCESS_KEY') }}"
 
-      - id: uploadToS3
+      - id: upload_to_s3
         type: io.kestra.plugin.scripts.python.Script
         disabled: true
         env:
           AWS_ACCESS_KEY_ID: "{{ secret('AWS_ACCESS_KEY_ID') }}"
           AWS_SECRET_ACCESS_KEY: "{{ secret('AWS_SECRET_ACCESS_KEY') }}"
           AWS_DEFAULT_REGION: "{{ secret('AWS_DEFAULT_REGION') }}"
-        docker:
-          image: ghcr.io/kestra-io/aws:latest
+        taskRunner:
+          type: io.kestra.plugin.scripts.runner.docker.Docker
+        containerImage: ghcr.io/kestra-io/aws:latest
         script: |
           import boto3
           file = "index.html"

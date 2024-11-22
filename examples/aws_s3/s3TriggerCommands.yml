@@ -1,38 +1,32 @@
-id: s3TriggerCommands
-namespace: blueprint
-description: process CSV file from S3 trigger
+id: s3_trigger_commands
+namespace: company.team
+description: Process CSV file from S3 trigger
 
 tasks:
   - id: wdir
-    type: io.kestra.core.tasks.flows.WorkingDirectory
+    type: io.kestra.plugin.core.flow.WorkingDirectory
     tasks:
-      - id: cloneRepo
+      - id: clone_repo
         type: io.kestra.plugin.git.Clone
         url: https://github.com/kestra-io/examples
         branch: main
 
-      - id: local
-        type: io.kestra.core.tasks.storages.LocalFiles
-        inputs:
-          data.csv: "{{ trigger.objects | jq('.[].uri') | first }}"
-
       - id: python
         type: io.kestra.plugin.scripts.python.Commands
         description: this script expects to. receive a file `data.csv` as input from S3 trigger
-        runner: DOCKER
-        docker:
-          image: ghcr.io/kestra-io/pydata:latest
+        inputFiles:
+          data.csv: "{{ trigger.objects | jq('.[].uri') | first }}"
+        taskRunner:
+          type: io.kestra.plugin.scripts.runner.docker.Docker
+        containerImage: ghcr.io/kestra-io/pydata:latest
         warningOnStdErr: false
         commands:
           - python scripts/clean_messy_dataset.py
-
-      - id: output
-        type: io.kestra.core.tasks.storages.LocalFiles
-        outputs:
+        outputFiles:
           - clean_dataset.csv
 
 triggers:
-  - id: waitForS3object
+  - id: wait_for_s3_object
     type: io.kestra.plugin.aws.s3.Trigger
     bucket: declarative-orchestration
     region: "{{ secret('AWS_DEFAULT_REGION') }}"

@@ -11,5 +11,5 @@ tasks:
     key: orders.csv
 
   - id: get
-    type: io.kestra.core.tasks.debugs.Return
+    type: io.kestra.plugin.core.debug.Return
     format: "{{ outputs.s3_download.uri }}"

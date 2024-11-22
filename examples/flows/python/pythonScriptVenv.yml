@@ -1,5 +1,5 @@
-id: pythonScriptVenv
-namespace: prod
+id: python_script_venv
+namespace: company.team
 description: |
   This flow creates a CSV file from a CLI using a Bash task.
   It then processes it in Python with `pandas` in a virtual environment.
@@ -7,31 +7,31 @@ description: |
 
 tasks:
   - id: csv
-    type: io.kestra.core.tasks.flows.WorkingDirectory
+    type: io.kestra.plugin.core.flow.WorkingDirectory
     tasks:
-      - id: extractCSV
-        type: io.kestra.core.tasks.scripts.Bash
-        description: create a CSV file
+      - id: extract_csv
+        type: io.kestra.plugin.scripts.shell.Commands
+        description: Create a CSV file
         commands:
           - echo "order_id,total_amount" > output.csv
           - echo "1,100" >> output.csv
           - echo "2,200" >> output.csv
           - echo "3,300" >> output.csv
           - echo Generated the CSV file ✅
-      - id: processCSV
-        type: io.kestra.core.tasks.scripts.Python
-        inputFiles:
-          main.py: |
-            from kestra import Kestra
-            import pandas as pd
-            
-            df = pd.read_csv("output.csv")
-            orders = df["order_id"].count()
-            sales = df["total_amount"].sum()
-            print(f"there are {orders} orders with total sales of {sales}")
-            
-            tags = dict(dashboard="sales")
-            Kestra.counter("orders", int(orders), tags)
-            Kestra.counter("sales", int(sales), tags)
-        requirements:
-          - pandas==1.5.3
+
+      - id: process_csv
+        type: io.kestra.plugin.scripts.python.Script
+        beforeCommands:
+          - pip install pandas==1.5.3
+        script: |
+          from kestra import Kestra
+          import pandas as pd
+          
+          df = pd.read_csv("output.csv")
+          orders = df["order_id"].count()
+          sales = df["total_amount"].sum()
+          print(f"there are {orders} orders with total sales of {sales}")
+          
+          tags = dict(dashboard="sales")
+          Kestra.counter("orders", int(orders), tags)
+          Kestra.counter("sales", int(sales), tags)

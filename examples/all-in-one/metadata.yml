@@ -2,6 +2,7 @@ id: metadataDemo
 namespace: prod.staging
 description: |
   Note that this is not a working example - only meant to communicate a possible additional metadata tracking feature
+
 tasks:
   - id: marketingCosts
     type: io.kestra.plugin.gcp.bigquery.LoadFromGcs

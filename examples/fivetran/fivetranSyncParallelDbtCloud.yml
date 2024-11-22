@@ -1,32 +1,38 @@
-id: fivetranSyncParallelDbtCloud
-namespace: prod
+id: fivetran_sync_parallel_dbt_cloud
+namespace: company.team
+
 tasks:
-  - id: marketingExtractLoad
-    type: io.kestra.core.tasks.flows.WorkingDirectory
+  - id: marketing_extract_load
+    type: io.kestra.plugin.core.flow.WorkingDirectory
     tasks:
-      - id: dataIngestion
-        type: io.kestra.core.tasks.flows.Parallel
+      - id: data_ingestion
+        type: io.kestra.plugin.core.flow.Parallel
         tasks:
           - id: salesforce
             type: io.kestra.plugin.fivetran.connectors.Sync
             connectorId: vesicle_movement
+
           - id: stripe
             type: io.kestra.plugin.fivetran.connectors.Sync
             connectorId: cell_delivery
+
           - id: google-analytics
             type: io.kestra.plugin.fivetran.connectors.Sync
             connectorId: equivocal_sandy
+
           - id: facebook-ads
             type: io.kestra.plugin.fivetran.connectors.Sync
             connectorId: molecule_transport
-  - id: dbtCloudJob
+
+  - id: dbt_cloud_job
     type: io.kestra.plugin.dbt.cloud.TriggerRun
-    accountId: "{{secret('DBT_CLOUD_ACCOUNT_ID')}}"
-    token: "{{envs.dbt_cloud_api_token}}"
+    accountId: "{{ secret('DBT_CLOUD_ACCOUNT_ID') }}"
+    token: "{{ secret('DBT_CLOUD_API_TOKEN') }}"
     jobId: "396284"
     wait: true
-taskDefaults:
+
+pluginDefaults:
   - type: io.kestra.plugin.fivetran.connectors.Sync
     values:
-      apiKey: "{{secret('FIVETRAN_API_KEY')}}"
-      apiSecret: "{{secret('FIVETRAN_API_SECRET')}}"
+      apiKey: "{{ secret('FIVETRAN_API_KEY') }}"
+      apiSecret: "{{ secret('FIVETRAN_API_SECRET') }}"

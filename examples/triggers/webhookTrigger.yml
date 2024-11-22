@@ -6,7 +6,7 @@ description: |
 
 tasks:
   - id: hello
-    type: io.kestra.core.tasks.log.Log
+    type: io.kestra.plugin.core.log.Log
     message: Hello from a flow triggered by a webhook
 
 triggers:
