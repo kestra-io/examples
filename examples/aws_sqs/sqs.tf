@@ -40,24 +40,26 @@ resource "aws_sqs_queue" "queue" {
 
 resource "kestra_flow" "sqsPublishMessage" {
   keep_original_source = true
-  flow_id    = "sqsPublishMessage"
+  flow_id    = "sqs_publish_message"
   namespace = var.namespace
   content   = <<EOF
-id: sqsPublishMessage
+id: sqs_publish_message
 namespace: ${var.namespace}
+
 inputs:
   - name: message
     type: STRING
     defaults: "Hi from SQS!"
+
 tasks:
-  - id: publishMessage
+  - id: publish_message
     type: io.kestra.plugin.aws.sqs.Publish
     accessKeyId: "{{ secret('AWS_ACCESS_KEY_ID') }}"
     secretKeyId: "{{ secret('AWS_SECRET_ACCESS_KEY') }}"
     region: ${var.region}
     queueUrl: ${aws_sqs_queue.queue.id}
     from:
-      data: "{{inputs.message}}"
+      data: "{{ inputs.message }}"
 EOF
 }
 
@@ -79,7 +81,7 @@ tasks:
   - id: print
     type: io.kestra.core.tasks.scripts.Bash
     inputFiles:
-      messages.ion: "{{outputs.pollSqsForMessages.uri}}"
+      messages.ion: "{{ outputs.pollSqsForMessages.uri }}"
     commands:
       - cat messages.ion
 EOF

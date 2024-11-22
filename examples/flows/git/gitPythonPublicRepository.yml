@@ -1,19 +1,19 @@
-id: gitPythonPublicRepository
-namespace: prod
-tasks:
-  - id: pythonScripts
-    type: io.kestra.core.tasks.flows.WorkingDirectory
-    tasks:
-    - id: cloneRepository
-      type: io.kestra.plugin.git.Clone
-      url: https://github.com/anna-geller/kestra-flows
-      branch: main
-      username: anna-geller
+id: git_python_public_repository
+namespace: company.team
 
-    - id: pythonETL
-      type: io.kestra.core.tasks.scripts.Python
-      commands:
-        - ./bin/python python-scripts/etl_script.py
-      requirements:
-        - requests
-        - pandas
+tasks:
+  - id: python_scripts
+    type: io.kestra.plugin.core.flow.WorkingDirectory
+    tasks:
+      - id: clone_repository
+        type: io.kestra.plugin.git.Clone
+        url: https://github.com/anna-geller/kestra-flows
+        branch: main
+        username: anna-geller
+
+      - id: python_etl
+        type: io.kestra.plugin.scripts.python.Commands
+        beforeCommands:
+          - pip install requests pandas
+        commands:
+          - ./bin/python examples/scripts/etl_script.py

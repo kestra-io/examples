@@ -3,7 +3,7 @@ namespace: company.team
 
 tasks:
   - id: data_ingestion
-    type: io.kestra.core.tasks.flows.Parallel
+    type: io.kestra.plugin.core.flow.Parallel
     tasks:
       - id: salesforce
         type: io.kestra.plugin.airbyte.cloud.jobs.Sync
@@ -24,7 +24,7 @@ tasks:
     token: "{{ secret('DBT_CLOUD_API_TOKEN') }}"
     wait: true
 
-taskDefaults:
+pluginDefaults:
   - type: io.kestra.plugin.airbyte.cloud.jobs.Sync
     values:
       url: http://host.docker.internal:8000/

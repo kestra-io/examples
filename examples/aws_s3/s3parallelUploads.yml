@@ -1,5 +1,5 @@
-id: s3parallelUploads
-namespace: prod
+id: s3_parallel_uploads
+namespace: company.team
 description: |
   This flow downloads a zip file, unzips it, and uploads the contents to S3 in parallel
 
@@ -9,58 +9,62 @@ inputs:
     defaults: declarative-data-orchestration
 
 tasks:
-  - id: getZipFile
+  - id: get_zip_file
     type: io.kestra.plugin.fs.http.Download
     uri: https://wri-dataportal-prod.s3.amazonaws.com/manual/global_power_plant_database_v_1_3.zip
 
   - id: unzip
     type: io.kestra.plugin.compress.ArchiveDecompress
     algorithm: ZIP
-    from: "{{outputs.getZipFile.uri}}"
+    from: "{{outputs.get_zip_file.uri}}"
 
-  - id: parallelUploadToS3
-    type: io.kestra.core.tasks.flows.Parallel
+  - id: parallel_upload_to_s3
+    type: io.kestra.plugin.core.flow.Parallel
     tasks:
       - id: csv
         type: io.kestra.plugin.aws.s3.Upload
         accessKeyId: "{{ secret('AWS_ACCESS_KEY_ID') }}"
-        from: "{{outputs.unzip.files['global_power_plant_database.csv']}}"
+        from: "{{ outputs.unzip.files['global_power_plant_database.csv'] }}"
         key: powerplant/global_power_plant_database.csv
         region: "{{ secret('AWS_DEFAULT_REGION') }}"
         secretKeyId: "{{ secret('AWS_SECRET_ACCESS_KEY') }}"
+
       - id: pdf
         type: io.kestra.plugin.aws.s3.Upload
-        from: "{{outputs.unzip.files['Estimating_Power_Plant_Generation_in_the_Global_Power_Plant_Database.pdf']}}"
+        from: "{{ outputs.unzip.files['Estimating_Power_Plant_Generation_in_the_Global_Power_Plant_Database.pdf'] }}"
         key: powerplant/Estimating_Power_Plant_Generation_in_the_Global_Power_Plant_Database.pdf
+
       - id: txt
         type: io.kestra.plugin.aws.s3.Upload
-        from: "{{outputs.unzip.files['RELEASE_NOTES.txt']}}"
+        from: "{{ outputs.unzip.files['RELEASE_NOTES.txt'] }}"
         key: powerplant/RELEASE_NOTES.txt
 
-  - id: listObjects
+  - id: list_objects
     type: io.kestra.plugin.aws.s3.List
-    bucket: "{{inputs.bucket}}"
+    bucket: "{{ inputs.bucket }}"
     prefix: powerplant/
 
-  - id: printObjects
-    type: io.kestra.core.tasks.log.Log
-    message: "found objects {{outputs.listObjects.objects}}"
+  - id: print_objects
+    type: io.kestra.plugin.core.log.Log
+    message: "found objects {{ outputs.list_objects.objects }}"
 
-  - id: mapOverS3Objects
-    type: io.kestra.core.tasks.flows.EachParallel
+  - id: map_over_s3_objects
+    type: io.kestra.plugin.core.flow.ForEach
+    concurrencyLimit: 0
     value: "{{outputs.listObjects.objects}}"
     tasks: # all tasks listed here will run in parallel
-    - id: filename
-      type: io.kestra.core.tasks.log.Log
-      message: "filename {{json(taskrun.value).key}} with size {{json(taskrun.value).size}}"
+      - id: filename
+        type: io.kestra.plugin.core.log.Log
+        message: "filename {{ json(taskrun.value).key }} with size {{ json(taskrun.value).size }}"
 
-taskDefaults:
+pluginDefaults:
   - type: io.kestra.plugin.aws.s3.Upload
     values:
       accessKeyId: "{{ secret('AWS_ACCESS_KEY_ID') }}"
       secretKeyId: "{{ secret('AWS_SECRET_ACCESS_KEY') }}"
       region: "{{ secret('AWS_DEFAULT_REGION') }}"
-      bucket: "{{inputs.bucket}}"
+      bucket: "{{ inputs.bucket }}"
+
   - type: io.kestra.plugin.aws.s3.List
     values:
       accessKeyId: "{{ secret('AWS_ACCESS_KEY_ID') }}"

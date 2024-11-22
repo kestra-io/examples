@@ -1,20 +1,25 @@
-id: outputFromPythonScript
-namespace: dev
+id: output_from_python_script
+namespace: company.team
+
 tasks:
   - id: wdir
-    type: io.kestra.core.tasks.flows.WorkingDirectory
+    type: io.kestra.plugin.core.flow.WorkingDirectory
     disabled: true
     tasks:
-      - id: myPython
+      - id: my_python
         type: io.kestra.plugin.scripts.python.Script
-        runner: PROCESS
+        taskRunner:
+          type: io.kestra.plugin.core.runner.Process
         script: |
-          f = open("{{outputDir}}/myfile.txt", "a")
+          f = open("myfile.txt", "a")
           f.write("Hi, this is output from a script 👋")
           f.close()
+        outputFiles:
+          - myfile.txt
 
-      - id: myShell
+      - id: my_shell
         type: io.kestra.plugin.scripts.shell.Commands
-        runner: PROCESS
+        taskRunner:
+          type: io.kestra.plugin.core.runner.Process
         commands:
-          - cat {{outputs.myPython.outputFiles['myfile.txt']}}
+          - cat {{ outputs.my_python.outputFiles['myfile.txt']}}

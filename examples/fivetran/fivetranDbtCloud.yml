@@ -4,7 +4,7 @@ description: |
 
 tasks:
   - id: fivetran-syncs
-    type: io.kestra.core.tasks.flows.Parallel
+    type: io.kestra.plugin.core.flow.Parallel
     tasks:
       - id: salesforce
         type: io.kestra.plugin.fivetran.connectors.Sync
@@ -23,7 +23,7 @@ tasks:
     token: "{{envs.dbt_cloud_api_token}}"
     wait: true
 
-taskDefaults:
+pluginDefaults:
   - type: io.kestra.plugin.fivetran.connectors.Sync
     values:
       apiKey: "{{secret('FIVETRAN_API_KEY')}}"

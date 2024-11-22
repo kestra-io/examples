@@ -3,7 +3,7 @@ namespace: company.team
 
 tasks:
   - id: data_ingestion
-    type: io.kestra.core.tasks.flows.Parallel
+    type: io.kestra.plugin.core.flow.Parallel
     tasks:
       - id: psyduck
         type: io.kestra.plugin.airbyte.connections.Sync
@@ -22,7 +22,7 @@ tasks:
         connectionId: 39c38950-b0b9-4fce-a303-06ced3dbfa75
 
   - id: dbt
-    type: io.kestra.core.tasks.flows.WorkingDirectory
+    type: io.kestra.plugin.core.flow.WorkingDirectory
     tasks:
       - id: clone_repository
         type: io.kestra.plugin.git.Clone

@@ -11,6 +11,6 @@ tasks:
     secretKeyId: "{{ secret('AWS_SECRET_KEY_ID') }}"
 
   - id: process_data
-    type: io.kestra.core.tasks.scripts.Bash
+    type: io.kestra.plugin.scripts.shell.Commands
     commands:
       - echo {{ outputs.extract_data.rows }}

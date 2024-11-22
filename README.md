@@ -40,7 +40,7 @@ id: hello
 namespace: prod
 tasks:
   - id: hello-world
-    type: io.kestra.core.tasks.log.Log
+    type: io.kestra.plugin.core.log.Log
     message: Hello world!
 ```
 
@@ -87,24 +87,22 @@ Using `dockerOptions` with the `dockerConfig` attribute, you can also configure 
 
 
 ```yaml
-id: hello-python-docker
-namespace: prod
+id: hello_python_docker
+namespace: company.team
 tasks:
-  - id: python-container
-    type: io.kestra.core.tasks.scripts.Python
-    inputFiles:
-      main.py: |
-        import pandas as pd
-        import requests
-        
-        print(pd.__version__)
-        print(requests.__version__)
-    requirements:
-      - requests
-      - pandas
-    runner: DOCKER
-    dockerOptions:
-      image: python:3.11-slim
+  - id: python_container
+    type: io.kestra.plugin.scripts.python.Script
+    beforeCommands:
+      - pip install requests pandas
+    taskRunner:
+      type: io.kestra.plugin.scripts.runner.docker.Docker
+    containerImage: python:3.11-slim
+    script: |
+      import pandas as pd
+      import requests
+      
+      print(pd.__version__)
+      print(requests.__version__)
 ```
 
 
@@ -128,16 +126,13 @@ On Windows:
 
 ## Open-source Kestra
 
-In the open-source version, you can leverage environment variables. 
-Create an `.env` file and add any environment variables there, as shown in the [.env_example](.env_example) file.
+In the open-source version, you can leverage Secrets.
 
-Then, you can reference that environment variable in your flow using ``{{envs.aws_access_key_id}}``. 
+Create an `.env` file and add any environment variables there with the prefix `SECRET_`, as shown in the [.env_example](.env_example) file. The values are the passwords in the base64 encoded format.
+
+Then, you can reference the secrets in your flow using `{{ secret('AIRBYTE_PASSWORD') }}`. Note that we drop the `SECRET_` prefix while referencing the secrets.
 
 For security reasons, environment variables are fixed at the application startup (JVM startup).
-
-Note that the reference must be **lowercase**:
-- ``{{envs.aws_access_key_id}}`` is correct ✅ 
-- ``{{envs.AWS_ACCESS_KEY_ID}}`` is NOT correct ❌ because it must be referenced in lowercase, even though the ``.env`` file contains the variable in uppercase ``AWS_ACCESS_KEY_ID=xxx``
 
 Also, make sure that your Kestra container contains this configuration in your [docker-compose.yml](docker-compose.yml) file:
 
@@ -151,17 +146,12 @@ Also, make sure that your Kestra container contains this configuration in your [
       KESTRA_CONFIGURATION: |
         kestra:
           ...
-          variables:
-            env-vars-prefix: ""
 ```
-
-Setting `env-vars-prefix` to an empty string will allow you to reference environment variables without a prefix.
-
-Without this settings, your AWS_ACCESS_KEY_ID environment variable would need to be prefixed with `KESTRA_` in the `.env` file: ``KESTRA_AWS_ACCESS_KEY_ID``.
 
 ## Cloud & Eneterprise Edition
 
 Cloud & Enterprise Editions have a dedicated credentials managers with extra encryption, namespace-bound credential inheritance hierarchy and an RBAC-setting behind it.
 
-You can add a Secret in the relevant namespace from the namespace tab in the UI. To reference that secret in your flow, use ``{{secret('AWS_ACCESS_KEY_ID')}}`` instead of ``{{envs.aws_access_key_id}}``.  
+You can add a Secret in the relevant namespace from the Namespace tab in the UI. You should not add the `SECRET_` prefix while setting up the secrets via the Namespace tab.
 
+To reference that secret in your flow, use `{{ secret('AWS_ACCESS_KEY_ID') }}`.

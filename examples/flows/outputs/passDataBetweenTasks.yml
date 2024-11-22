@@ -21,7 +21,7 @@ tasks:
             json.dump(my_kv_pair, f)
 
     - id: takeInputs
-      type: io.kestra.core.tasks.log.Log
+      type: io.kestra.plugin.core.log.Log
       message: |
         data from previous tasks: {{outputs.passOutput.value}} and {{outputs.pyOutputs.vars.mykey}}
 

@@ -2,7 +2,7 @@ id: duckDBqueryS3
 namespace: prod
 tasks:
   - id: hello
-    type: io.kestra.core.tasks.log.Log
+    type: io.kestra.plugin.core.log.Log
     message: Hello from Kestra!
   - id: duckDB
     type: io.kestra.plugin.jdbc.duckdb.Query

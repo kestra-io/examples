@@ -2,7 +2,7 @@ id: loadFromGCSNorthwind
 namespace: prod.staging
 tasks:
   - id: csv-to-bq
-    type: io.kestra.core.tasks.flows.Parallel
+    type: io.kestra.plugin.core.flow.Parallel
     concurrent: 20
     tasks:
       - id: customer
@@ -45,7 +45,7 @@ tasks:
         type: io.kestra.plugin.gcp.bigquery.LoadFromGcs
       - id: suppliers
         type: io.kestra.plugin.gcp.bigquery.LoadFromGcs
-taskDefaults:
+pluginDefaults:
   - type: io.kestra.plugin.gcp.bigquery.LoadFromGcs
     values:
       destinationTable: "kestraio.dl_northwind.{{task.id}}"

@@ -3,7 +3,7 @@ namespace: company.team
 
 tasks:
   - id: extract_load_to_datalake
-    type: io.kestra.core.tasks.flows.Parallel
+    type: io.kestra.plugin.core.flow.Parallel
     concurrent: 8
     tasks:
       - id: microsoft_dynamics_nav
@@ -73,7 +73,7 @@ tasks:
         password: "{{ secret('AIRBYTE_PASSWORD') }}"
 
   - id: raw_sales_to_bigquery_stage
-    type: io.kestra.core.tasks.flows.Parallel
+    type: io.kestra.plugin.core.flow.Parallel
     concurrent: 10
     tasks:
       - id: order_details
@@ -88,7 +88,7 @@ tasks:
         type: io.kestra.plugin.gcp.bigquery.LoadFromGcs
 
   - id: dbt
-    type: io.kestra.core.tasks.flows.Worker
+    type: io.kestra.plugin.core.flow.WorkingDirectory
     tasks:
       - id: clone_repository
         type: io.kestra.plugin.git.Clone
@@ -114,13 +114,14 @@ tasks:
             target: prod
         requirements:
           - dbt-bigquery
+        exitOnFailed: true
         taskRunner:
           type: io.kestra.plugin.scripts.runner.docker.Docker
         containerImage: python:3.10-slim
         inputFiles:
           sa.json: "{{ secret('GCP_SERVICE_ACCOUNT_JSON') }}"
 
-      - id: dbt-build
+      - id: dbt_build
         type: io.kestra.plugin.dbt.cli.Build
         debug: false
         taskRunner:
@@ -130,7 +131,7 @@ tasks:
           sa.json: "{{ secret('GCP_SERVICE_ACCOUNT_JSON') }}"
 
   - id: consumption_layer
-    type: io.kestra.core.tasks.flows.Parallel
+    type: io.kestra.plugin.core.flow.Parallel
     tasks:
       - id: refresh_powerBI
         type: io.kestra.plugin.powerbi.RefreshGroupDataset
@@ -152,21 +153,21 @@ tasks:
                 machineType: n1-standard-4
               replicaCount: 1
 
-    - id: custom_reporting
-      type: io.kestra.core.tasks.flows.ForEach
-      concurrencyLimit: 0
-      values: [ "https://raw.githubusercontent.com/dbt-labs/jaffle_shop/main/seeds/raw_customers.csv", "https://raw.githubusercontent.com/dbt-labs/jaffle_shop/main/seeds/raw_orders.csv", "https://raw.githubusercontent.com/dbt-labs/jaffle_shop/main/seeds/raw_payments.csv" ]
-      tasks:
-        - id: python_analysis
-          type: io.kestra.core.tasks.scripts.Python
-          inputFiles:
-            data.csv: "{{ taskrun.value }}"
-            main.py: |
-              import pandas as pd
-              df = pd.read_csv("data.csv")
-              df.info()
-          requirements:
-            - pandas
+  - id: custom_reporting
+    type: io.kestra.plugin.core.flow.ForEach
+    concurrencyLimit: 0
+    values: [ "https://raw.githubusercontent.com/dbt-labs/jaffle_shop/main/seeds/raw_customers.csv", "https://raw.githubusercontent.com/dbt-labs/jaffle_shop/main/seeds/raw_orders.csv", "https://raw.githubusercontent.com/dbt-labs/jaffle_shop/main/seeds/raw_payments.csv" ]
+    tasks:
+      - id: python_analysis
+        type: io.kestra.plugin.scripts.python.Script
+        inputFiles:
+          data.csv: "{{ taskrun.value }}"
+        beforeCommands:
+          - pip install pandas
+        script: |
+            import pandas as pd
+            df = pd.read_csv("data.csv")
+            df.info()
 
 pluginDefaults:
   - type: io.kestra.plugin.gcp.bigquery.LoadFromGcs

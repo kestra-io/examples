@@ -14,9 +14,9 @@ tasks:
     condition: "{{inputs.customInput ?? false }}"
     then:
       - id: if-not-null
-        type: io.kestra.core.tasks.log.Log
+        type: io.kestra.plugin.core.log.Log
         message: Received input {{inputs.parameter}}
     else:
       - id: if-null
-        type: io.kestra.core.tasks.log.Log
+        type: io.kestra.plugin.core.log.Log
         message: No input provided

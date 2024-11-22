@@ -19,7 +19,7 @@ tasks:
         );
 
   - id: extract_parallel
-    type: io.kestra.core.tasks.flows.ForEach
+    type: io.kestra.plugin.core.flow.ForEach
     concurrencyLimit: 0
     values:
       - employees01.csv
@@ -33,7 +33,7 @@ tasks:
         uri: https://raw.githubusercontent.com/kestra-io/examples/main/datasets/{{ taskrun.value }}
 
   - id: load_parallel
-    type: io.kestra.core.tasks.flows.ForEach
+    type: io.kestra.plugin.core.flow.ForEach
     concurrencyLimit: 0
     values:
       - employees01.csv
@@ -61,7 +61,7 @@ tasks:
       ON_ERROR = 'skip_file';
     disabled: false
 
-taskDefaults:
+pluginDefaults:
   - type: io.kestra.plugin.jdbc.snowflake.Query
     values:
       url: jdbc:snowflake://<account-identifier>.snowflakecomputing.com?warehouse=DEMO

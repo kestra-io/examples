@@ -4,5 +4,5 @@ description: This flow logs a message to the console
 
 tasks:
   - id: hello
-    type: io.kestra.core.tasks.log.Log
+    type: io.kestra.plugin.core.log.Log
     message: Hello world!

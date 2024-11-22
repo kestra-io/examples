@@ -1,26 +1,31 @@
-id: fivetranSyncParallel
-namespace: prod
+id: fivetran_sync_parallel
+namespace: company.team
+
 tasks:
-  - id: marketingExtractLoad
-    type: io.kestra.core.tasks.flows.WorkingDirectory
+  - id: marketing_extract_load
+    type: io.kestra.plugin.core.flow.WorkingDirectory
     tasks:
-      - id: dataIngestion
-        type: io.kestra.core.tasks.flows.Parallel
+      - id: data_ingestion
+        type: io.kestra.plugin.core.flow.Parallel
         tasks:
           - id: salesforce
             type: io.kestra.plugin.fivetran.connectors.Sync
             connectorId: vesicle_movement
+
           - id: stripe
             type: io.kestra.plugin.fivetran.connectors.Sync
             connectorId: cell_delivery
-          - id: google-analytics
+
+          - id: google_analytics
             type: io.kestra.plugin.fivetran.connectors.Sync
             connectorId: equivocal_sandy
-          - id: facebook-ads
+
+          - id: facebook_ads
             type: io.kestra.plugin.fivetran.connectors.Sync
             connectorId: molecule_transport
-taskDefaults:
+
+pluginDefaults:
   - type: io.kestra.plugin.fivetran.connectors.Sync
     values:
-      apiKey: "{{secret('FIVETRAN_API_KEY')}}"
-      apiSecret: "{{secret('FIVETRAN_API_SECRET')}}"
+      apiKey: "{{ secret('FIVETRAN_API_KEY') }}"
+      apiSecret: "{{ secret('FIVETRAN_API_SECRET') }}"

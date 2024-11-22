@@ -2,7 +2,7 @@ id: pythonDependenciesVenvPerTask
 namespace: prod
 tasks:
   - id: compareInstallTimesBetweenVersions
-    type: io.kestra.core.tasks.flows.Parallel
+    type: io.kestra.plugin.core.flow.Parallel
     concurrent: 2
     tasks:
     - id: latestRequests

@@ -14,7 +14,7 @@ tasks:
       maxDuration: PT1H
       interval: PT10M
   - id: parallel
-    type: io.kestra.core.tasks.flows.Parallel
+    type: io.kestra.plugin.core.flow.Parallel
     tasks:
       - id: analyze-data-sum
         type: io.kestra.core.tasks.scripts.Python
@@ -61,5 +61,5 @@ tasks:
           - "cat new.csv > {{ outputFiles.data_update }}"
 errors:
   - id: error-handling
-    type: io.kestra.core.tasks.log.Log
+    type: io.kestra.plugin.core.log.Log
     message: "An error occurred."

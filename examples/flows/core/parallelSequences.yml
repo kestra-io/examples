@@ -3,7 +3,7 @@ namespace: prod.demo
 description: Run two sequences in parallel
 tasks:
   - id: parallel
-    type: io.kestra.core.tasks.flows.Parallel
+    type: io.kestra.plugin.core.flow.Parallel
     tasks:
       - id: sequence1
         type: io.kestra.core.tasks.flows.Sequential

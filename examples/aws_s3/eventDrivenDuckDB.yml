@@ -23,7 +23,7 @@ tasks:
     from: "{{ outputs.query.uri }}"
 
   - id: if_anomalies_detected
-    type: io.kestra.core.tasks.flows.If
+    type: io.kestra.plugin.core.flow.If
     condition: "{{ outputs.query.size }}"
     description: send email if outliers detected
     then:

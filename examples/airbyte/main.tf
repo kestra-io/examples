@@ -46,53 +46,53 @@ resource "kestra_flow" "airbyte" {
   content              = <<EOF
 id: airbyte
 namespace: ${var.namespace}
+
 tasks:
   - id: airbyte
-    type: io.kestra.core.tasks.flows.Parallel
+    type: io.kestra.plugin.core.flow.Parallel
     tasks:
-      - id: pokeApi
+      - id: poke_api
         type: io.kestra.plugin.airbyte.cloud.jobs.Sync
         connectionId: ${airbyte_connection.pokeapi_devnull.connection_id}
-        token: "{{envs.airbyte_cloud_api_token}}"
+        token: "{{ secret('AIRBYTE_CLOUD_API_TOKEN') }}"
 
-      - id: sampleData
+      - id: sample_data
         type: io.kestra.plugin.airbyte.cloud.jobs.Sync
         connectionId: ${airbyte_connection.sample_devnull.connection_id}
-        token: "{{envs.airbyte_cloud_api_token}}"
+        token: "{{ secret('AIRBYTE_CLOUD_API_TOKEN') }}"
 
       - id: dockerhub
         type: io.kestra.plugin.airbyte.cloud.jobs.Sync
         connectionId: ${airbyte_connection.dockerhub_devnull.connection_id}
-        token: "{{envs.airbyte_cloud_api_token}}"
+        token: "{{ secret('AIRBYTE_CLOUD_API_TOKEN') }}"
 
   - id: transformations
-    type: io.kestra.core.tasks.flows.Parallel
+    type: io.kestra.plugin.core.flow.Parallel
     tasks:
       - id: dbt
-        type: io.kestra.core.tasks.flows.WorkingDirectory
+        type: io.kestra.plugin.core.flow.WorkingDirectory
         tasks:
-          - id: cloneRepository
+          - id: clone_repository
             type: io.kestra.plugin.git.Clone
             url: https://github.com/jwills/jaffle_shop_duckdb
             branch: duckdb
 
           - id: pandas
-            type: io.kestra.core.tasks.scripts.Python
-            inputFiles:
-              main.py: |
+            type: io.kestra.plugin.scripts.python.Script
+            script: |
                 import pandas as pd
                 df = pd.read_csv("seeds/raw_customers.csv")
                 df.info()
-            runner: DOCKER
-            dockerOptions:
-              image: ghcr.io/kestra-io/pydata:latest
+            taskRunner:
+              type: io.kestra.plugin.scripts.runner.docker.Docker
+            containerImage: ghcr.io/kestra-io/pydata:latest
 
-          - id: dbt-build
+          - id: dbt_build
             type: io.kestra.plugin.dbt.cli.Build
             debug: true
-            runner: DOCKER
-            dockerOptions:
-              image: ghcr.io/kestra-io/dbt-duckdb:latest
+            taskRunner:
+              type: io.kestra.plugin.scripts.runner.docker.Docker
+            containerImage: ghcr.io/kestra-io/dbt-duckdb:latest
             dbtPath: /usr/local/bin/dbt
             inputFiles:
               .profile/profiles.yml: |
