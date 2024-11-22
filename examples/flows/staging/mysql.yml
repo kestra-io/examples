@@ -1,8 +1,0 @@
-id: mysql
-namespace: prod.staging
-tasks:
-  - id: dataIngestionSync
-    type: io.kestra.plugin.fivetran.connectors.Sync
-    connectorId: mysql
-    apiKey: "{{secret('FIVETRAN_API_KEY')}}"
-    apiSecret: "{{secret('FIVETRAN_API_SECRET')}}"

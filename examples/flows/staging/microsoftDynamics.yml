@@ -1,8 +1,0 @@
-id: microsoftDynamics
-namespace: prod.staging
-tasks:
-  - id: dataIngestionSync
-    type: io.kestra.plugin.fivetran.connectors.Sync
-    connectorId: microsoftDynamics
-    apiKey: "{{secret('FIVETRAN_API_KEY')}}"
-    apiSecret: "{{secret('FIVETRAN_API_SECRET')}}"

@@ -1,8 +1,0 @@
-id: helloWorld
-namespace: prod
-description: This flow logs a message to the console
-
-tasks:
-  - id: hello
-    type: io.kestra.plugin.core.log.Log
-    message: Hello world!

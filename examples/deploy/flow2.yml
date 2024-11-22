@@ -1,6 +1,0 @@
-id: flow2
-namespace: prod
-tasks:
-- id: iac
-  type: io.kestra.plugin.core.log.Log
-  message: Hello from {{ flow.id }} in {{ flow.namespace }}
