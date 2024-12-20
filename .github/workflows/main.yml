@@ -28,10 +28,11 @@ jobs:
               - added|modified: 'dockerfiles/*.Dockerfile'
 
       - name: Generate Markdown Summary
-        run: echo "New/modified Dockerfiles: ${{ steps.filter.outputs.dockerfiles_files }}" >> $GITHUB_STEP_SUMMARY
+        run: |
+          echo New/modified Dockerfiles: ${{ steps.filter.outputs.dockerfiles_files }} >> $GITHUB_STEP_SUMMARY
 
   ghcr:
-    needs: changes
+    needs: [changes]
     if: ${{ needs.changes.outputs.dockerfiles_changed == 'true' }}
     runs-on: ubuntu-latest
     permissions:
