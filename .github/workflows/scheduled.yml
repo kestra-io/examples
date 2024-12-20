@@ -11,9 +11,11 @@ jobs:
     outputs:
       matrix: ${{ steps.dockerfiles.outputs.matrix }}
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - id: dockerfiles
-        run: echo "matrix=$(ls dockerfiles/ | jq -R -s -c 'split("\n")[:-1]')" >> $GITHUB_OUTPUT
+        run: echo "matrix=$(ls dockerfiles/ | jq -R -s -c 'split(\"\\n\")[:-1]')" >> $GITHUB_OUTPUT
 
   ghcr:
     runs-on: ubuntu-latest
@@ -25,11 +27,17 @@ jobs:
       matrix:
         image: ${{ fromJson(needs.list-dockerfiles.outputs.matrix) }}
     steps:
-      - name: checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: GHCR Login
-        uses: docker/login-action@v2
+      - name: Set up QEMU for cross-platform builds
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -37,7 +45,7 @@ jobs:
 
       - id: image-tag  # example output: "ghcr.io/kestra-io/pydata:latest"
         run: |
-          export IMAGE=$(basename ${{ matrix.image }} .Dockerfile)
+          IMAGE=$(basename ${{ matrix.image }} .Dockerfile)
           echo "image_url=ghcr.io/kestra-io/$IMAGE:latest" >> $GITHUB_OUTPUT
           echo "file=dockerfiles/${{ matrix.image }}" >> $GITHUB_OUTPUT
 
@@ -48,3 +56,4 @@ jobs:
           push: true
           tags: ${{ steps.image-tag.outputs.image_url }}
           file: ${{ steps.image-tag.outputs.file }}
+          platforms: linux/amd64,linux/arm64
