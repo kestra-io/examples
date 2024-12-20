@@ -1,4 +1,4 @@
-name: Container Image Packages
+name: Scheduled Container Image Packages
 
 on:
   schedule:
