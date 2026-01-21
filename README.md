@@ -1,4 +1,4 @@
-# Data Orchestration with Kestra
+# Kestra Examples
 
 This repository will:
 1. Help you **get started** with Kestra
