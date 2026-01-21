@@ -15,7 +15,7 @@ curl -o docker-compose.yml https://raw.githubusercontent.com/kestra-io/kestra/de
 Start Kestra:
 
 ```sh
-docker-compose up
+docker compose up
 ```
 
 ![install.png](images/install.png)
@@ -27,7 +27,7 @@ docker-compose up
 Here is a simple example logging hello world message to the terminal:
 
 ```yaml
-id: hello  
+id: myflow
 namespace: company.team
 
 tasks:
